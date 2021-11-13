@@ -120,6 +120,8 @@ library(deSolve)
 library(patchwork)
 library(gt)
 library(scales)
+library(khroma)
+devtools::install_github("gadenbuie/xaringanExtra")
 ```
 
 # Simulating model behavior at equilibrium
@@ -316,11 +318,13 @@ ggplot(data = PRED_biomass_long, aes(x = Compartment, y = Stock, fill = Compartm
   # stat_summary(aes(label=round(..y..,2)), fun=median, geom="text", color = "black") + # sanity check on median calculations above
   geom_label(data = comparts_medians, aes(y = median, label = round(median,2)), col = "black", size = 3, fill = "#FFFFFF", alpha = 0.75, nudge_x = -0.18, label.padding = unit(0.15, "lines"), label.size = 0.15) + 
   facet_grid(.~Ecosystem, scales = "free") + 
+  scale_color_discreterainbow() +
+  scale_fill_discreterainbow() +
   theme_pubr() + 
   coord_cartesian(y = c(0, 100)) + # limits range of y-axis without affecting stats in plot
   theme(legend.position = "none")
 
-#ggsave(filename = "../Results/ModelEq_base.png", device = "png", dpi = 300, height = 5)
+#ggsave(filename = "../Results/ModelEq_base.png", device = "png", dpi = 600, height = 5)
 ```
 
 The graph above show a classic trophic cascade, albeit one that acts across 
@@ -346,17 +350,44 @@ PRED_long <- pivot_longer(PREDpos, names_to = "Compartment", values_to = "Stock"
 PRED_long$Compartment <- as_factor(PRED_long$Compartment)
 PRED_long$Ecosystem <- as_factor(PRED_long$Ecosystem)
 
-ggplot(PRED_long, aes(g, log10(Stock), col = Ecosystem)) + geom_point(alpha = 0.15) + geom_smooth(method = "lm", col = "black", alpha = 1, se = T, lwd = 0.5) + facet_grid(.~Compartment) + theme_pubr() + guides(colour = guide_legend(override.aes = list(alpha = 1))) + theme(axis.text.x = element_text(angle = 45, vjust = 0.5, size = 8), text = element_text(size = 11))
+ggplot(PRED_long, aes(g, log10(Stock), col = Ecosystem)) + 
+  geom_point(alpha = 0.15) + 
+  geom_smooth(method = "lm", col = "black", alpha = 1, se = T, lwd = 0.5) +
+  facet_grid(.~Compartment) + 
+  scale_color_light() +
+  scale_fill_light() +
+  theme_pubr() + 
+  guides(colour = guide_legend(override.aes = list(alpha = 1))) + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 0.5, size = 8), 
+        text = element_text(size = 11))
 ```
 
 ```{r m-change, echo=TRUE,tidy=TRUE,fig.cap="Change in biomass of the two ecosystems' compartment, the dispersers' pool, and the meta-ecostystem with change in the value of the rate of emigration from the disperser pool (m).---i.e., the rate at which consumers enter ecosystem 2. All other specifications as in Figure 2."}
 
-ggplot(PRED_long, aes(m, log10(Stock), col = Ecosystem)) + geom_point(alpha = 0.15) + geom_smooth(method = "lm", col = "black", alpha = 1, se = T, lwd = 0.5) + facet_grid(.~Compartment) + theme_pubr() + guides(colour = guide_legend(override.aes = list(alpha = 1))) + theme(axis.text.x = element_text(angle = 45, vjust = 0.5, size = 8), text = element_text(size = 11))
+ggplot(PRED_long, aes(m, log10(Stock), col = Ecosystem)) + 
+  geom_point(alpha = 0.15) + 
+  geom_smooth(method = "lm", col = "black", alpha = 1, se = T, lwd = 0.5) + 
+  facet_grid(.~Compartment) + 
+  scale_color_light() +
+  scale_fill_light() +
+  theme_pubr() + 
+  guides(colour = guide_legend(override.aes = list(alpha = 1))) + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 0.5, size = 8), 
+        text = element_text(size = 11))
 ```
 
 ```{r c-change, echo=TRUE,tidy=TRUE,fig.cap="Change in biomass of the two ecosystems' compartment, the dispersers' pool, and the meta-ecostystem with change in the value of the consumer death rate while in the dispersers' pool (c). This could represent predation risk, but also environmental hazards and stochastic events such as crossing a dangerous linear feature of the landscape---e.g., a busy highway. All other specifications as in Figure 2."}
 
-ggplot(PRED_long, aes(c, log10(Stock), col = Ecosystem)) + geom_point(alpha = 0.15) + geom_smooth(method = "lm", col = "black", alpha = 1, se = T, lwd = 0.5) + facet_grid(.~Compartment) + theme_pubr() + guides(colour = guide_legend(override.aes = list(alpha = 1))) + theme(axis.text.x = element_text(angle = 45, vjust = 0.5, size = 8), text = element_text(size = 11))
+ggplot(PRED_long, aes(c, log10(Stock), col = Ecosystem)) + 
+  geom_point(alpha = 0.15) + 
+  geom_smooth(method = "lm", col = "black", alpha = 1, se = T, lwd = 0.5) + 
+  facet_grid(.~Compartment) + 
+  scale_color_light() +
+  scale_fill_light() +
+  theme_pubr() + 
+  guides(colour = guide_legend(override.aes = list(alpha = 1))) + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 0.5, size = 8), 
+        text = element_text(size = 11))
 ```
 
 After taking a look at the productivity of the system by checking stock graphs,
@@ -387,7 +418,7 @@ FluxPRED %>%
   geom_boxjitter(outlier.intersect = TRUE, alpha = 0.25, outlier.shape = 25, jitter.shape = 21) +
   # stat_summary(aes(label=round(..y..,2)), fun=median, geom="text", color = "black") + # sanity check on median calculations above
   geom_label(data = comparts_medians, aes(y = median, label = round(median,2)), col = "black", size = 3, fill = "#FFFFFF", alpha = 0.75, nudge_x = -0.18, label.padding = unit(0.15, "lines"), label.size = 0.15) + 
-  facet_grid(.~Scale, scales = "free") + scale_x_discrete(labels = c("FLUX_C1" = "C", "FLUX_P1" = "P", "FLUX_Ptot" = "P", "FLUX_C2" = "C", "FLUX_P2" = "P", "FLUX_Ctot" = "C", "MetaEcoFlux" = "Meta-ecosystem")) + 
+  facet_grid(.~Scale, scales = "free") + scale_x_discrete(labels = c("FLUX_C1" = "C", "FLUX_P1" = "P", "FLUX_Ptot" = "P", "FLUX_C2" = "C", "FLUX_P2" = "P", "FLUX_Ctot" = "C", "MetaEcoFlux" = "Meta-ecosystem")) +
   theme_pubr() + 
   coord_cartesian(y = c(0, 500)) + # limits range of y-axis without affecting stats in plot
   theme(legend.position = "none", axis.title.x = element_blank())
@@ -475,6 +506,8 @@ ggplot(data=PREDm0_long, aes(x = Compartment, y = Stock, fill = Compartment, col
   # stat_summary(aes(label=round(..y..,2)), fun=median, geom="text", color = "black") + # sanity check on median calculations above
   geom_label(data = comparts_medians, aes(y = median, label = round(median,2)), col = "black", size = 3, fill = "#FFFFFF", alpha = 0.75, nudge_x = -0.18, label.padding = unit(0.15, "lines"), label.size = 0.15) + 
   facet_grid(.~Ecosystem, scales = "free") + 
+  scale_color_discreterainbow() +
+  scale_fill_discreterainbow() +
   theme_pubr() + 
   coord_cartesian(y = c(0, 100)) + # limits range of y-axis without affecting stats in plot
   theme(legend.position = "none")
@@ -489,12 +522,30 @@ Nutrients and grow.
 
 ```{r echo=TRUE,tidy=TRUE,fig.cap="Change in biomass of the two ecosystems’ compartment, the dispersers’ pool, and the meta-ecostystem with change in the value of the rate of the rate of immigration into the disperser pool (g)---i.e., the rate at which consumers leave ecosystem 1. All other specifications as in Figure 2.", fig.show='asis'}
 
-ggplot(PRED_long, aes(g, log10(Stock), col = Ecosystem)) + geom_point(alpha = 0.15) + geom_smooth(method = "lm", col = "black", alpha = 1, se = T, lwd = 0.5) + facet_grid(.~Compartment) + theme_pubr() + guides(colour = guide_legend(override.aes = list(alpha = 1))) + theme(axis.text.x = element_text(angle = 45, vjust = 0.5, size = 8), text = element_text(size = 11))
+ggplot(PRED_long, aes(g, log10(Stock), col = Ecosystem)) + 
+  geom_point(alpha = 0.15) + 
+  geom_smooth(method = "lm", col = "black", alpha = 1, se = T, lwd = 0.5) + 
+  facet_grid(.~Compartment) + 
+  scale_color_light() +
+  scale_fill_light() +
+  theme_pubr() + 
+  guides(colour = guide_legend(override.aes = list(alpha = 1))) + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 0.5, size = 8), 
+        text = element_text(size = 11))
 ```
 
 ```{r echo=TRUE,tidy=TRUE,fig.cap="Change in biomass of the two ecosystems’ compartment, the dispersers’ pool, and the meta-ecostystem with change in the value of the rate of the consumer death rate while in the dispersers' pool (c). All other specifications as in Figure 2.", fig.show='asis'}
 
-ggplot(PRED_long, aes(c, log10(Stock), col = Ecosystem)) + geom_point(alpha = 0.15) + geom_smooth(method = "lm", col = "black", alpha = 1, se = T, lwd = 0.5) + facet_grid(.~Compartment) + theme_pubr() + guides(colour = guide_legend(override.aes = list(alpha = 1))) + theme(axis.text.x = element_text(angle = 45, vjust = 0.5, size = 8), text = element_text(size = 11))
+ggplot(PRED_long, aes(c, log10(Stock), col = Ecosystem)) + 
+  geom_point(alpha = 0.15) + 
+  geom_smooth(method = "lm", col = "black", alpha = 1, se = T, lwd = 0.5) + 
+  facet_grid(.~Compartment) + 
+  scale_color_light() +
+  scale_fill_light() +
+  theme_pubr() + 
+  guides(colour = guide_legend(override.aes = list(alpha = 1))) + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 0.5, size = 8), 
+        text = element_text(size = 11))
 ```
 
 ### Lack of immigration into the Dispersers' Pool from Ecosystem 1 (g = 0)
@@ -573,6 +624,8 @@ ggplot(data=PREDg0_long, aes(x = Compartment, y = Stock, fill = Compartment, col
 # stat_summary(aes(label=round(..y..,2)), fun=median, geom="text", color = "black") + # sanity check on median calculations above
   geom_label(data = comparts_medians, aes(y = median, label = round(median,2)), col = "black", size = 3, fill = "#FFFFFF", alpha = 0.75, nudge_x = -0.18, label.padding = unit(0.16, "lines"), label.size = 0.15) + 
   facet_grid(.~Ecosystem, scales = "free") + 
+  scale_color_discreterainbow() +
+  scale_fill_discreterainbow() +
   theme_pubr() + 
   coord_cartesian(y = c(0, 100)) + # limits range of y-axis without affecting stats in plot
   theme(legend.position = "none")
@@ -586,12 +639,30 @@ show scatterplots like Figures \@ref(fig:g-change), \@ref(fig:m-change), or
 
 ```{r echo=TRUE,tidy=TRUE, fig.cap="Change in biomass of the two ecosystems’ and the meta-ecostystemtrophic compartments with change in the value of the rate of the rate of emigration from the disperser pool (m). NOte that Q is not shown as there is no immigration into it. All other specifications as in Figure 2.", fig.show='asis'}
 
-ggplot(PREDg0_long, aes(m, log10(Stock), col = Ecosystem)) + geom_point(alpha = 0.1) + geom_smooth(method = "lm", col = "black", alpha = 1, se = T, lwd = 0.5) + facet_grid(.~Compartment) + theme_pubr() + guides(colour = guide_legend(override.aes = list(alpha = 1))) + theme(axis.text.x = element_text(angle = 45, vjust = 0.5, size = 8), text = element_text(size = 11))
+ggplot(PREDg0_long, aes(m, log10(Stock), col = Ecosystem)) + 
+  geom_point(alpha = 0.1) + 
+  geom_smooth(method = "lm", col = "black", alpha = 1, se = T, lwd = 0.5) + 
+  facet_grid(.~Compartment) + 
+  scale_color_light() +
+  scale_fill_light() +
+  theme_pubr() + 
+  guides(colour = guide_legend(override.aes = list(alpha = 1))) + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 0.5, size = 8), 
+        text = element_text(size = 11))
 ```
 
 ```{r echo=TRUE,tidy=TRUE,fig.cap="Change in biomass of the two ecosystems’ and the meta-ecostystem trophic compartments with change in the value of the rate of the consumer death rate while in the dispersers' pool (c). Note that Q is not shown as there is not immigration into it. All other specifications as in Figure 2.", fig.show='asis'}
 
-ggplot(PREDg0_long, aes(c, log10(Stock), col = Ecosystem)) + geom_point(alpha = 0.1) + geom_smooth(method = "lm", col = "black", alpha = 1, se = T, lwd = 0.5) + facet_grid(.~Compartment) + theme_pubr() + guides(colour = guide_legend(override.aes = list(alpha = 1))) + theme(axis.text.x = element_text(angle = 45, vjust = 0.5, size = 8), text = element_text(size = 11))
+ggplot(PREDg0_long, aes(c, log10(Stock), col = Ecosystem)) + 
+  geom_point(alpha = 0.1) + 
+  geom_smooth(method = "lm", col = "black", alpha = 1, se = T, lwd = 0.5) + 
+  facet_grid(.~Compartment) + 
+  scale_color_light() +
+  scale_fill_light() +
+  theme_pubr() + 
+  guides(colour = guide_legend(override.aes = list(alpha = 1))) + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 0.5, size = 8), 
+        text = element_text(size = 11))
 ```
 
 ### Sampling `g` from a set of values
@@ -682,6 +753,8 @@ ggplot(data=PREDgvar_long, aes(x = Compartment, y = Stock, fill = Compartment, c
   # stat_summary(aes(label=round(..y..,2)), fun=median, geom="text", color = "black") + # sanity check on median calculations above
   geom_label(data = comparts_medians, aes(y = median, label = round(median,2)), col = "black", size = 3, fill = "#FFFFFF", alpha = 0.75, nudge_x = -0.18, label.padding = unit(0.15, "lines"), label.size = 0.15) + 
   facet_grid(.~Ecosystem, scales = "free") + 
+  scale_color_discreterainbow() +
+  scale_fill_discreterainbow() +
   theme_pubr() + 
   coord_cartesian(y = c(0, 100)) + # limits range of y-axis without affecting stats in plot
   theme(legend.position = "none")
@@ -689,12 +762,30 @@ ggplot(data=PREDgvar_long, aes(x = Compartment, y = Stock, fill = Compartment, c
 
 ```{r echo=TRUE,tidy=TRUE, fig.cap="Change in biomass of the two ecosystems’ compartment, the dispersers’ pool, and the meta-ecostystem as g increases from 0 to 10, in increments of 0.5. THe value of m is held constant at 0. All other specifications as in Figure 2.", fig.show='asis'}
 
-ggplot(data = PREDgvar_long, aes(x = g, y = log10(Stock), col = Ecosystem)) + geom_point(alpha = 0.1) + geom_smooth(method = "lm", col = "black", alpha = 1, se = T, lwd = 0.5) + facet_grid(.~Compartment) + theme_pubr() + guides(colour = guide_legend(override.aes = list(alpha = 1))) + theme(axis.text.x = element_text(angle = 45, vjust = 0.5, size = 8), text = element_text(size = 11))
+ggplot(data = PREDgvar_long, aes(x = g, y = log10(Stock), col = Ecosystem)) +
+  geom_point(alpha = 0.1) + 
+  geom_smooth(method = "lm", col = "black", alpha = 1, se = T, lwd = 0.5) + 
+  facet_grid(.~Compartment) + 
+  scale_color_light() +
+  scale_fill_light() +
+  theme_pubr() + 
+  guides(colour = guide_legend(override.aes = list(alpha = 1))) + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 0.5, size = 8), 
+        text = element_text(size = 11))
 ```
 
 ```{r echo=TRUE,tidy=TRUE,fig.cap="Change in biomass of the two ecosystems’ compartment, the dispersers’ pool, and the meta-ecostystem with change in the value of the consumer death rate while in the dispersers' pool (c) when g varies between 0 and 10. All specificatons as in Figure 2.", fig.show='asis'}
 
-ggplot(PREDgvar_long, aes(c, log10(Stock), col = Ecosystem)) + geom_point(alpha = 0.1) + geom_smooth(method = "lm", col = "black", alpha = 1, se = T, lwd = 0.5) + facet_grid(.~Compartment) + theme_pubr() + guides(colour = guide_legend(override.aes = list(alpha = 1))) + theme(axis.text.x = element_text(angle = 45, vjust = 0.5, size = 8), text = element_text(size = 11))
+ggplot(PREDgvar_long, aes(c, log10(Stock), col = Ecosystem)) +
+  geom_point(alpha = 0.1) + 
+  geom_smooth(method = "lm", col = "black", alpha = 1, se = T, lwd = 0.5) + 
+  facet_grid(.~Compartment) + 
+  scale_color_light() +
+  scale_fill_light() +
+  theme_pubr() + 
+  guides(colour = guide_legend(override.aes = list(alpha = 1))) + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 0.5, size = 8), 
+        text = element_text(size = 11))
 ```
 
 ### Potential Interaction between `g` and `m`
@@ -786,6 +877,8 @@ ggplot(data=PREDint_long, aes(x = Compartment, y = Stock, fill = Compartment, co
   # stat_summary(aes(label=round(..y..,2)), fun=median, geom="text", color = "black") + # sanity check on median calculations above
   geom_label(data = comparts_medians, aes(y = median, label = round(median,2)), col = "black", size = 3, fill = "#FFFFFF", alpha = 0.75, nudge_x = -0.18, label.padding = unit(0.15, "lines"), label.size = 0.15) + 
   facet_grid(g~Ecosystem, scales = "free") + 
+  scale_color_discreterainbow() +
+  scale_fill_discreterainbow() +
   theme_pubr() + 
   coord_cartesian(y = c(-5, 100)) + # limits range of y-axis without affecting stats in plot
   theme(legend.position = "none")
@@ -793,12 +886,33 @@ ggplot(data=PREDint_long, aes(x = Compartment, y = Stock, fill = Compartment, co
 
 ```{r gm-int-stock, echo=TRUE,tidy=TRUE, fig.cap="Change in biomass stock values over change in the rate of consumer movement from the dispersers' pool to ecosystem 2 (m), when the rate of consumer movememnt to the dispersers' pool from ecosystem 1 (g) is drawn from three alternative values: low (g = 0), medium (g = 5), and high (g = 9). All other specifications as in Figure 2.", fig.show='asis'}
 
-ggplot(data=PREDint_long, aes(x = m, y = log10(Stock), fill = Ecosystem, col = Ecosystem)) + geom_point(alpha = 0.1) + geom_smooth(method = "lm", col = "black", alpha = 1, se = T, lwd = 0.5) + facet_grid(g~Compartment, scales = "free", labeller = labeller(g = g_levels)) + theme_pubr() + guides(colour = guide_legend(override.aes = list(alpha = 1))) + theme(axis.text.x = element_text(angle = 45, vjust = 0.5, size = 8), text = element_text(size = 10))
+ggplot(data=PREDint_long, aes(x = m, y = log10(Stock), 
+                              fill = Ecosystem, col = Ecosystem)) + 
+  geom_point(alpha = 0.1) + 
+  geom_smooth(method = "lm", col = "black", alpha = 1, se = T, lwd = 0.5) + 
+  facet_grid(g~Compartment, scales = "free", 
+             labeller = labeller(g = g_levels)) + 
+  scale_color_light() +
+  scale_fill_light() +
+  theme_pubr() + 
+  guides(colour = guide_legend(override.aes = list(alpha = 1))) + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 0.5, size = 8), 
+        text = element_text(size = 10))
 ```
 
 ```{r echo=TRUE,tidy=TRUE,fig.cap="Change in biomass stock values with change in the value of the consumer death rate while in the dispersers' pool (c), when g is either low (g = 0), medium (g = 5), and high (g = 9). All other specifications as in Figure 2.", fig.show='asis'}
 
-ggplot(PREDint_long, aes(c, log10(Stock), col = Ecosystem)) + geom_point(alpha = 0.15) + geom_smooth(method = "lm", col = "black", alpha = 1, se = T, lwd = 0.5) + facet_grid(g~Compartment, scale = "free", labeller = labeller(g = g_levels)) + theme_pubr() + guides(colour = guide_legend(override.aes = list(alpha = 1))) + theme(axis.text.x = element_text(angle = 45, vjust = 0.5, size = 8), text = element_text(size = 10))
+ggplot(PREDint_long, aes(c, log10(Stock), col = Ecosystem)) + 
+  geom_point(alpha = 0.15) + 
+  geom_smooth(method = "lm", col = "black", alpha = 1, se = T, lwd = 0.5) + 
+  facet_grid(g~Compartment, scale = "free", 
+             labeller = labeller(g = g_levels)) + 
+  scale_color_light() +
+  scale_fill_light() +
+  theme_pubr() + 
+  guides(colour = guide_legend(override.aes = list(alpha = 1))) + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 0.5, size = 8), 
+        text = element_text(size = 10))
 ```
 
 # Different environmental fertility conditions in local ecosystems
@@ -927,6 +1041,8 @@ I2bm <- ggplot(data=PREDI2_biomass_long, aes(x = Compartment, y = Stock, fill = 
   # stat_summary(aes(label=round(..y..,2)), fun=median, geom="text", color = "black") + # sanity check on median calculations above
   geom_label(data = comparts_medians, aes(y = median, label = round(median,2)), col = "black", size = 3, fill = "#FFFFFF", alpha = 0.75, nudge_x = -0.18, label.padding = unit(0.15, "lines"), label.size = 0.15) + 
   facet_grid(.~Ecosystem, scales = "free") + 
+  scale_color_discreterainbow() +
+  scale_fill_discreterainbow() +
   theme_pubr() + 
   coord_cartesian(y = c(0, 100)) + # limits range of y-axis without affecting stats in plot
   theme(legend.position = "none")
@@ -958,7 +1074,7 @@ I2nf
 
 I2all <- I2bm + I2nf + plot_annotation(tag_levels = "a", tag_prefix = "(", tag_suffix = ")") + plot_layout(ncol = 1, nrow = 2)
 
-#ggsave(I2all, filename = "../Results/LowI2BmNf.png", device = "png", dpi = 300, width = 8, height = 6)
+#ggsave(I2all, filename = "../Results/LowI2BmNf.png", device = "png", dpi = 600, width = 8, height = 6)
 ```
 
 ### Higher environmental fertility in recipient ecosystem 
@@ -1072,6 +1188,8 @@ I1bm <- ggplot(data=PREDI1_biomass_long, aes(x = Compartment, y = Stock, fill = 
 # stat_summary(aes(label=round(..y..,2)), fun=median, geom="text", color = "black") + # sanity check on median calculations above
   geom_label(data = comparts_medians, aes(y = median, label = round(median,2)), col = "black", size = 3, fill = "#FFFFFF", alpha = 0.75, nudge_x = -0.18, label.padding = unit(0.15, "lines"), label.size = 0.15) + 
   facet_grid(.~Ecosystem, scales = "free") + 
+  scale_color_discreterainbow() +
+  scale_fill_discreterainbow() +
   theme_pubr() + 
   coord_cartesian(y = c(0, 100)) + # limits range of y-axis without affecting stats in plot
   theme(legend.position = "none")
@@ -1115,8 +1233,10 @@ I1nf
 
 I1all <- I1bm + I1nf + plot_annotation(tag_levels = "a", tag_prefix = "(", tag_suffix = ")") + plot_layout(ncol = 1, nrow = 2)
 
-#ggsave(I1all, filename = "../Results/LowI1BmNf.png", device = "png", dpi = 300, width = 8, height = 6)
+#ggsave(I1all, filename = "../Results/LowI1BmNf.png", device = "png", dpi = 600, width = 8, height = 6)
 ```
+
+<!-- Look into massive P1 outliers and if they're linked to P2's negative values -->
 
 # Model behaviour with different producers' recycling rates
 
@@ -1263,6 +1383,8 @@ eqIbm <- ggplot(data=PREDeqrecrates_biomass_long, aes(x = Compartment, y = Stock
 # stat_summary(aes(label=round(..y..,2)), fun=median, geom="text", color = "black") + # sanity check on median calculations above
   geom_label(data = comparts_medians, aes(y = median, label = round(median,2)), col = "black", size = 3, fill = "#FFFFFF", alpha = 0.75, nudge_x = -0.18, label.padding = unit(0.15, "lines"), label.size = 0.15) + 
   facet_grid(.~Ecosystem, scales = "free") + 
+  scale_color_discreterainbow() +
+  scale_fill_discreterainbow() +
   theme_pubr() + 
   coord_cartesian(y = c(0, 100)) + # limits range of y-axis without affecting stats in plot
   theme(legend.position = "none")
@@ -1300,7 +1422,7 @@ eqInf
 
 eqIall <- eqIbm + eqInf + plot_annotation(tag_levels = "a", tag_prefix = "(", tag_suffix = ")") + plot_layout(ncol = 1, nrow = 2)
 
-#ggsave(eqIall, filename = "../Results/BM_eqIeqh.png", device = "png", dpi = 300, width = 8, height = 6)
+#ggsave(eqIall, filename = "../Results/BM_eqIeqh.png", device = "png", dpi = 600, width = 8, height = 6)
 ```
 
 #### Higher producers' recycling rate in the donor ecosystem
@@ -1428,6 +1550,10 @@ PREDhigh_h1 <- dplyr::mutate(PREDhigh_h1, PROD_Ctot = PROD_C1 + PROD_C2, .after 
 PREDhigh_h1pos <- subset(PREDhigh_h1, N1>0 & P1>0 & C1>0 & N2>0 & P2>0 & C2>0 & Q>0)
 ```
 
+<!-- Now, let's take a look at how nutrient stocks and biomass of biotic compartments -->
+<!-- varies in response to these changes to the recycling rate of producers in the  -->
+<!-- donor ecosystem. -->
+
 ```{r highh1-bmplot, echo=TRUE, tidy=TRUE, fig.cap="At higher producers recycling rates in the donor ecosystem, compared to the recipient ecosystems, correspond higher median nutrient stocks in the donor ecosystem. Grey labels above the graphs show the scale of investigation (local, meta-ecosystems). Grey labels on the right-hand side of the graphs indicate the increase in h~1~ compared to h~2~ ($x$). All specifications as in Figure 1.", fig.show='asis'}
 # pivot the data frame containing the predictions
 PREDhigh_h1_biomass_long <- pivot_longer(PREDhigh_h1pos, names_to = "Compartment", values_to = "Stock", cols = c(N1, P1, C1, N2, P2, C2, Q, Ntot, Ptot, Ctot)) %>% dplyr::mutate(., Ecosystem = if_else(Compartment == "N1"|Compartment == "C1"|Compartment == "P1", "Donor", if_else(Compartment == "N2"|Compartment == "P2"|Compartment=="C2", "Recipient", if_else(Compartment == "Q", "Dispersers' Pool", "Meta-ecosystem")))) %>% dplyr::filter(., Ecosystem != "Dispersers' Pool")
@@ -1443,10 +1569,17 @@ ggplot(data = PREDhigh_h1_biomass_long, aes(x = Compartment, y = Stock, fill = C
 # stat_summary(aes(label=round(..y..,2)), fun=median, geom="text", color = "black") + # sanity check on median calculations above
   geom_label(data = comparts_medians, aes(y = median, label = round(median,2)), col = "black", size = 3, fill = "#FFFFFF", alpha = 0.75, nudge_x = -0.18, label.padding = unit(0.15, "lines"), label.size = 0.15) + 
   facet_grid(hDIFF~Ecosystem, scales = "free") + 
+  scale_color_discreterainbow() +
+  scale_fill_discreterainbow() +
   theme_pubr() + 
   coord_cartesian(y = c(-15, 100)) + # limits range of y-axis without affecting stats in plot
   theme(legend.position = "none")
 ```
+
+<!-- Nutrient stocks increase as producers recycling rates in the donor ecosystem  -->
+<!-- increase. Figure \@ref(fig:eq-I-highh1-flux) below shows a clear increase in  -->
+<!-- nutrient flux at the meta-ecosystem level (compare this figure with Figures  -->
+<!-- \@ref(fig:nut-flux-equal-I) and \@ref(fig:eq-I-recrates-flux) above). -->
 
 ```{r eq-I-highh1-flux, echo=TRUE,tidy=TRUE,fig.cap="As for biomass and stocks, differences in producers recycling rates between local ecosystem influence nutrient flux at both local and meta-ecosystem scales. Here the increase in the median value for nutrient flux in both producers trophic compartment and the donor ecosystem (Ecosystem 1) overall is clearly visible, as it is at the meta-ecosystem scale.", fig.show='asis'}
 FluxPREDhigh_h1 <- PREDhigh_h1pos %>% dplyr::select(TIME:c, FLUX_P1:FLUX_Eco_2, MetaEcoFlux) %>% tidyr::pivot_longer(names_to = "Compartment", values_to = "Flux", cols = c(FLUX_P1:MetaEcoFlux)) %>% dplyr::mutate(Scale = if_else(Compartment == "FLUX_P1" | Compartment == "FLUX_C1" | Compartment == "FLUX_Eco_1", "Donor", if_else(Compartment == "FLUX_P2" | Compartment == "FLUX_C2" | Compartment == "FLUX_Eco_2", "Recipient", "Meta-ecosystem"))) %>% dplyr::mutate(., Scale = fct_relevel(Scale, "Donor", "Recipient", "Meta-ecosystem"))
@@ -1585,6 +1718,13 @@ PREDhigh_h2 <- dplyr::mutate(PREDhigh_h2, PROD_Ctot = PROD_C1 + PROD_C2, .after 
 PREDhigh_h2pos <- subset(PREDhigh_h2, N1>0 & P1>0 & C1>0 & N2>0 & P2>0 & C2>0 & Q>0)
 ```
 
+<!-- Figure \@ref(fig:highh2-bmplot) below show the nutrient and biomass stocks,  -->
+<!-- for increasingly smaller values of h~1~ compared to h~2~. As the difference  -->
+<!-- between the two producers recycling rates increases, the median value of the  -->
+<!-- inorganic nutrients stock in the donor ecosystem (ecosystem 1) falls.  -->
+<!-- Consequently, there is a reduction of the total nutrients stock at the  -->
+<!-- meta-ecosystem scale too. -->
+
 ```{r highh2-bmplot, echo=TRUE, tidy=TRUE, fig.cap="Nutrients stocks and biomass values when h~1~ is increasingly smaller than h~2~. The reduction in producers recycling rates in the donor ecosystem, compared to the recipient, leads to a strong decrease of the median value of nutrients stock in this patch. In turn, this leads to a lower nutrient availability at the meta-ecosystem scale.", fig.show='asis'}
 # pivot the data frame containing the predictions
 PREDhigh_h2_biomass_long <- pivot_longer(PREDhigh_h2pos, names_to = "Compartment", values_to = "Stock", cols = c(N1, P1, C1, N2, P2, C2, Q, Ntot, Ptot, Ctot)) %>% dplyr::mutate(., Ecosystem = if_else(Compartment == "N1"|Compartment == "C1"|Compartment == "P1", "Donor", if_else(Compartment == "N2"|Compartment == "P2"|Compartment=="C2", "Recipient", if_else(Compartment == "Q", "Dispersers' Pool", "Meta-ecosystem")))) %>% dplyr::filter(., Ecosystem != "Dispersers' Pool")
@@ -1600,10 +1740,18 @@ ggplot(data = PREDhigh_h2_biomass_long, aes(x = Compartment, y = Stock, fill = C
 # stat_summary(aes(label=round(..y..,2)), fun=median, geom="text", color = "black") + # sanity check on median calculations above
   geom_label(data = comparts_medians, aes(y = median, label = round(median,2)), col = "black", size = 3, fill = "#FFFFFF", alpha = 0.75, nudge_x = -0.18, label.padding = unit(0.15, "lines"), label.size = 0.15) + 
   facet_grid(hDIFF~Ecosystem, scales = "free") + 
+  scale_color_discreterainbow() +
+  scale_fill_discreterainbow() +
   theme_pubr() + 
   coord_cartesian(y = c(-15, 100)) + # limits range of y-axis without affecting stats in plot
   theme(legend.position = "none")
 ```
+
+<!-- As the difference in recycling rate between producers at the local  -->
+<!-- ecosystem scale increases, overall median nutrient flux in ecosystem 1  -->
+<!-- (the donor) gets reduced by about 2/3. This effects can be seen at the  -->
+<!-- meta-ecosystem scale too, where the reduction is less stark but still  -->
+<!-- clearly visible (Figure \@ref(fig:eq-I-highh2-flux)). -->
 
 ```{r eq-I-highh2-flux, echo=TRUE,tidy=TRUE,fig.cap="Median nutrient flux falls in the donor ecosystem (ecosystem 1) as a consequence of the lower producers' recycling rate in it, compared to ecosystem 2 (the recipient). In turn, this leads to an overall reduction of nutrient flux when considering the whole meta-ecosystem.", fig.show='asis'}
 FluxPREDhigh_h2 <- PREDhigh_h2pos %>% dplyr::select(TIME:c, FLUX_P1:FLUX_Eco_2, MetaEcoFlux) %>% tidyr::pivot_longer(names_to = "Compartment", values_to = "Flux", cols = c(FLUX_P1:MetaEcoFlux)) %>% dplyr::mutate(Scale = if_else(Compartment == "FLUX_P1" | Compartment == "FLUX_C1" | Compartment == "FLUX_Eco_1", "Donor", if_else(Compartment == "FLUX_P2" | Compartment == "FLUX_C2" | Compartment == "FLUX_Eco_2", "Recipient", "Meta-ecosystem"))) %>% dplyr::mutate(., Scale = fct_relevel(Scale, "Donor", "Recipient", "Meta-ecosystem"))
@@ -1627,6 +1775,11 @@ FluxPREDhigh_h2 %>%
   theme_pubr() + 
   theme(legend.position = "none", axis.title.x = element_blank())
 ```
+
+<!-- From the simulations above, it would appear that---even when environmental  -->
+<!-- fertility is the same in two consumer-connected ecosystem---stronger differences  -->
+<!-- in the recycling rates of local producers populations can influence both  -->
+<!-- productivity and nutrient flux at multiple spatial scales.  -->
 
 Below, we simulate the behaviour of the model when environmental fertility 
 conditions differ among local ecosystems. Let's start with the case of higher 
@@ -1731,6 +1884,11 @@ PREDI1recrates <- dplyr::mutate(PREDI1recrates, PROD_Ctot = PROD_C1 + PROD_C2, .
 PREDI1recratespos <- subset(PREDI1recrates, N1>0 & P1>0 & C1>0 & N2>0 & P2>0 & C2>0 & Q>0)
 ```
 
+<!-- Figure \@ref(fig:I1-recrates-bm) below shows the variation in median nutrient  -->
+<!-- stock and median biomass values for all trophic compartments at local and  -->
+<!-- meta-ecosystem scales. Median values do not differ from those reported in Figure -->
+<!-- \@ref(fig:simuls-I2small).  -->
+
 ```{r I1-recrates-bm, echo=TRUE, tidy=TRUE, fig.cap="Differing primary producers' recycling rates do not appreciably change the median nutrient stock and median biomass values at either local or meta-ecosystem scale (compare with Figure 18).", fig.show='asis'}
 # pivot the data frame containing the predictions
 PREDI1recrates_biomass_long <- pivot_longer(PREDI1recratespos, names_to = "Compartment", values_to = "Stock", cols = c(N1, P1, C1, N2, P2, C2, Q, Ntot, Ptot, Ctot)) %>% dplyr::mutate(., Ecosystem = if_else(Compartment == "N1"|Compartment == "C1"|Compartment == "P1", "Donor", if_else(Compartment == "N2"|Compartment == "P2"|Compartment=="C2", "Recipient", if_else(Compartment == "Q", "Dispersers' Pool", "Meta-ecosystem")))) %>% dplyr::filter(., Ecosystem != "Dispersers' Pool")
@@ -1745,10 +1903,16 @@ ggplot(data=PREDI1recrates_biomass_long, aes(x = Compartment, y = Stock, fill = 
 # stat_summary(aes(label=round(..y..,2)), fun=median, geom="text", color = "black") + # sanity check on median calculations above
   geom_label(data = comparts_medians, aes(y = median, label = round(median,2)), col = "black", size = 3, fill = "#FFFFFF", alpha = 0.75, nudge_x = -0.18, label.padding = unit(0.15, "lines"), label.size = 0.15) + 
   facet_grid(.~Ecosystem, scales = "free") + 
+  scale_color_discreterainbow() +
+  scale_fill_discreterainbow() +
   theme_pubr() + 
   coord_cartesian(y = c(0, 100)) + # limits range of y-axis without affecting stats in plot
   theme(legend.position = "none")
 ```
+
+<!-- Nutrient flux in both local and meta-ecosystem appears unaffected by equal  -->
+<!-- producers recycling rates, as shown below in Figure \@ref(fig:I1-recrates-flux). -->
+<!-- As above, this figure resembles Figure \@ref(fig:I2small-flux). -->
 
 ```{r I1-recrates-flux, echo=TRUE,tidy=TRUE,fig.cap="Nutrient flux median values in all trophic compartment at the two scales of interest, local and meta-ecosystem. When h~1~ = h~2~ and consumers move from a more to a less fertile ecosystem, nutrient flux at the meta-ecosystem scale is much lower than in the corresponding case when local fertility is equivalent between donor and recipient ecosystem (Figure 23).", fig.show='asis'}
 FluxPREDI1recrates <- PREDI1recratespos %>% dplyr::select(TIME:c, FLUX_P1:FLUX_Eco_2, MetaEcoFlux) %>% tidyr::pivot_longer(names_to = "Compartment", values_to = "Flux", cols = c(FLUX_P1:MetaEcoFlux)) %>% dplyr::mutate(Scale = if_else(Compartment == "FLUX_P1" | Compartment == "FLUX_C1" | Compartment == "FLUX_Eco_1", "Donor", if_else(Compartment == "FLUX_P2" | Compartment == "FLUX_C2" | Compartment == "FLUX_Eco_2", "Recipient", "Meta-ecosystem"))) %>% dplyr::mutate(., Scale = fct_relevel(Scale, "Donor", "Recipient", "Meta-ecosystem"))
@@ -1885,6 +2049,13 @@ PREDhigh_I1h1 <- dplyr::mutate(PREDhigh_I1h1, PROD_Ctot = PROD_C1 + PROD_C2, .af
 PREDhigh_I1h1pos <- subset(PREDhigh_I1h1, N1>0 & P1>0 & C1>0 & N2>0 & P2>0 & C2>0 & Q>0)
 ```
 
+<!-- Now, let's take a look at how nutrient stocks and biomass of biotic compartments -->
+<!-- varies in response to these changes to the recycling rate of producers in the  -->
+<!-- donor ecosystem. Figure \@ref(fig:highI1h1-bmplot) shows that, in these  -->
+<!-- conditions, inorganic nutrient stock in ecosystem 1 increase. This increase is  -->
+<!-- mirrored at the meta-ecosystem scale (compare with Figure  -->
+<!-- \@ref(fig:highh1-bmplot) above).  -->
+
 ```{r highI1h1-bmplot, echo=TRUE, tidy=TRUE, fig.cap="As h~1~ increases compared to h~2~, median nutrient stock in ecosystem 1 does too. In turn, this leads to a higher median nutrient stock value at the meta-ecosystem scale.", fig.show='asis'}
 # pivot the data frame containing the predictions
 PREDhigh_I1h1_biomass_long <- pivot_longer(PREDhigh_I1h1pos, names_to = "Compartment", values_to = "Stock", cols = c(N1, P1, C1, N2, P2, C2, Q, Ntot, Ptot, Ctot)) %>% dplyr::mutate(., Ecosystem = if_else(Compartment == "N1"|Compartment == "C1"|Compartment == "P1", "Donor", if_else(Compartment == "N2"|Compartment == "P2"|Compartment=="C2", "Recipient", if_else(Compartment == "Q", "Dispersers' Pool", "Meta-ecosystem")))) %>% dplyr::filter(., Ecosystem != "Dispersers' Pool") 
@@ -1900,10 +2071,17 @@ ggplot(data = PREDhigh_I1h1_biomass_long, aes(x = Compartment, y = Stock, fill =
 # stat_summary(aes(label=round(..y..,2)), fun=median, geom="text", color = "black") + # sanity check on median calculations above
   geom_label(data = comparts_medians, aes(y = median, label = round(median,2)), col = "black", size = 3, fill = "#FFFFFF", alpha = 0.75, nudge_x = -0.18, label.padding = unit(0.15, "lines"), label.size = 0.15) + 
   facet_grid(hDIFF~Ecosystem, scales = "free") + 
+  scale_color_discreterainbow() +
+  scale_fill_discreterainbow() +
   theme_pubr() + 
   coord_cartesian(y = c(-15, 100)) + # limits range of y-axis without affecting stats in plot
   theme(legend.position = "none")
 ```
+
+<!-- The increase in ecosystem 1's median nutrient stocks is mirrored by a similar  -->
+<!-- increase with median nutrient flux in this ecosystem (Figure  -->
+<!-- \@ref(fig:highI1h1-flux)). In turn, this lead an increase at the meta-ecosystem  -->
+<!-- scale. -->
 
 ```{r highI1h1-flux, echo=TRUE,tidy=TRUE,fig.cap="As producers' recycling rate increase, so does median nutrient flux in ecosystem 1. In turn, the whole meta-ecosystem experiences heightened median values of nutrient flux.", fig.show='asis'}
 FluxPREDhigh_I1h1 <- PREDhigh_I1h1pos %>% dplyr::select(TIME:c, FLUX_P1:FLUX_Eco_2, MetaEcoFlux) %>% tidyr::pivot_longer(names_to = "Compartment", values_to = "Flux", cols = c(FLUX_P1:MetaEcoFlux)) %>% dplyr::mutate(Scale = if_else(Compartment == "FLUX_P1" | Compartment == "FLUX_C1" | Compartment == "FLUX_Eco_1", "Donor", if_else(Compartment == "FLUX_P2" | Compartment == "FLUX_C2" | Compartment == "FLUX_Eco_2", "Recipient", "Meta-ecosystem"))) %>% dplyr::mutate(., Scale = fct_relevel(Scale, "Donor", "Recipient", "Meta-ecosystem"))
@@ -2040,6 +2218,10 @@ PREDhigh_I1h2 <- dplyr::mutate(PREDhigh_I1h2, PROD_Ctot = PROD_C1 + PROD_C2, .af
 PREDhigh_I1h2pos <- subset(PREDhigh_I1h2, N1>0 & P1>0 & C1>0 & N2>0 & P2>0 & C2>0 & Q>0)
 ```
 
+<!-- The reduction of producers recycling rates in ecosystem 1, compared to those in  -->
+<!-- ecosystem 2, lead to a lower stock of inorganic nutrients in the donor  -->
+<!-- ecosystem and at the meta-ecosystem scale.  -->
+
 ```{r highI1h2-bmplot, echo=TRUE, tidy=TRUE, fig.cap="Reduced recycling rates for producers in ecosystem 1 lead a decrease un nutrient stocks at both local and meta-ecosystem scales.", fig.show='asis'}
 # pivot the data frame containing the predictions
 PREDhigh_I1h2_biomass_long <- pivot_longer(PREDhigh_I1h2pos, names_to = "Compartment", values_to = "Stock", cols = c(N1, P1, C1, N2, P2, C2, Q, Ntot, Ptot, Ctot)) %>% dplyr::mutate(., Ecosystem = if_else(Compartment == "N1"|Compartment == "C1"|Compartment == "P1", "Donor", if_else(Compartment == "N2"|Compartment == "P2"|Compartment=="C2", "Recipient", if_else(Compartment == "Q", "Dispersers' Pool", "Meta-ecosystem")))) %>% dplyr::filter(., Ecosystem != "Dispersers' Pool")
@@ -2055,6 +2237,8 @@ ggplot(data = PREDhigh_I1h2_biomass_long, aes(x = Compartment, y = Stock, fill =
 # stat_summary(aes(label=round(..y..,2)), fun=median, geom="text", color = "black") + # sanity check on median calculations above
   geom_label(data = comparts_medians, aes(y = median, label = round(median,2)), col = "black", size = 3, fill = "#FFFFFF", alpha = 0.75, nudge_x = -0.18, label.padding = unit(0.15, "lines"), label.size = 0.15) + 
   facet_grid(hDIFF~Ecosystem, scales = "free") + 
+  scale_color_discreterainbow() +
+  scale_fill_discreterainbow() +
   theme_pubr() + 
   coord_cartesian(y = c(-15, 100)) + # limits range of y-axis without affecting stats in plot
   theme(legend.position = "none")
@@ -2090,7 +2274,7 @@ recycling rates (h~i~, i $\in [1,1]$) in the local ecosystems influences
 local and meta-ecosystem functions, when the recipient ecosystem is more 
 fertile than the donor. Hence, this is a test of the interaction between 
 producers' recycling rates and non-diffusive, against-gradient consumer 
-movememt. As in previous simulations, we begin by testing the case of equal 
+movement. As in previous simulations, we begin by testing the case of equal 
 h~i~, then the case of h~1~ > h~2~, and finally the case of h~1~ < h~2~.
 
 #### Equal primary producers recycling rates
@@ -2188,6 +2372,13 @@ PREDI2recrates <- dplyr::mutate(PREDI2recrates, PROD_Ctot = PROD_C1 + PROD_C2, .
 PREDI2recratespos <- subset(PREDI2recrates, N1>0 & P1>0 & C1>0 & N2>0 & P2>0 & C2>0 & Q>0)
 ```
 
+<!-- For nutrient stocks and biomass values, the lack of differences in producers  -->
+<!-- recycling rates leads to a situation similar to what we saw in Figure  -->
+<!-- \@ref(fig:simuls-I1small): high median nutrient stocks in the recipient  -->
+<!-- ecosystem, paired with low producers and consumers' median biomass, and high  -->
+<!-- biomass values of producers in the donor ecosystem (Figure  -->
+<!-- \@ref(fig:I2-recrates-bm)). -->
+
 ```{r I2-recrates-bm, echo=TRUE, tidy=TRUE, fig.cap="Equal recycling rates for primary producers in the local ecosystems lead to environmental fertility playing the larger role in determining local and meta-ecosystem stocks of nutrients and biomass, as seen in Figure 34 above.", fig.show='asis'}
 # pivot the data frame containing the predictions
 PREDI2recrates_biomass_long <- pivot_longer(PREDI2recratespos, names_to = "Compartment", values_to = "Stock", cols = c(N1, P1, C1, N2, P2, C2, Q, Ntot, Ptot, Ctot)) %>% dplyr::mutate(., Ecosystem = if_else(Compartment == "N1"|Compartment == "C1"|Compartment == "P1", "Donor", if_else(Compartment == "N2"|Compartment == "P2"|Compartment=="C2", "Recipient", if_else(Compartment == "Q", "Dispersers' Pool", "Meta-ecosystem")))) %>% dplyr::filter(., Ecosystem != "Dispersers' Pool")
@@ -2202,10 +2393,17 @@ ggplot(data=PREDI2recrates_biomass_long, aes(x = Compartment, y = Stock, fill = 
 # stat_summary(aes(label=round(..y..,2)), fun=median, geom="text", color = "black") + # sanity check on median calculations above
   geom_label(data = comparts_medians, aes(y = median, label = round(median,2)), col = "black", size = 3, fill = "#FFFFFF", alpha = 0.75, nudge_x = -0.18, label.padding = unit(0.15, "lines"), label.size = 0.15) + 
   facet_grid(.~Ecosystem, scales = "free") + 
+  scale_color_discreterainbow() +
+  scale_fill_discreterainbow() +
   theme_pubr() + 
   coord_cartesian(y = c(0, 100)) + # limits range of y-axis without affecting stats in plot
   theme(legend.position = "none")
 ```
+
+<!-- Trends for nutrient flux follows the same direction as those for productivity,  -->
+<!-- with environmental fertility conditions driving the flux of nutrients at both -->
+<!-- local and meta-ecosystem scales (Figure \@ref(fig:I2-recrates-flux), compare it -->
+<!-- with Figure \@ref(fig:I1small-flux)). -->
 
 ```{r I2-recrates-flux, echo=TRUE,tidy=TRUE,fig.cap="Nutrient flux in local and meta-ecosystem, when producers have equal recycling rates and the recipient ecosystem (ecosystem 2) is much more fertile than the donor ecosystem.", fig.show='asis'}
 FluxPREDI2recrates <- PREDI2recratespos %>% dplyr::select(TIME:c, FLUX_P1:FLUX_Eco_2, MetaEcoFlux) %>% tidyr::pivot_longer(names_to = "Compartment", values_to = "Flux", cols = c(FLUX_P1:MetaEcoFlux)) %>% dplyr::mutate(Scale = if_else(Compartment == "FLUX_P1" | Compartment == "FLUX_C1" | Compartment == "FLUX_Eco_1", "Donor", if_else(Compartment == "FLUX_P2" | Compartment == "FLUX_C2" | Compartment == "FLUX_Eco_2", "Recipient", "Meta-ecosystem"))) %>% dplyr::mutate(., Scale = fct_relevel(Scale, "Donor", "Recipient", "Meta-ecosystem"))
@@ -2342,6 +2540,11 @@ PREDhigh_I2h1 <- dplyr::mutate(PREDhigh_I2h1, PROD_Ctot = PROD_C1 + PROD_C2, .af
 PREDhigh_I2h1pos <- subset(PREDhigh_I2h1, N1>0 & P1>0 & C1>0 & N2>0 & P2>0 & C2>0 & Q>0)
 ```
 
+<!-- When primary producers recycling rate is higher in the less-fertile  -->
+<!-- ecosystem---here, the donor---nutrient stocks appears to increase with h~1~.  -->
+<!-- However, this increase is less pronounced than in the case of equal recycling  -->
+<!-- rates (Figure \@ref(fig:highh1-bmplot)), at both spatial scales. -->
+
 ```{r highI2h1-bmplot, echo=TRUE, tidy=TRUE, fig.cap="As h~1~ increases, compared to h~2~, median nutrient stock in the donor ecosystem increases, and so does at the meta-ecosystem scale. Interestingly, we note a small but constant increase in median consumers' biomass in ecosystem 2 happening alongside the nutrient stock increase in ecosystem, which similarly leads to a smalll increase in consumers biomass at the meta-ecosystem scale.", fig.show='asis'}
 # pivot the data frame containing the predictions
 PREDhigh_I2h1_biomass_long <- pivot_longer(PREDhigh_I2h1pos, names_to = "Compartment", values_to = "Stock", cols = c(N1, P1, C1, N2, P2, C2, Q, Ntot, Ptot, Ctot)) %>% dplyr::mutate(., Ecosystem = if_else(Compartment == "N1"|Compartment == "C1"|Compartment == "P1", "Donor", if_else(Compartment == "N2"|Compartment == "P2"|Compartment=="C2", "Recipient", if_else(Compartment == "Q", "Dispersers' Pool", "Meta-ecosystem")))) %>% dplyr::filter(., Ecosystem != "Dispersers' Pool") 
@@ -2357,10 +2560,19 @@ ggplot(data = PREDhigh_I2h1_biomass_long, aes(x = Compartment, y = Stock, fill =
 # stat_summary(aes(label=round(..y..,2)), fun=median, geom="text", color = "black") + # sanity check on median calculations above
   geom_label(data = comparts_medians, aes(y = median, label = round(median,2)), col = "black", size = 3, fill = "#FFFFFF", alpha = 0.75, nudge_x = -0.18, label.padding = unit(0.15, "lines"), label.size = 0.15) + 
   facet_grid(hDIFF~Ecosystem, scales = "free") + 
+  scale_color_discreterainbow() +
+  scale_fill_discreterainbow() +
   theme_pubr() + 
   coord_cartesian(y = c(-15, 100)) + # limits range of y-axis without affecting stats in plot
   theme(legend.position = "none")
 ```
+
+<!-- In the case of nutrient flux, a strong increase of nutrient flux for primary  -->
+<!-- producers in ecosystem 1 produces two effects that, while agreeing in direction, -->
+<!-- differ starkly in magnitude. Local, in ecosystem 1, and meta-ecosystem nutrient  -->
+<!-- flux both increase markedly as h~1~ increases. Interestingly, at the same time,  -->
+<!-- nutrient flux in ecosystem 1 consumers becomes smaller as does nutrient flux for -->
+<!-- producers in ecosystem 2---the recipient, and much more fertile, ecosystem.  -->
 
 ```{r highI2h1-flux, echo=TRUE,tidy=TRUE,fig.cap=" ", fig.show='asis'}
 FluxPREDhigh_I2h1 <- PREDhigh_I2h1pos %>% dplyr::select(TIME:c, FLUX_P1:FLUX_Eco_2, MetaEcoFlux) %>% tidyr::pivot_longer(names_to = "Compartment", values_to = "Flux", cols = c(FLUX_P1:MetaEcoFlux)) %>% dplyr::mutate(Scale = if_else(Compartment == "FLUX_P1" | Compartment == "FLUX_C1" | Compartment == "FLUX_Eco_1", "Donor", if_else(Compartment == "FLUX_P2" | Compartment == "FLUX_C2" | Compartment == "FLUX_Eco_2", "Recipient", "Meta-ecosystem"))) %>% dplyr::mutate(., Scale = fct_relevel(Scale, "Donor", "Recipient", "Meta-ecosystem"))
@@ -2498,6 +2710,14 @@ PREDhigh_I2h2 <- dplyr::mutate(PREDhigh_I2h2, PROD_Ctot = PROD_C1 + PROD_C2, .af
 PREDhigh_I2h2pos <- subset(PREDhigh_I2h2, N1>0 & P1>0 & C1>0 & N2>0 & P2>0 & C2>0 & Q>0)
 ```
 
+<!-- The reduction in h~1~ leads to increasingly smaller median nutrients stock in -->
+<!-- the donor ecosystem, as well as to a reduction in the primary producers' median -->
+<!-- biomass in this ecosystem (Figure \@ref(fig:highI2h2-bmplot)). Additionally, we  -->
+<!-- note limited decreases in the median biomass of ecosystem 2's consumers.  -->
+<!-- The overall effects, at the meta-ecosystem scale, is a marked reduction in the -->
+<!-- median stock of nutrients (Figure \@ref(fig:highI2h2-bmplot)). These results are -->
+<!-- similar to those reported in Figure \@ref(fig:highh2-bmplot). -->
+
 ```{r highI2h2-bmplot, echo=TRUE, tidy=TRUE, fig.cap="Higher fertility and primary producers recycling rates in the recipient ecosystem lead to reductions in the nutrient stocks and producers biomass of the donor ecosystem. As well, we note a limited inrease in the biomass of consumers in the recipient ecosystem.", fig.show='asis'}
 # pivot the data frame containing the predictions
 PREDhigh_I2h2_biomass_long <- pivot_longer(PREDhigh_I2h2pos, names_to = "Compartment", values_to = "Stock", cols = c(N1, P1, C1, N2, P2, C2, Q, Ntot, Ptot, Ctot)) %>% dplyr::mutate(., Ecosystem = if_else(Compartment == "N1"|Compartment == "C1"|Compartment == "P1", "Donor", if_else(Compartment == "N2"|Compartment == "P2"|Compartment=="C2", "Recipient", if_else(Compartment == "Q", "Dispersers' Pool", "Meta-ecosystem")))) %>% dplyr::filter(., Ecosystem != "Dispersers' Pool")
@@ -2513,10 +2733,20 @@ ggplot(data = PREDhigh_I2h2_biomass_long, aes(x = Compartment, y = Stock, fill =
 # stat_summary(aes(label=round(..y..,2)), fun=median, geom="text", color = "black") + # sanity check on median calculations above
   geom_label(data = comparts_medians, aes(y = median, label = round(median,2)), col = "black", size = 3, fill = "#FFFFFF", alpha = 0.75, nudge_x = -0.18, label.padding = unit(0.15, "lines"), label.size = 0.15) + 
   facet_grid(hDIFF~Ecosystem, scales = "free") + 
+  scale_color_discreterainbow() +
+  scale_fill_discreterainbow() +
   theme_pubr() + 
   coord_cartesian(y = c(-15, 100)) + # limits range of y-axis without affecting stats in plot
   theme(legend.position = "none")
 ```
+
+<!-- A higher recycling rate of primary producers in the recipient ecosystem combined  -->
+<!-- with increased environmental fertility leads to a reduction in the nutrient flux -->
+<!-- in ecosystem 1, as well as at the meta-ecosystem scales (Figure  -->
+<!-- \@ref(fig:highI2h2-flux)). The only result seemingly  -->
+<!-- disagreeing with this trend is the increase in nutrient flux in the donor  -->
+<!-- ecosystem consumer compartment, which is anyway too limited to impact either the -->
+<!-- local or the meta-ecosystem fluxes.  -->
 
 ```{r highI2h2-flux, echo=TRUE,tidy=TRUE,fig.cap="For nutrient flux, the combination of higher fertility and primary producers recycling rates in the recipient ecosystem translate in an reduction at both local and meta-ecosystem scales.", fig.show='asis'}
 FluxPREDhigh_I2h2 <- PREDhigh_I2h2pos %>% dplyr::select(TIME:c, FLUX_P1:FLUX_Eco_2, MetaEcoFlux) %>% tidyr::pivot_longer(names_to = "Compartment", values_to = "Flux", cols = c(FLUX_P1:MetaEcoFlux)) %>% dplyr::mutate(Scale = if_else(Compartment == "FLUX_P1" | Compartment == "FLUX_C1" | Compartment == "FLUX_Eco_1", "Donor", if_else(Compartment == "FLUX_P2" | Compartment == "FLUX_C2" | Compartment == "FLUX_Eco_2", "Recipient", "Meta-ecosystem"))) %>% dplyr::mutate(., Scale = fct_relevel(Scale, "Donor", "Recipient", "Meta-ecosystem"))
@@ -2574,6 +2804,23 @@ are larger than those of the _baseline_ one. Vice versa, values of $LRR < 0$
 indicates that the _baseline_ ecosystem function values are larger than those for 
 the scenario of interest.
 
+```{r set-ggplot-theme-default, echo=TRUE, tidy=TRUE}
+ppt_theme <- theme_bw() + theme(
+  legend.position = "bottom", 
+  legend.background = element_rect(fill = "#222A35", color = NA), 
+  text = element_text(color = "white", size = 14), 
+  axis.text = element_text(color = "white"), 
+  axis.line = element_line(color = "white"), 
+  axis.ticks = element_line(color = "white"), 
+  strip.background = element_rect(fill = "#222A35", color = NA), 
+  strip.text = element_text(color = "white"), 
+  panel.border = element_rect(fill = NA, color = "white"), 
+  panel.background = element_rect(fill = "#222A35"),
+  panel.grid = element_blank(),
+  plot.background = element_rect(fill = "#222A35", color = "#222A35")
+  )
+```
+
 ## Environmental Fertility summary
 
 We are working with the `PRED`, `PREDI2`, and `PREDI1` datasets we produced 
@@ -2604,61 +2851,61 @@ str(EnvFert_long)
 
 Now that we have a dataset ready for plotting, we produce the graphs.
 
-```{r envfert-rawdata-fig, echo=TRUE,tidy=TRUE}
+```{r envfert-rawdata-fig, echo=TRUE,tidy=TRUE, fig.width=8, fig.height=14}
 StockSumm <- EnvFert_long %>% filter(., Function == "Stock") %>% 
-  dplyr::mutate(., EcoFunction = fct_recode(EcoFunction, N = "N1", N = "N2", N = "Ntot", P = "P1", P = "P2", P = "Ptot", C = "C1", C = "C2", C = "Ctot")) %>%
-  dplyr::mutate(., EcoFunction = fct_relevel(EcoFunction, "N", "P", "C")) %>%
+  dplyr::mutate(., EcoFunction = fct_recode(EcoFunction, Nutrients = "N1", Nutrients = "N2", Nutrients = "Ntot", "Primary\n Producers" = "P1", "Primary\n Producers" = "P2", "Primary\n Producers" = "Ptot", Consumers = "C1", Consumers = "C2", Consumers = "Ctot")) %>%
+  dplyr::mutate(., EcoFunction = fct_relevel(EcoFunction, "Nutrients", "Primary\n Producers", "Consumers")) %>%
   dplyr::mutate(., Fertility = fct_relevel(Fertility, "Equal", "Along", "Against")) %>%
   ggplot(., aes(x = EcoFunction, y = Value)) +
   geom_hline(yintercept = 10, linetype = "dashed", lwd = 0.25) + 
   geom_boxplot(aes(color = Fertility)) +
-  scale_color_hue(direction = -1, h.start = 90, labels = c("Equal", "Higher in Donor", "Higher in Recipient")) +
+  scale_color_highcontrast(reverse = F, name = "Modelling scenario", labels = c("Equal", "Along-gradient", "Against-gradient")) +
   facet_grid(.~Scale, scales = "free") +
   labs(title = "Nutrient Stock and Biomass") +
   ylab(" ") +
   xlab(" ") +
   coord_cartesian(ylim = c(0, 75)) +
   theme_pubr() +
-  theme(legend.position = "right")
+  theme(legend.position = "bottom")
 
 FluxSumm <- EnvFert_long %>% filter(., Function == "Nutrient Flux") %>% 
-  dplyr::mutate(., EcoFunction = fct_recode(EcoFunction, P = "FLUX_P1", P = "FLUX_P2", P = "FLUX_Ptot", C = "FLUX_C1", C = "FLUX_C2", C = "FLUX_Ctot")) %>%
-  dplyr::mutate(., EcoFunction = fct_relevel(EcoFunction, "P", "C")) %>%
+  dplyr::mutate(., EcoFunction = fct_recode(EcoFunction, "Primary\n Producers" = "FLUX_P1", "Primary\n Producers" = "FLUX_P2", "Primary\n Producers" = "FLUX_Ptot", Consumers = "FLUX_C1", Consumers = "FLUX_C2", Consumers = "FLUX_Ctot")) %>%
+  dplyr::mutate(., EcoFunction = fct_relevel(EcoFunction, "Primary\n Producers", "Consumers")) %>%
   dplyr::mutate(., Fertility = fct_relevel(Fertility, "Equal", "Along", "Against")) %>%
   ggplot(., aes(x = EcoFunction, y = Value)) +
   geom_hline(yintercept = 50, linetype = "dashed", lwd = 0.25) + 
   geom_boxplot(aes(color = Fertility)) + 
-  scale_color_hue(direction = -1, h.start = 90, labels = c("Equal", "Higher in Donor", "Higher in Recipient")) +
+  scale_color_highcontrast(reverse = F, name = "Modelling scenario", labels = c("Equal", "Along-gradient", "Against-gradient")) +
   facet_grid(.~Scale, scales = "free") +
   labs(title = "Nutrient Flux") +
   ylab(" ") +
   xlab(" ") +
   coord_cartesian(ylim = c(0, 350)) +
   theme_pubr() +
-  theme(legend.position = "right")
+  theme(legend.position = "bottom")
 
 ProdSumm <- EnvFert_long %>% 
   filter(., Function == "Trophic Productivity") %>% 
-  dplyr::mutate(., EcoFunction = fct_recode(EcoFunction, P = "PROD_P1", P = "PROD_P2", P = "PROD_Ptot", C = "PROD_C1", C = "PROD_C2", C = "PROD_Ctot")) %>%
-  dplyr::mutate(., EcoFunction = fct_relevel(EcoFunction, "P", "C")) %>%
+  dplyr::mutate(., EcoFunction = fct_recode(EcoFunction, "Primary\n Producers" = "PROD_P1", "Primary\n Producers" = "PROD_P2", "Primary\n Producers" = "PROD_Ptot", Consumers = "PROD_C1", Consumers = "PROD_C2", Consumers = "PROD_Ctot")) %>%
+  dplyr::mutate(., EcoFunction = fct_relevel(EcoFunction, "Primary\n Producers", "Consumers")) %>%
   dplyr::mutate(., Fertility = fct_relevel(Fertility, "Equal", "Along", "Against")) %>%
   ggplot(., aes(x = EcoFunction, y = Value)) +
   geom_hline(yintercept = 50, linetype = "dashed", lwd = 0.25) + 
   geom_boxplot(aes(color = Fertility)) + 
-  scale_color_hue(direction = -1, h.start = 90, labels = c("Equal", "Higher in Donor", "Higher in Recipient")) +
+  scale_color_highcontrast(reverse = F, name = "Modelling scenario", labels = c("Equal", "Along-gradient", "Against-gradient")) +
   facet_grid(.~Scale, scales = "free") +
   labs(title = "Trophic Compartment Productivity") +
   ylab(" ") +
   xlab("Compartment") +
   coord_cartesian(ylim = c(0, 500)) +
   theme_pubr() +
-  theme(legend.position = "right")
+  theme(legend.position = "bottom")
 
-FuncAll <- StockSumm + FluxSumm + ProdSumm+ plot_layout(ncol = 1, nrow = 3, guides = "collect") + plot_annotation(tag_levels = "a", tag_prefix = "(", tag_suffix = ")")
+FuncAll <- StockSumm + FluxSumm + ProdSumm+ plot_layout(ncol = 1, nrow = 3, guides = "collect") + plot_annotation(tag_levels = "a", tag_prefix = "(", tag_suffix = ")") & theme(legend.position = "bottom")
 
-# FuncAll
+FuncAll
 
-# ggsave(FuncAll, filename = "../Results/FunctionSummary.png", device = "png", dpi = 600, width = 10, height = 8)
+ggsave(FuncAll, filename = "../Results/FunctionSummary.png", device = "png", dpi = 600, width = 10, height = 8)
 ```
 
 Now, we produce a log10 response ratio figure. First, we are going to create 
@@ -2714,11 +2961,11 @@ EnvFertRR <- bind_rows("Along" = PREDI2rr, "Against" = PREDI1rr, .id = "Fertilit
 # now build the graph, first by pivoting to longer format, then graphing
 ```
 
-Now, we build the graphs. FIrst, pivot the `EnvFertRR` dataframe from wide to
+Now, we build the graphs. First, pivot the `EnvFertRR` dataframe from wide to
 long format.
 
 ```{r envfert-lrr-wrangling, echo=TRUE,tidy=TRUE}
-EnvFertRR_long <- pivot_longer(EnvFertRR, cols = N1rr:PROD_Crr, names_to = "Compartment", values_to = "RespRatio") %>% 
+EnvFertRR_long <- pivot_longer(EnvFertRR, cols = N1rr:PROD_Crr, names_to = "Compartment", values_to = "Ratio") %>% 
   dplyr::mutate(., Function = if_else(Compartment == "FLUX_P1rr" | Compartment == "FLUX_P2rr" | Compartment == "FLUX_C1rr" | Compartment == "FLUX_C2rr" | Compartment == "FLUX_Prr" | Compartment == "FLUX_Crr", "Nutrient Flux", if_else(Compartment == "PROD_P1rr" | Compartment == "PROD_C1rr" | Compartment == "PROD_P2rr" | Compartment == "PROD_C2rr" | Compartment == "PROD_Prr" | Compartment == "PROD_Crr", "Trophic Productivity", "Stock"))) %>% 
   dplyr::mutate(., Scale = if_else(Compartment == "N1rr" | Compartment == "P1rr" | Compartment == "C1rr" | Compartment == "FLUX_P1rr" | Compartment == "FLUX_C1rr" | Compartment == "PROD_P1rr" | Compartment == "PROD_C1rr", "Ecosystem 1", if_else(Compartment == "N2rr" | Compartment == "P2rr" | Compartment == "C2rr" | Compartment == "FLUX_P2rr" | Compartment == "FLUX_C2rr" | Compartment == "PROD_P2rr" | Compartment == "PROD_C2rr", "Ecosystem 2", "Meta-ecosystem"))) %>% 
   dplyr::mutate(., Fertility = factor(Fertility), Function = factor(Function), Scale = factor(Scale), Compartment = factor(Compartment))
@@ -2728,56 +2975,78 @@ Then subset and graph each ecosystem function individually, before putting
 them together with package `patchwork`. Note that we are going to graph the
 `log10` transformed response ratio (LRR) against the 
 
-```{r envfert-lrr-fig, echo=TRUE,tidy=TRUE}
+```{r envfert-lrr-fig, echo=TRUE,tidy=TRUE, fig.width=8, fig.height=14}
+# FillFertpal <- c("#e8f8f9", "#F9E9E8")
+
+ptHCsubset <- c("#DDAA33", "#BB5566")
+
 EFstockLRR <- EnvFertRR_long %>% filter(., Function == "Stock") %>% 
-  dplyr::mutate(., Compartment = fct_recode(Compartment, N = "N1rr", N = "N2rr", N = "Nrr", P = "P1rr", P = "P2rr", P = "Prr", C = "C1rr", C = "C2rr", C = "Crr")) %>%
-  dplyr::mutate(., Compartment = fct_relevel(Compartment, "N", "P", "C")) %>%
+  dplyr::mutate(., Compartment = fct_recode(Compartment, Nutrients = "N1rr", Nutrients = "N2rr", Nutrients = "Nrr", "Primary\n Producers" = "P1rr", "Primary\n Producers" = "P2rr", "Primary\n Producers" = "Prr", Consumers = "C1rr", Consumers = "C2rr", Consumers = "Crr")) %>%
+  dplyr::mutate(., Compartment = fct_relevel(Compartment, "Nutrients", "Primary\n Producers", "Consumers")) %>%
   dplyr::mutate(., Fertility = fct_relevel(Fertility, "Along", "Against")) %>%
-  ggplot(., aes(x = Compartment, y = log10(RespRatio))) +
+  ggplot(., aes(x = Compartment, y = log10(Ratio))) +
   geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = 0), fill = "gray95") +
-  geom_hline(yintercept = 0, linetype = "dashed", lwd = 0.25) + 
-  geom_boxplot(aes(color = Fertility)) +
-  scale_color_hue(direction = -1, h.start = 90, labels = c("Higher in Donor", "Higher in Recipient")) +
+  geom_hline(yintercept = 0, linetype = "dashed", colour = "black") + 
+  geom_boxplot(aes(color = Fertility)) + 
+  # geom_boxplot(aes(color = Fertility, fill = Fertility)) +
+  scale_color_manual(values = ptHCsubset, name = "Modelling scenario", labels = c("Along-gradient", "Against-gradient")) +
+  # scale_fill_manual(values = FillFertpal, labels = c("Higher in Donor", "Higher in Recipient")) +
   facet_grid(.~Scale, scales = "free") +
   labs(title = "Nutrient Stock and Biomass") +
-  ylab(" ") +
-  theme_pubr() +
-  theme(legend.position = "right")
+  ylab("Response Ratio (log10)") +
+  xlab(" ") +
+  theme_pubr() + 
+  theme(legend.position = "bottom")
+  # + ppt_theme
+  # coord_cartesian(ylim = c(-2,2))
 
 EFfluxLRR <- EnvFertRR_long %>% filter(., Function == "Nutrient Flux") %>% 
-  dplyr::mutate(., Compartment = fct_recode(Compartment, P = "FLUX_P1rr", P = "FLUX_P2rr", P = "FLUX_Prr", C = "FLUX_C1rr", C = "FLUX_C2rr", C = "FLUX_Crr")) %>%
-  dplyr::mutate(., Compartment = fct_relevel(Compartment, "P", "C")) %>%
+  dplyr::mutate(., Compartment = fct_recode(Compartment, "Primary\n Producers" = "FLUX_P1rr", "Primary\n Producers" = "FLUX_P2rr", "Primary\n Producers" = "FLUX_Prr", Consumers = "FLUX_C1rr", Consumers = "FLUX_C2rr", Consumers = "FLUX_Crr")) %>%
+  dplyr::mutate(., Compartment = fct_relevel(Compartment, "Primary\n Producers", "Consumers")) %>%
   dplyr::mutate(., Fertility = fct_relevel(Fertility, "Along", "Against")) %>%
-  ggplot(., aes(x = Compartment, y = log10(RespRatio))) +
+  ggplot(., aes(x = Compartment, y = log10(Ratio))) +
   geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = 0), fill = "gray95") +
-  geom_hline(yintercept = 0, linetype = "dashed", lwd = 0.25) + 
-  geom_boxplot(aes(color = Fertility)) +
-  scale_color_hue(direction = -1, h.start = 90, labels = c("Higher in Donor", "Higher in Recipient")) +
+  geom_hline(yintercept = 0, linetype = "dashed", colour = "black") + 
+  geom_boxplot(aes(color = Fertility)) + 
+  # geom_boxplot(aes(color = Fertility, fill = Fertility)) +
+  scale_color_manual(values = ptHCsubset, name = "Modelling scenario", labels = c("Along-gradient", "Against-gradient")) +
+  # scale_fill_manual(values = FillFertpal, labels = c("Higher in Donor", "Higher in Recipient")) +
   facet_grid(.~Scale, scales = "free") +
   labs(title = "Nutrient Flux") +
-  ylab(" ") +
-  theme_pubr() +
-  theme(legend.position = "right")
+  ylab("Response Ratio (log10)") +
+  xlab(" ")  +
+  theme_pubr() + 
+  theme(legend.position = "bottom")
+  # + ppt_theme
+  # coord_cartesian(ylim = c(-2,2))
 
 EFprodLRR <- EnvFertRR_long %>% 
   filter(., Function == "Trophic Productivity") %>% 
-  dplyr::mutate(., Compartment = fct_recode(Compartment, P = "PROD_P1rr", P = "PROD_P2rr", P = "PROD_Prr", C = "PROD_C1rr", C = "PROD_C2rr", C = "PROD_Crr")) %>%
-  dplyr::mutate(., Compartment = fct_relevel(Compartment, "P", "C")) %>%
+  dplyr::mutate(., Compartment = fct_recode(Compartment, "Primary\n Producers" = "PROD_P1rr", "Primary\n Producers" = "PROD_P2rr", "Primary\n Producers" = "PROD_Prr", Consumers = "PROD_C1rr", Consumers = "PROD_C2rr", Consumers = "PROD_Crr")) %>%
+  dplyr::mutate(., Compartment = fct_relevel(Compartment, "Primary\n Producers", "Consumers")) %>%
   dplyr::mutate(., Fertility = fct_relevel(Fertility, "Along", "Against")) %>%
-  ggplot(., aes(x = Compartment, y = log10(RespRatio))) +
+  ggplot(., aes(x = Compartment, y = log10(Ratio))) +
   geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = 0), fill = "gray95") +
-  geom_hline(yintercept = 0, linetype = "dashed", lwd = 0.25) + 
-  geom_boxplot(aes(color = Fertility)) +
-  scale_color_hue(direction = -1, h.start = 90, labels = c("Higher in Donor", "Higher in Recipient")) +
+  geom_hline(yintercept = 0, linetype = "dashed", colour = "black") + 
+  geom_boxplot(aes(color = Fertility)) + 
+  # geom_boxplot(aes(color = Fertility, fill = Fertility)) +
+ scale_color_manual(values = ptHCsubset, name = "Modelling scenario", labels = c("Along-gradient", "Against-gradient")) +
+  # scale_fill_manual(values = FillFertpal, labels = c("Higher in Donor", "Higher in Recipient")) +
   facet_grid(.~Scale, scales = "free") +
   labs(title = "Trophic Compartment Productivity") +
-  ylab(" ") +
-  theme_pubr() +
-  theme(legend.position = "right")
+  ylab("Response Ratio (log10)")  +
+  theme_pubr() + 
+  theme(legend.position = "bottom")
+  # + ppt_theme
+  # coord_cartesian(ylim = c(-2,2))
 
-EFallLRR <- EFstockLRR + EFfluxLRR + EFprodLRR + plot_layout(ncol = 1, nrow = 3, guides = "collect") + plot_annotation(tag_levels = "a", tag_prefix = "(", tag_suffix = ")")
+EFallLRR <- EFstockLRR + EFfluxLRR + EFprodLRR + plot_layout(ncol = 1, nrow = 3, guides = "collect") + plot_annotation(tag_levels = "a", tag_prefix = "(", tag_suffix = ")") & theme(legend.position = "bottom")
 
-# ggsave(EFallLRR, filename = "../Results/FunctionSummary_LRR.png", device = "png", dpi = 600, width = 10, height = 8)
+EFallLRR
+
+ggsave(EFallLRR, filename = "../Results/FunctionSummary_LRR.png", device = "png", dpi = 600, width = 10, height = 8)
+
+# ggsave(EFallLRR, filename = "../../Thesis/Defence/img/FunctionSummary_LRR_forppt.pdf", device = "pdf", dpi = 600, width = 29.92, height = 19.05, units = "cm", bg = NULL)
 ```
 
 ## Fertility and Recycling Rates summary
@@ -2813,7 +3082,7 @@ long format. We subset the resulting `AlongEF_long` dataframe to produce a graph
 each for stock, nutrient flux, and primary and  secondary productivity. We then 
 combine them using the `patchwork` package.
 
-```{r alongEF-raw-plot-gen, echo=TRUE,tidy=TRUE}
+```{r alongEF-raw-plot-gen, echo=TRUE,tidy=TRUE, fig.width=8, fig.height=14}
 AlongEF_long <- dplyr::filter(AlongEF, N1>0 & P1>0 & C1>0 & N2>0 & P2>0 & C2>0) %>%
   pivot_longer(., names_to = "Compartment", values_to = "Value", cols = N1:PROD_Ctot) %>% 
   # create Scale column, capturing local vs regional (=meta-eco) spatial extent
@@ -2830,46 +3099,50 @@ AlongEF_long <- dplyr::filter(AlongEF, N1>0 & P1>0 & C1>0 & N2>0 & P2>0 & C2>0) 
   dplyr::mutate(., hDIFF = fct_drop(hDIFF))
 
 AlongEFStock <- AlongEF_long %>% dplyr::filter(., Function == "Stock") %>%
-  dplyr::mutate(., Compartment = fct_recode(Compartment, "N" = "N1", "N"= "N2", "N" = "Ntot", "P" = "P1", "P" = "P2", "P" = "Ptot", "C" = "C1", "C" = "C2", "C" = "Ctot")) %>%
-  dplyr::mutate(., Compartment = fct_relevel(Compartment, "N", "P", "C")) %>%
+  dplyr::mutate(., Compartment = fct_recode(Compartment, Nutrients = "N1", Nutrients = "N2", Nutrients = "Ntot", "Primary\n Producers" = "P1", "Primary\n Producers" = "P2", "Primary\n Producers" = "Ptot", Consumers = "C1", Consumers = "C2", Consumers = "Ctot")) %>%
+  dplyr::mutate(., Compartment = fct_relevel(Compartment, "Nutrients", "Primary\n Producers", "Consumers")) %>%
   ggplot(., aes(x = Compartment, y = Value)) + 
-  geom_hline(yintercept = 10, linetype = "dashed", lwd = 0.25) + 
+  geom_hline(yintercept = 10, linetype = "dashed") + 
   geom_boxplot(aes(col = PPRec)) + 
   facet_grid(.~Scale, scales = "free") + 
-  labs(y = " ", x = " ", color = "P recycling rate", 
+  labs(y = " ", x = " ", color = "Primary Producers recycling rate", 
        title = "Nutrient Stock and Biomass") + 
-  scale_color_hue(direction = -1, h.start = 90, 
-                  labels = c("Equal", "90% higher in Donor", "90% higher in Recipient")) +
-  coord_cartesian(ylim=c(0,100)) +
-  theme_pubr() + theme(legend.position = "right")
+  # scale_color_hue(direction = -1, h.start = 90, labels = c("Equal", "90% higher in Donor", "90% higher in Recipient")) +
+  scale_color_highcontrast(reverse = F, labels = c("Equal", "Higher in Donor", "Higher in Recipient")) +
+  coord_cartesian(ylim = c(0,100)) +
+  theme_pubr() + theme(legend.position = "bottom")
 
 AlongEFFlux <- AlongEF_long %>% dplyr::filter(., Function == "Nutrient Flux") %>%
-  dplyr::mutate(., Compartment = fct_recode(Compartment, "P" = "FLUX_P1", "P" = "FLUX_P2", "P" = "FLUX_Ptot", "C" = "FLUX_C1", "C" = "FLUX_C2", "C" = "FLUX_Ctot")) %>%
-  dplyr::mutate(., Compartment = fct_relevel(Compartment, "P", "C")) %>%
+  dplyr::mutate(., Compartment = fct_recode(Compartment, "Primary\n Producers" = "FLUX_P1", "Primary\n Producers" = "FLUX_P2", "Primary\n Producers" = "FLUX_Ptot", Consumers = "FLUX_C1", Consumers = "FLUX_C2", Consumers = "FLUX_Ctot")) %>%
+  dplyr::mutate(., Compartment = fct_relevel(Compartment, "Primary\n Producers", "Consumers")) %>%
   ggplot(., aes(x = Compartment, y = Value)) + 
-  geom_hline(yintercept = 50, linetype = "dashed", lwd = 0.25) + 
+  geom_hline(yintercept = 50, linetype = "dashed") + 
   geom_boxplot(aes(col = PPRec)) + 
   facet_grid(.~Scale, scales = "free") + 
-  labs(y = " ", x = " ", color = "P recycling rate", title = "Nutrient Flux") + 
-  scale_color_hue(direction = -1, h.start = 90, labels = c("Equal", "90% higher in Donor", "90% higher in Recipient")) +
-  coord_cartesian(ylim=c(0,350)) +
-  theme_pubr() + theme(legend.position = "right")
+  labs(y = " ", x = " ", color = "Primary Producers recycling rate", title = "Nutrient Flux") + 
+  # scale_color_hue(direction = -1, h.start = 90, labels = c("Equal", "90% higher in Donor", "90% higher in Recipient")) +
+  scale_color_highcontrast(reverse = F, labels = c("Equal", "Higher in Donor", "Higher in Recipient")) +
+  coord_cartesian(ylim = c(0,350)) +
+  theme_pubr() + theme(legend.position = "bottom")
 
 AlongEFProd <- AlongEF_long %>% dplyr::filter(., Function == "Trophic Productivity") %>%
-  dplyr::mutate(., Compartment = fct_recode(Compartment, "P" = "PROD_P1", "P" = "PROD_P2", "P" = "PROD_Ptot", "C" = "PROD_C1", "C" = "PROD_C2", "C" = "PROD_Ctot")) %>%
-  dplyr::mutate(., Compartment = fct_relevel(Compartment, "P", "C")) %>%
+  dplyr::mutate(., Compartment = fct_recode(Compartment, "Primary\n Producers" = "PROD_P1", "Primary\n Producers" = "PROD_P2", "Primary\n Producers" = "PROD_Ptot", Consumers = "PROD_C1", Consumers = "PROD_C2", Consumers = "PROD_Ctot")) %>%
+  dplyr::mutate(., Compartment = fct_relevel(Compartment, "Primary\n Producers", "Consumers")) %>%
   ggplot(., aes(x = Compartment, y = Value)) + 
-  geom_hline(yintercept = 100, linetype = "dashed", lwd = 0.25) + 
+  geom_hline(yintercept = 100, linetype = "dashed") + 
   geom_boxplot(aes(col = PPRec)) + 
   facet_grid(.~Scale, scales = "free") + 
-  labs(y = " ", x = "Compartment", color = "P recycling rate", title = "Trophic Compartmet Productivity") + 
-  scale_color_hue(direction = -1, h.start = 90, labels = c("Equal", "90% higher in Donor", "90% higher in Recipient")) +
+  labs(y = " ", x = "Compartment", color = "Primary Producers recycling rate", title = "Trophic Compartmet Productivity") + 
+  # scale_color_hue(direction = -1, h.start = 90, labels = c("Equal", "90% higher in Donor", "90% higher in Recipient")) +
+  scale_color_highcontrast(reverse = F, labels = c("Equal", "Higher in Donor", "Higher in Recipient")) +
   coord_cartesian(ylim=c(0,500)) +
-  theme_pubr() + theme(legend.position = "right")
+  theme_pubr() + theme(legend.position = "bottom")
 
-AlongEFall <- AlongEFStock + AlongEFFlux + AlongEFProd + plot_layout(ncol = 1, nrow = 3, guides = "collect") + plot_annotation(tag_levels = "a", tag_prefix = "(", tag_suffix = ")", title = "Consumer move along-gradient from high to low environmental fertility")
+AlongEFall <- AlongEFStock + AlongEFFlux + AlongEFProd + plot_layout(ncol = 1, nrow = 3, guides = "collect") + plot_annotation(tag_levels = "a", tag_prefix = "(", tag_suffix = ")", title = "Consumer move along-gradient from high to low environmental fertility") & theme(legend.position = "bottom")
 
-# ggsave(AlongEFall, filename = "../Results/FunctSumm_AlongEFraw.png", device = "png", dpi = 300, width = 12, height = 8)
+AlongEFall
+
+ggsave(AlongEFall, filename = "../Results/FunctSumm_AlongEFraw.png", device = "png", dpi = 600, width = 10, height = 8)
 ```
 
 Below, we produce a log response ratio version of the same plot. We begin by 
@@ -2894,7 +3167,9 @@ the dataframe to include only those and create a new dataframe,
 `AlongEFlrr_long`, with which we will be working. The workflow is the same as 
 above.
 
-```{r alongEF-LRRplot-gen,echo=TRUE,tidy=TRUE,fig.cap="."}
+```{r alongEF-LRRplot-gen,echo=TRUE,tidy=TRUE,fig.cap=".", fig.width=8, fig.height=14}
+# PPFillPal <- c("#d0e1fe", "#bae9c5", "#fcd6d4")
+
 # now select only the metadata and ratios columns and pivot to a long dataframe,
 # then create a Scale column
 AlongEFlrr_long <- select(AlongEFlrr, PPRec:I2, N1rr:PROD_Crr) %>% 
@@ -2916,51 +3191,62 @@ AlongEFlrr_long <- select(AlongEFlrr, PPRec:I2, N1rr:PROD_Crr) %>%
 # trophic compartment stock graph
 AlongEFlrrStock <- AlongEFlrr_long %>% 
   dplyr::filter(., Function == "Stock") %>% 
-  dplyr::mutate(., Compartment = fct_recode(Compartment, "N" = "N1rr", "N" = "N2rr", "N" = "Nrr", "P" = "P1rr", "P" = "P2rr", "P" = "Prr", "C" = "C1rr", "C" = "C2rr", "C" = "Crr")) %>% 
-  dplyr::mutate(., Compartment = fct_relevel(Compartment, "N", "P", "C")) %>% 
+  dplyr::mutate(., Compartment = fct_recode(Compartment, Nutrients = "N1rr", Nutrients = "N2rr", Nutrients = "Nrr", "Primary\n Producers" = "P1rr", "Primary\n Producers" = "P2rr", "Primary\n Producers" = "Prr", Consumers = "C1rr", Consumers = "C2rr", Consumers = "Crr")) %>% 
+  dplyr::mutate(., Compartment = fct_relevel(Compartment, "Nutrients", "Primary\n Producers", "Consumers")) %>% 
   ggplot(., aes(x = Compartment, y = log10(Ratio))) + 
   geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = 0), fill = "gray95") +
-  geom_hline(yintercept = 0, linetype = "dashed", lwd = 0.25) + 
+  geom_hline(yintercept = 0, linetype = "dashed", color = "black") + 
   geom_boxplot(aes(col = PPRec)) + 
   facet_grid(.~Scale, scales = "free") + 
-  labs(y = " ", x = " ", color = "P recycling rate", title = "Nutrient Stock and Biomass") + 
-  scale_color_hue(direction = -1, h.start = 90, labels = c("Equal", "90% higher in Donor", "90% higher in Recipient")) +
-  # coord_cartesian(ylim=c(-1,1)) +
-  theme_pubr() + theme(legend.position = "right")
+  labs(y = "Response Ratio (log10)", color = "Primary Producers recycling rate", title = "Nutrient Stocks and Biomass", x = " ") + 
+  scale_color_highcontrast(reverse = F, labels = c("Equal", "Higher in Donor", "Higher in Recipient")) +
+  # scale_fill_manual(values = PPFillPal, labels = c("Equal", "90% higher in Donor", "90% higher in Recipient")) +
+  theme_pubr() +
+  theme(legend.position = "bottom")
+  # ppt_theme
+  # coord_cartesian(ylim=c(-1,1))
 
 # trophic compartment nutrient flux graph
 AlongEFlrrFlux <- AlongEFlrr_long %>% 
   dplyr::filter(., Function == "Nutrient Flux") %>% 
-  dplyr::mutate(., Compartment = fct_recode(Compartment, "P" = "FLUX_P1rr", "P" = "FLUX_P2rr", "P" = "FLUX_Prr", "C" = "FLUX_C1rr", "C" = "FLUX_C2rr", "C" = "FLUX_Crr")) %>% 
-  dplyr::mutate(., Compartment = fct_relevel(Compartment, "P", "C")) %>% 
+  dplyr::mutate(., Compartment = fct_recode(Compartment, "Primary\n Producers" = "FLUX_P1rr", "Primary\n Producers" = "FLUX_P2rr", "Primary\n Producers" = "FLUX_Prr", Consumers = "FLUX_C1rr", Consumers = "FLUX_C2rr", Consumers = "FLUX_Crr")) %>% 
+  dplyr::mutate(., Compartment = fct_relevel(Compartment, "Primary\n Producers", "Consumers")) %>% 
   ggplot(., aes(x = Compartment, y = log10(Ratio))) + 
   geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = 0), fill = "gray95") +
-  geom_hline(yintercept = 0, linetype = "dashed", lwd = 0.25) + 
+  geom_hline(yintercept = 0, linetype = "dashed", color = "black") + 
   geom_boxplot(aes(col = PPRec)) + 
   facet_grid(.~Scale, scales = "free") + 
-  labs(y = " ", x = " ", color = "P recycling rate", title = "Nutrient Flux") + 
-  scale_color_hue(direction = -1, h.start = 90, labels = c("Equal", "90% higher in Donor", "90% higher in Recipient")) +
-  # coord_cartesian(ylim=c(-1,1)) +
-  theme_pubr() + theme(legend.position = "right")
+  labs(y = "Response Ratio (log10)", color = "Primary Producers recycling rate", title = "Nutrient Flux", x = " ") + 
+  scale_color_highcontrast(reverse = F, labels = c("Equal", "Higher in Donor", "Higher in Recipient")) +
+  # scale_fill_manual(values = PPFillPal, labels = c("Equal", "90% higher in Donor", "90% higher in Recipient")) +
+  theme_pubr() + theme(legend.position = "bottom")
+  # ppt_theme
+  # coord_cartesian(ylim=c(-1,1))
 
 # trophic compartment production graph
 AlongEFlrrProd <- AlongEFlrr_long %>% 
   dplyr::filter(., Function == "Trophic Productivity") %>% 
-  dplyr::mutate(., Compartment = fct_recode(Compartment, "P" = "PROD_P1rr", "P" = "PROD_P2rr", "P" = "PROD_Prr", "C" = "PROD_C1rr", "C" = "PROD_C2rr", "C" = "PROD_Crr")) %>% 
+  dplyr::mutate(., Compartment = fct_recode(Compartment, "Primary\n Producers" = "PROD_P1rr", "Primary\n Producers" = "PROD_P2rr", "Primary\n Producers" = "PROD_Prr", Consumers = "PROD_C1rr", Consumers = "PROD_C2rr", Consumers = "PROD_Crr")) %>% 
   dplyr::mutate(., Compartment = fct_relevel(Compartment, "P", "C")) %>% 
   ggplot(., aes(x = Compartment, y = log10(Ratio))) + 
   geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = 0), fill = "gray95") +
-  geom_hline(yintercept = 0, linetype = "dashed", lwd = 0.25) + 
+  geom_hline(yintercept = 0, linetype = "dashed", color = "black") + 
   geom_boxplot(aes(col = PPRec)) + 
   facet_grid(.~Scale, scales = "free") + 
-  labs(y = " ", color = "P recycling rate", title = "Trophic Compartment Productivity") + 
-  scale_color_hue(direction = -1, h.start = 90, labels = c("Equal", "90% higher in Donor", "90% higher in Recipient")) +
-  # coord_cartesian(ylim=c(-1,1)) +
-  theme_pubr() + theme(legend.position = "right")
+  labs(y = "Response Ratio (log10)", color = "Primary Producers recycling rate", title = "Trophic Compartment Productivity") + 
+  scale_color_highcontrast(reverse = F, labels = c("Equal", "Higher in Donor", "Higher in Recipient")) +
+  # scale_fill_manual(values = PPFillPal, labels = c("Equal", "90% higher in Donor", "90% higher in Recipient")) +
+  theme_pubr() + theme(legend.position = "bottom")
+  # ppt_theme
+  # coord_cartesian(ylim=c(-1,1))
 
-AlongEFlrr_AllFunct <- AlongEFlrrStock + AlongEFlrrFlux + AlongEFlrrProd + plot_layout(ncol = 1, nrow = 3, guides = "collect") + plot_annotation(tag_levels = "a", tag_prefix = "(", tag_suffix = ")", title = "Consumer move along-gradient from high to low environmental fertility")
+AlongEFlrr_AllFunct <- AlongEFlrrStock + AlongEFlrrFlux + AlongEFlrrProd + plot_layout(ncol = 1, nrow = 3, guides = "collect") + plot_annotation(title = "Consumer move along-gradient from high to low environmental fertility", tag_levels = "a", tag_prefix = "(", tag_suffix = ")") & theme(legend.position = "bottom")
 
-# ggsave(AlongEFlrr_AllFunct, filename = "../Results/FunctSumm_AlongEFlrr.png", dpi = 300, device = "png", width = 12, height = 8)
+AlongEFlrr_AllFunct
+
+ggsave(AlongEFlrr_AllFunct, filename = "../Results/FunctSumm_AlongEFlrr.png", dpi = 600, device = "png", width = 10, height = 8)
+
+# ggsave(AlongEFlrr_AllFunct, filename = "../../Thesis/Defence/img/FunctSumm_AlongEFlrr_forppt.pdf", dpi = 600, device = "pdf", width = 29.92, height = 19.05, units = "cm")
 ```
 
 #### Against gradient movement
@@ -2980,7 +3266,7 @@ this new dataframe to produce the graphs. For each ecosystem function of
 interest, we subset `AgainstEF_long` and build the graph from the resulting 
 selection of values.
 
-```{r againstEF-raw-plot-gen, echo=TRUE,tidy=TRUE}
+```{r againstEF-raw-plot-gen, echo=TRUE,tidy=TRUE, fig.width=8, fig.height=14}
 AgainstEF_long <- dplyr::filter(AgainstEF, N1>0 & P1>0 & C1>0 & N2>0 & P2>0 & C2>0) %>% 
   pivot_longer(., names_to = "Compartment", values_to = "Value", cols = N1:PROD_Ctot) %>% 
   # create Scale column, capturing local vs regional (=meta-eco) spatial extent
@@ -2998,49 +3284,48 @@ AgainstEF_long <- dplyr::filter(AgainstEF, N1>0 & P1>0 & C1>0 & N2>0 & P2>0 & C2
 
 AgainstEFStock <- AgainstEF_long %>% 
   dplyr::filter(., Function == "Stock") %>%
-  dplyr::mutate(., Compartment = fct_recode(Compartment, "N" = "N1", "N"= "N2", "N" = "Ntot", "P" = "P1", "P" = "P2", "P" = "Ptot", "C" = "C1", "C" = "C2", "C" = "Ctot")) %>%
-  dplyr::mutate(., Compartment = fct_relevel(Compartment, "N", "P", "C")) %>%
+  dplyr::mutate(., Compartment = fct_recode(Compartment, Nutrients = "N1", Nutrients= "N2", Nutrients = "Ntot", "Primary\n Producers" = "P1", "Primary\n Producers" = "P2", "Primary\n Producers" = "Ptot", Consumers = "C1", Consumers = "C2", Consumers = "Ctot")) %>%
+  dplyr::mutate(., Compartment = fct_relevel(Compartment, "Nutrients", "Primary\n Producers", "Consumers")) %>%
   ggplot(., aes(x = Compartment, y = Value)) + 
-  geom_hline(yintercept = 10, linetype = "dashed", lwd = 0.25) + 
+  geom_hline(yintercept = 10, linetype = "dashed") + 
   geom_boxplot(aes(col = PPRec)) + 
   facet_grid(.~Scale, scales = "free") + 
-  labs(y = " ", x = " ", color = "P recycling rate", 
-       title = "Nutrient Stock and Biomass") + 
-  scale_color_hue(direction = -1, h.start = 90, labels = c("Equal", "90% higher in Donor", "90% higher in Recipient")) +
-  coord_cartesian(ylim=c(0,100)) +
-  theme_pubr() + theme(legend.position = "right")
+  labs(y = " ", x = " ", color = "Primary Producers recycling rate", title = "Nutrient Stock and Biomass") + 
+  scale_color_highcontrast(reverse = F, labels = c("Equal", "Higher in Donor", "Higher in Recipient")) +
+  coord_cartesian(ylim = c(0,100)) +
+  theme_pubr() + theme(legend.position = "bottom")
 
 AgainstEFFlux <- AgainstEF_long %>% 
   dplyr::filter(., Function == "Nutrient Flux") %>%
-  dplyr::mutate(., Compartment = fct_recode(Compartment, "P" = "FLUX_P1", "P" = "FLUX_P2", "P" = "FLUX_Ptot", "C" = "FLUX_C1", "C" = "FLUX_C2", "C" = "FLUX_Ctot")) %>%
-  dplyr::mutate(., Compartment = fct_relevel(Compartment, "P", "C")) %>%
+  dplyr::mutate(., Compartment = fct_recode(Compartment, "Primary\n Producers" = "FLUX_P1", "Primary\n Producers" = "FLUX_P2", "Primary\n Producers" = "FLUX_Ptot", Consumers = "FLUX_C1", Consumers = "FLUX_C2", Consumers = "FLUX_Ctot")) %>%
+  dplyr::mutate(., Compartment = fct_relevel(Compartment, "Primary\n Producers", "Consumers")) %>%
   ggplot(., aes(x = Compartment, y = Value)) + 
-  geom_hline(yintercept = 50, linetype = "dashed", lwd = 0.25) + 
+  geom_hline(yintercept = 50, linetype = "dashed") + 
   geom_boxplot(aes(col = PPRec)) + 
   facet_grid(.~Scale, scales = "free") + 
-  labs(y = " ", x = " ", color = "P recycling rate", 
-       title = "Nutrient Flux") + 
-  scale_color_hue(direction = -1, h.start = 90, labels = c("Equal", "90% higher in Donor", "90% higher in Recipient")) +
-  coord_cartesian(ylim=c(0,500)) +
-  theme_pubr() + theme(legend.position = "right")
+  labs(y = " ", x = " ", color = "Primary Producers recycling rate", title = "Nutrient Flux") + 
+  scale_color_highcontrast(reverse = F, labels = c("Equal", "Higher in Donor", "Higher in Recipient")) +
+  coord_cartesian(ylim = c(0,500)) +
+  theme_pubr() + theme(legend.position = "bottom")
 
 AgainstEFProd <- AgainstEF_long %>% 
   dplyr::filter(., Function == "Trophic Productivity") %>%
-  dplyr::mutate(., Compartment = fct_recode(Compartment, "P" = "PROD_P1", "P" = "PROD_P2", "P" = "PROD_Ptot", "C" = "PROD_C1", "C" = "PROD_C2", "C" = "PROD_Ctot")) %>%
-  dplyr::mutate(., Compartment = fct_relevel(Compartment, "P", "C")) %>%
+  dplyr::mutate(., Compartment = fct_recode(Compartment, "Primary\n Producers" = "PROD_P1", "Primary\n Producers" = "PROD_P2", "Primary\n Producers" = "PROD_Ptot", Consumers = "PROD_C1", Consumers = "PROD_C2", Consumers = "PROD_Ctot")) %>%
+  dplyr::mutate(., Compartment = fct_relevel(Compartment, "Primary\n Producers", "Consumers")) %>%
   ggplot(., aes(x = Compartment, y = Value)) + 
-  geom_hline(yintercept = 100, linetype = "dashed", lwd = 0.25) + 
+  geom_hline(yintercept = 100, linetype = "dashed") + 
   geom_boxplot(aes(col = PPRec)) + 
   facet_grid(.~Scale, scales = "free") + 
-  labs(y = " ", x = "Compartment", color = "P recycling rate", 
-       title = "Trophic Compartment Productivity") + 
-  scale_color_hue(direction = -1, h.start = 90, labels = c("Equal", "90% higher in Donor", "90% higher in Recipient")) +
-  coord_cartesian(ylim=c(0,700)) +
-  theme_pubr() + theme(legend.position = "right")
+  labs(y = " ", x = "Compartment", color = "Primary Producers recycling rate", title = "Trophic Compartment Productivity") + 
+  scale_color_highcontrast(reverse = F, labels = c("Equal", "Higher in Donor", "Higher in Recipient")) +
+  coord_cartesian(ylim = c(0,700)) +
+  theme_pubr() + theme(legend.position = "bottom")
 
-AgainstEFall <- AgainstEFStock + AgainstEFFlux + AgainstEFProd + plot_layout(ncol = 1, nrow = 3, guides = "collect") + plot_annotation(tag_levels = "a", tag_prefix = "(", tag_suffix = ")", title = "Consumer move against-gradient from low to high environmental fertility")
+AgainstEFall <- AgainstEFStock + AgainstEFFlux + AgainstEFProd + plot_layout(ncol = 1, nrow = 3, guides = "collect") + plot_annotation(tag_levels = "a", tag_prefix = "(", tag_suffix = ")", title = "Consumer move against-gradient from low to high environmental fertility") & theme(legend.position = "bottom")
 
-# ggsave(AgainstEFall, filename = "../Results/FunctSumm_AgainstEFraw.png", device = "png", dpi = 300, width = 12, height = 8)
+AgainstEFall
+
+ggsave(AgainstEFall, filename = "../Results/FunctSumm_AgainstEFraw.png", device = "png", dpi = 600, width = 10, height = 8)
 ```
 
 Now, we move on to producing the log response ratio version of the graphs we
@@ -3064,7 +3349,7 @@ With the log response ratio values in the dataframe, we now proceed to separate
 them from the raw data into a new dataframe, `AgainstEFlrr_long`, and pivoting it 
 to long format. We then use this new object to produce the graphs.
 
-```{r againstEF-LRRplot-gen,echo=TRUE,tidy=TRUE,fig.cap="."}
+```{r againstEF-LRRplot-gen,echo=TRUE,tidy=TRUE,fig.cap=".", fig.width=8, fig.height=14}
 # now select only the metadata and ratios columns and pivot to a long dataframe,
 # then create a Scale column
 AgainstEFlrr_long <- select(AgainstEFlrr, PPRec:I2, N1rr:PROD_Crr) %>% 
@@ -3086,54 +3371,61 @@ AgainstEFlrr_long <- select(AgainstEFlrr, PPRec:I2, N1rr:PROD_Crr) %>%
 # trophic compartment stock graph
 AgainstEFlrrStock <- AgainstEFlrr_long %>% 
   dplyr::filter(., Function == "Stock") %>% 
-  dplyr::mutate(., Compartment = fct_recode(Compartment, "N" = "N1rr", "N" = "N2rr", "N" = "Nrr", "P" = "P1rr", "P" = "P2rr", "P" = "Prr", "C" = "C1rr", "C" = "C2rr", "C" = "Crr")) %>% 
-  dplyr::mutate(., Compartment = fct_relevel(Compartment, "N", "P", "C")) %>% 
+  dplyr::mutate(., Compartment = fct_recode(Compartment, Nutrients = "N1rr", Nutrients = "N2rr", Nutrients = "Nrr", "Primary\n Producers" = "P1rr", "Primary\n Producers" = "P2rr", "Primary\n Producers" = "Prr", Consumers = "C1rr", Consumers = "C2rr", Consumers = "Crr")) %>% 
+  dplyr::mutate(., Compartment = fct_relevel(Compartment, "Nutrients", "Primary\n Producers", "Consumers")) %>% 
   ggplot(., aes(x = Compartment, y = log10(Ratio))) + 
   geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = 0), fill = "gray95") +
-  geom_hline(yintercept = 0, linetype = "dashed", lwd = 0.25) + 
+  geom_hline(yintercept = 0, linetype = "dashed", color = "black") + 
   geom_boxplot(aes(col = PPRec)) + 
   facet_grid(.~Scale, scales = "free") + 
-  labs(y = " ", x = " ", color = "P recycling rate", 
-       title = "Nutrient Stock and Biomass") + 
-  scale_color_hue(direction = -1, h.start = 90, labels = c("Equal", "90% higher in Donor", "90% higher in Recipient")) +
-  # coord_cartesian(ylim=c(-1,1)) +
-  theme_pubr() + theme(legend.position = "right")
+  labs(y = "Respose Ratio (log10)", color = "Primary Producers recycling rate", title = "Nutrient Stock and Biomass", x = " ") + 
+  scale_color_highcontrast(reverse = F, labels = c("Equal", "90% higher in Donor", "90% higher in Recipient")) +
+  # scale_fill_manual(values = PPFillPal, labels = c("Equal", "90% higher in Donor", "90% higher in Recipient")) +
+  theme_pubr() + theme(legend.position = "bottom")
+  # ppt_theme
+  # coord_cartesian(ylim=c(-1,1))
 
 # trophic compartment nutrient flux graph
 AgainstEFlrrFlux <- AgainstEFlrr_long %>% 
   dplyr::filter(., Function == "Nutrient Flux") %>% 
-  dplyr::mutate(., Compartment = fct_recode(Compartment, "P" = "FLUX_P1rr", "P" = "FLUX_P2rr", "P" = "FLUX_Prr", "C" = "FLUX_C1rr", "C" = "FLUX_C2rr", "C" = "FLUX_Crr")) %>% 
-  dplyr::mutate(., Compartment = fct_relevel(Compartment, "P", "C")) %>% 
+  dplyr::mutate(., Compartment = fct_recode(Compartment, "Primary\n Producers" = "FLUX_P1rr", "Primary\n Producers" = "FLUX_P2rr", "Primary\n Producers" = "FLUX_Prr", Consumers = "FLUX_C1rr", Consumers = "FLUX_C2rr", Consumers = "FLUX_Crr")) %>% 
+  dplyr::mutate(., Compartment = fct_relevel(Compartment, "Primary\n Producers", "Consumers")) %>% 
   ggplot(., aes(x = Compartment, y = log10(Ratio))) + 
   geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = 0), fill = "gray95") +
-  geom_hline(yintercept = 0, linetype = "dashed", lwd = 0.25) + 
+  geom_hline(yintercept = 0, linetype = "dashed", colour = "black") + 
   geom_boxplot(aes(col = PPRec)) + 
   facet_grid(.~Scale, scales = "free") + 
-  labs(y = " ", x = " ", color = "P recycling rate", 
-       title = "Nutrient Flux") + 
-  scale_color_hue(direction = -1, h.start = 90, labels = c("Equal", "90% higher in Donor", "90% higher in Recipient")) +
-  # coord_cartesian(ylim=c(-1,1)) +
-  theme_pubr() + theme(legend.position = "right")
+  labs(y = "Response Ratio (log10)", color = "Primary Producers recycling rate", title = "Nutrient Flux", x = " ") + 
+  scale_color_highcontrast(reverse = F, labels = c("Equal", "90% higher in Donor", "90% higher in Recipient")) +
+  # scale_fill_manual(values = PPFillPal, labels = c("Equal", "90% higher in Donor", "90% higher in Recipient")) +
+  theme_pubr() + theme(legend.position = "bottom")
+  # ppt_theme
+  # coord_cartesian(ylim=c(-1,1))
 
 # trophic compartment production graph
 AgainstEFlrrProd <- AgainstEFlrr_long %>% 
   dplyr::filter(., Function == "Trophic Productivity") %>% 
-  dplyr::mutate(., Compartment = fct_recode(Compartment, "P" = "PROD_P1rr", "P" = "PROD_P2rr", "P" = "PROD_Prr", "C" = "PROD_C1rr", "C" = "PROD_C2rr", "C" = "PROD_Crr")) %>% 
-  dplyr::mutate(., Compartment = fct_relevel(Compartment, "P", "C")) %>% 
+  dplyr::mutate(., Compartment = fct_recode(Compartment, "Primary\n Producers" = "PROD_P1rr", "Primary\n Producers" = "PROD_P2rr", "Primary\n Producers" = "PROD_Prr", Consumers = "PROD_C1rr", Consumers = "PROD_C2rr", Consumers = "PROD_Crr")) %>% 
+  dplyr::mutate(., Compartment = fct_relevel(Compartment, "Primary\n Producers", "Consumers")) %>% 
   ggplot(., aes(x = Compartment, y = log10(Ratio))) + 
   geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = 0), fill = "gray95") +
-  geom_hline(yintercept = 0, linetype = "dashed", lwd = 0.25) + 
+  geom_hline(yintercept = 0, linetype = "dashed", colour = "black") + 
   geom_boxplot(aes(col = PPRec)) + 
   facet_grid(.~Scale, scales = "free") + 
-  labs(y = " ", color = "P recycling rate", 
-       title = "Trophic Compartment Productivity") + 
-  scale_color_hue(direction = -1, h.start = 90, labels = c("Equal", "90% higher in Donor", "90% higher in Recipient")) +
-  # coord_cartesian(ylim=c(-1,1)) +
-  theme_pubr() + theme(legend.position = "right")
+  labs(y = "Response Ratio (log10)", color = "Primary Producers recycling rate", title = "Trophic Compartment Productivity") + 
+  scale_color_highcontrast(revers = F, labels = c("Equal", "90% higher in Donor", "90% higher in Recipient")) +
+  # scale_fill_manual(values = PPFillPal, labels = c("Equal", "90% higher in Donor", "90% higher in Recipient")) +
+  theme_pubr() + theme(legend.position = "bottom")
+  # ppt_theme
+  # coord_cartesian(ylim=c(-1,1)) 
 
-AgainstEFlrr_AllFunct <- AgainstEFlrrStock + AgainstEFlrrFlux + AgainstEFlrrProd + plot_layout(ncol = 1, nrow = 3, guides = "collect") + plot_annotation(tag_levels = "a", tag_prefix = "(", tag_suffix = ")", title = "Consumer move against-gradient from low to high environmental fertility")
+AgainstEFlrr_AllFunct <- AgainstEFlrrStock + AgainstEFlrrFlux + AgainstEFlrrProd + plot_layout(ncol = 1, nrow = 3, guides = "collect") + plot_annotation(title = "Consumer move against-gradient from low to high environmental fertility", tag_levels = "a", tag_prefix = "(", tag_suffix = ")") & theme(legend.position = "bottom")
 
-# ggsave(AgainstEFlrr_AllFunct, filename = "../Results/FunctSumm_AgainstEFlrr.png", dpi = 300, device = "png", width = 12, height = 8)
+AgainstEFlrr_AllFunct
+
+ggsave(AgainstEFlrr_AllFunct, filename = "../Results/FunctSumm_AgainstEFlrr.png", dpi = 600, device = "png", width = 10, height = 8)
+
+# ggsave(AgainstEFlrr_AllFunct, filename = "../../Thesis/Defence/img/FunctSumm_AgainstEFlrr_forppt.pdf", dpi = 600, device = "pdf", width = 29.92, height = 19.05, units = "cm")
 ```
 
 ## Summary tables
@@ -3155,96 +3447,978 @@ stock, nutrient flux, and primary and secondary productivity.
 ```{r summ-tables-df-gen, echo=TRUE,tidy=TRUE}
 # first, compute median of log10 ratio values
 
-AlongEFlrr_tables <- dplyr::filter(AlongEFlrr_long, Ratio>=0) %>% dplyr::group_by(., PPRec, Function, Scale, Compartment) %>% dplyr::mutate(., LRR = log10(Ratio)) %>% dplyr::summarise(., median = median(LRR), .groups = "keep")
+EnvFertLRR_tables <- dplyr::filter(EnvFertRR_long, Ratio>=0) %>% dplyr::group_by(., Fertility, Function, Scale, Compartment) %>% dplyr::mutate(., LRR = log10(Ratio)) %>% dplyr::summarise(., min = min(LRR), median = median(LRR), max = max(LRR), .groups = "keep")
 
-AgainstEFlrr_tables <- dplyr::filter(AgainstEFlrr_long, Ratio>=0) %>% dplyr::group_by(., PPRec, Function, Scale, Compartment) %>% dplyr::mutate(., LRR = log10(Ratio)) %>% dplyr::summarise(., median = median(LRR), .groups = "keep")
+AlongEFlrr_tables <- dplyr::filter(AlongEFlrr_long, Ratio>=0) %>% dplyr::group_by(., PPRec, Function, Scale, Compartment) %>% dplyr::mutate(., LRR = log10(Ratio)) %>% dplyr::summarise(., min = min(LRR), median = median(LRR), max = max(LRR), .groups = "keep")
+
+AgainstEFlrr_tables <- dplyr::filter(AgainstEFlrr_long, Ratio>=0) %>% dplyr::group_by(., PPRec, Function, Scale, Compartment) %>% dplyr::mutate(., LRR = log10(Ratio)) %>% dplyr::summarise(., min = min(LRR), median = median(LRR), max = max(LRR), .groups = "keep")
+
+# # for biomass ratio when h1 > h2
+# RBMh1_long$Rlog10 <- log10(RBMh1_long$Ratio)
+#   
+# RBMh1_medians <- RBMh1_long %>% dplyr::filter(., Ratio>=0) %>% dplyr::group_by(., hDIFF, Fert, Scale, Compartment) %>% dplyr::summarise(., median = median(Rlog10), .groups = "keep") %>% dplyr::mutate(., Case = "RBMh1")
+# 
+# # for nutrient flux ratio when h1 > h2
+# RNFh1_long$Rlog10 <- log10(RNFh1_long$Ratio)
+#   
+# RNFh1_medians <- RNFh1_long %>% dplyr::filter(., Ratio>=0) %>% dplyr::group_by(., hDIFF, Fert, Scale, Compartment)  %>% dplyr::summarise(., median = median(Rlog10), .groups = "keep") %>% dplyr::mutate(., Case = "RNFh1")
+# 
+# # for biomass ratio when h1 < h2
+# RBMh2_long$Rlog10 <- log10(RBMh2_long$Ratio)
+#   
+# RBMh2_medians <- RBMh2_long %>% dplyr::filter(., Ratio>=0) %>% dplyr::group_by(., hDIFF, Fert, Scale, Compartment) %>% dplyr::summarise(., median = median(Rlog10), .groups = "keep") %>% dplyr::mutate(., Case = "RBMh2")
+# 
+# # for nutrient flux ratio when h1 < h2
+# RNFh2_long$Rlog10 <- log10(RNFh2_long$Ratio)
+#   
+# RNFh2_medians <- RNFh2_long %>% dplyr::filter(., Ratio>=0) %>% dplyr::group_by(., hDIFF, Fert, Scale, Compartment)  %>% dplyr::summarise(., median = median(Rlog10), .groups = "keep") %>% dplyr::mutate(., Case = "RNFh2")
+# 
+# # for productivity when h1 > h2
+# RPRODh1_long$Rlog10 <- log10(RPRODh1_long$Ratio)
+# 
+# RPRODh1_medians <- RPRODh1_long %>% dplyr::filter(., Ratio>=0) %>% dplyr::group_by(., hDIFF, Fert, Scale, Compartment) %>% dplyr::summarise(., median = median(Rlog10), .groups = "keep") %>% dplyr::mutate(., Case = "RPRODh1")
+# 
+# # for productivity when h1 < h2
+# RPRODh2_long$Rlog10 <- log10(RPRODh2_long$Ratio)
+# 
+# RPRODh2_medians <- RPRODh2_long %>% dplyr::filter(., Ratio>=0) %>% dplyr::group_by(., hDIFF, Fert, Scale, Compartment) %>% dplyr::summarise(., median = median(Rlog10), .groups = "keep") %>% dplyr::mutate(., Case = "RPRODh2")
+# 
+# RBM_medians <- dplyr::bind_rows(RBMh1_medians, RBMh2_medians)
+# RBM_medians$Fert <- as.factor(RBM_medians$Fert)
+# 
+# RNF_medians <- dplyr::bind_rows(RNFh1_medians, RNFh2_medians)
+# RNF_medians$Fert <- as.factor(RNF_medians$Fert)
+# 
+# RPROD_medians <- dplyr::bind_rows(RPRODh1_medians, RPRODh2_medians)
+# RPROD_medians$Fert <- as.factor(RPROD_medians$Fert)
 ```
 
 Now, we produce the tables, separating between along and against-gradient 
 movement, as above.
 
-#### Along-gradient movement tables
+```{r xaringan-panelset, echo=FALSE}
+xaringanExtra::use_panelset()
+```
 
-```{r alongEF-tables-gen, echo=TRUE, tidy=TRUE}
-AlongEFStockTab <- AlongEFlrr_tables %>% 
+#### Environmental Fertility table 
+
+::::: {.panelset}
+
+::: {.panel}
+
+##### Biomass and Nutrient Stock {.panel-name}
+```{r EFstock-table-gen, echo=TRUE, tidy=TRUE}
+EFStockTab <- EnvFertLRR_tables %>% 
   dplyr::ungroup() %>% 
   dplyr::filter(., Function == "Stock") %>% 
-  pivot_wider(., names_from = PPRec, values_from = median) %>% 
+  pivot_wider(., names_from = Fertility, values_from = c(min, median, max)) %>% 
   dplyr::mutate(., Compartment = fct_recode(Compartment, "Consumers" = "C1rr", "Consumers" = "C2rr", "Consumers" = "Crr", "Producers" = "P1rr", "Producers" = "P2rr", "Producers" = "Prr", "Nutrients" = "N1rr", "Nutrients" = "N2rr", "Nutrients" = "Nrr")) %>%
   dplyr::mutate(., Compartment = fct_relevel(Compartment, "Nutrients", "Producers", "Consumers")) %>%
   gt(groupname_col = "Scale") %>% 
   cols_hide("Function") %>% 
-  fmt_number(., columns = c(4:6), decimals = 3) %>% 
-  data_color(., columns = 4:6, colors = col_numeric(palette = "PiYG", domain = c(-1,1)))
+  tab_spanner(label = md("**Along-gradient**"), columns = c("min_Along", "median_Along", "max_Along")) %>%
+  tab_spanner(label = md("**Against-gradient**"), columns = c("min_Against", "median_Against", "max_Against")) %>%
+  cols_label(Compartment = md("**Compartment**"), "min_Along" = md("*Min.*"), "median_Along" = md("*Median*"), "max_Along" = md("*Max.*"), "min_Against" = md("*Min.*"), "median_Against" = md("*Median*"), "max_Against" = md("*Max.*"))%>%
+  fmt_number(., columns = c(4:9), decimals = 2) %>% 
+  data_color(., columns = c(6, 7), colors = col_numeric(palette = "PiYG", domain = c(-1,1)))
 
-AlongEFStockTab
+EFStockTab
+```
 
-AlongEFFluxTab <- AlongEFlrr_tables %>% 
+:::
+
+::: {.panel}
+
+##### Nutrient Flux {.panel-name}
+```{r EFflux-table-gen, echo=TRUE, tidy=TRUE}
+EFFluxTab <- EnvFertLRR_tables %>% 
   dplyr::ungroup() %>% 
   dplyr::filter(., Function == "Nutrient Flux") %>% 
-  pivot_wider(., names_from = PPRec, values_from = median) %>% 
+  pivot_wider(., names_from = Fertility, values_from = c(min, median, max)) %>% 
   dplyr::mutate(., Compartment = fct_recode(Compartment, "Consumers" = "FLUX_C1rr", "Consumers" = "FLUX_C2rr", "Consumers" = "FLUX_Crr", "Producers" = "FLUX_P1rr", "Producers" = "FLUX_P2rr", "Producers" = "FLUX_Prr")) %>%
   dplyr::mutate(., Compartment = fct_relevel(Compartment, "Producers", "Consumers")) %>%
   gt(groupname_col = "Scale") %>% 
   cols_hide("Function") %>% 
-  fmt_number(., columns = c(4:6), decimals = 3) %>% 
-  data_color(., columns = 4:6, colors = col_numeric(palette = "PiYG", domain = c(-1,1)))
+  tab_spanner(label = md("**Along-gradient**"), columns = c("min_Along", "median_Along", "max_Along")) %>%
+  tab_spanner(label = md("**Against-gradient**"), columns = c("min_Against", "median_Against", "max_Against")) %>%
+  cols_label(Compartment = md("**Compartment**"), "min_Along" = md("*Min.*"), "median_Along" = md("*Median*"), "max_Along" = md("*Max.*"), "min_Against" = md("*Min.*"), "median_Against" = md("*Median*"), "max_Against" = md("*Max.*"))%>%
+  fmt_number(., columns = c(4:9), decimals = 2) %>% 
+  data_color(., columns = c(6, 7), colors = col_numeric(palette = "PiYG", domain = c(-1,1)))
 
-AlongEFFluxTab
+EFFluxTab
+```
 
-AlongEFProdTab <- AlongEFlrr_tables %>% 
+:::
+
+::: {.panel}
+
+##### Trophic Productivity {.panel-name}
+```{r EFprod-table-gen, echo=TRUE, tidy=TRUE}
+EFProdTab <- EnvFertLRR_tables %>% 
   dplyr::ungroup() %>% 
   dplyr::filter(., Function == "Trophic Productivity") %>% 
-  pivot_wider(., names_from = PPRec, values_from = median) %>% 
+  pivot_wider(., names_from = Fertility, values_from = c(min, median, max)) %>% 
   dplyr::mutate(., Compartment = fct_recode(Compartment, "Consumers" = "PROD_C1rr", "Consumers" = "PROD_C2rr", "Consumers" = "PROD_Crr", "Producers" = "PROD_P1rr", "Producers" = "PROD_P2rr", "Producers" = "PROD_Prr")) %>%
   dplyr::mutate(., Compartment = fct_relevel(Compartment, "Producers", "Consumers")) %>%
   gt(groupname_col = "Scale") %>% 
   cols_hide("Function") %>% 
-  fmt_number(., columns = c(4:6), decimals = 3) %>% 
-  data_color(., columns = 4:6, colors = col_numeric(palette = "PiYG", domain = c(-1,1)))
+  tab_spanner(label = md("**Along-gradient**"), columns = c("min_Along", "median_Along", "max_Along")) %>%
+  tab_spanner(label = md("**Against-gradient**"), columns = c("min_Against", "median_Against", "max_Against")) %>%
+  cols_label(Compartment = md("**Compartment**"), "min_Along" = md("*Min.*"), "median_Along" = md("*Median*"), "max_Along" = md("*Max.*"), "min_Against" = md("*Min.*"), "median_Against" = md("*Median*"), "max_Against" = md("*Max.*"))%>%
+  fmt_number(., columns = c(4:9), decimals = 2) %>% 
+  data_color(., columns = c(6, 7), colors = col_numeric(palette = "PiYG", domain = c(-1,1)))
+
+EFProdTab
+```
+
+:::
+
+:::::
+
+#### Along-gradient movement tables 
+
+::::: {.panelset}
+
+::: {.panel}
+
+##### Biomass and Nutrient Stocks {.panel-name}
+```{r alongEFstock-tables-gen, echo=TRUE, tidy=TRUE}
+AlongEFStockTab <- AlongEFlrr_tables %>% 
+  dplyr::ungroup() %>% 
+  dplyr::filter(., Function == "Stock") %>% 
+  pivot_wider(., names_from = PPRec, values_from = c(min, median, max)) %>% 
+  dplyr::mutate(., Compartment = fct_recode(Compartment, "Consumers" = "C1rr", "Consumers" = "C2rr", "Consumers" = "Crr", "Producers" = "P1rr", "Producers" = "P2rr", "Producers" = "Prr", "Nutrients" = "N1rr", "Nutrients" = "N2rr", "Nutrients" = "Nrr")) %>%
+  dplyr::mutate(., Compartment = fct_relevel(Compartment, "Nutrients", "Producers", "Consumers")) %>%
+  gt(groupname_col = "Scale") %>% 
+  cols_hide("Function") %>% 
+  tab_spanner(label = md("**Equal**"), columns = c("min_Equal h", "median_Equal h", "max_Equal h")) %>%
+  tab_spanner(label = md("**High in Donor**"), columns = c("min_High h1", "median_High h1", "max_High h1")) %>%
+  tab_spanner(label = md("**High in Recipient**"), columns = c("min_High h2", "median_High h2", "max_High h2")) %>%
+  cols_label(Compartment = md("**Compartment**"), "min_Equal h" = md("*Min.*"), "median_Equal h" = md("*Median*"), "max_Equal h" = md("*Max.*"), "min_High h1" = md("*Min.*"), "median_High h1" = md("*Median*"), "max_High h1" = md("*Max.*"), "min_High h2" = md("*Min.*"), "median_High h2" = md("*Median*"), "max_High h2" = md("*Max.*"))%>%
+  fmt_number(., columns = c(4:12), decimals = 2) %>% 
+  data_color(., columns = c(7, 8, 9), colors = col_numeric(palette = "PiYG", domain = c(-1,1)))
+
+AlongEFStockTab
+```
+
+:::
+
+::: {.panel}
+
+##### Nutrient Flux {.panel-name}
+```{r alongEFflux-tables-gen, echo=TRUE, tidy=TRUE}
+AlongEFFluxTab <- AlongEFlrr_tables %>% 
+  dplyr::ungroup() %>% 
+  dplyr::filter(., Function == "Nutrient Flux") %>% 
+  pivot_wider(., names_from = PPRec, values_from = c(min, median, max)) %>% 
+  dplyr::mutate(., Compartment = fct_recode(Compartment, "Consumers" = "FLUX_C1rr", "Consumers" = "FLUX_C2rr", "Consumers" = "FLUX_Crr", "Producers" = "FLUX_P1rr", "Producers" = "FLUX_P2rr", "Producers" = "FLUX_Prr")) %>%
+  dplyr::mutate(., Compartment = fct_relevel(Compartment, "Producers", "Consumers")) %>%
+  gt(groupname_col = "Scale") %>% 
+  cols_hide("Function") %>% 
+  tab_spanner(label = md("**Equal**"), columns = c("min_Equal h", "median_Equal h", "max_Equal h")) %>%
+  tab_spanner(label = md("**High in Donor**"), columns = c("min_High h1", "median_High h1", "max_High h1")) %>%
+  tab_spanner(label = md("**High in Recipient**"), columns = c("min_High h2", "median_High h2", "max_High h2")) %>%
+  cols_label(Compartment = md("**Compartment**"), "min_Equal h" = md("*Min.*"), "median_Equal h" = md("*Median*"), "max_Equal h" = md("*Max.*"), "min_High h1" = md("*Min.*"), "median_High h1" = md("*Median*"), "max_High h1" = md("*Max.*"), "min_High h2" = md("*Min.*"), "median_High h2" = md("*Median*"), "max_High h2" = md("*Max.*"))%>%
+  fmt_number(., columns = c(4:12), decimals = 2) %>% 
+  data_color(., columns = c(7, 8, 9), colors = col_numeric(palette = "PiYG", domain = c(-1,1)))
+
+AlongEFFluxTab
+```
+
+:::
+
+::: {.panel}
+
+##### Trophic Productivity {.panel-name}
+```{r alongEFprod-tables-gen, echo=TRUE, tidy=TRUE}
+AlongEFProdTab <- AlongEFlrr_tables %>% 
+  dplyr::ungroup() %>% 
+  dplyr::filter(., Function == "Trophic Productivity") %>% 
+  pivot_wider(., names_from = PPRec, values_from = c(min, median, max)) %>% 
+  dplyr::mutate(., Compartment = fct_recode(Compartment, "Consumers" = "PROD_C1rr", "Consumers" = "PROD_C2rr", "Consumers" = "PROD_Crr", "Producers" = "PROD_P1rr", "Producers" = "PROD_P2rr", "Producers" = "PROD_Prr")) %>%
+  dplyr::mutate(., Compartment = fct_relevel(Compartment, "Producers", "Consumers")) %>%
+  gt(groupname_col = "Scale") %>% 
+  cols_hide("Function") %>% 
+  tab_spanner(label = md("**Equal**"), columns = c("min_Equal h", "median_Equal h", "max_Equal h")) %>%
+  tab_spanner(label = md("**High in Donor**"), columns = c("min_High h1", "median_High h1", "max_High h1")) %>%
+  tab_spanner(label = md("**High in Recipient**"), columns = c("min_High h2", "median_High h2", "max_High h2")) %>%
+  cols_label(Compartment = md("**Compartment**"), "min_Equal h" = md("*Min.*"), "median_Equal h" = md("*Median*"), "max_Equal h" = md("*Max.*"), "min_High h1" = md("*Min.*"), "median_High h1" = md("*Median*"), "max_High h1" = md("*Max.*"), "min_High h2" = md("*Min.*"), "median_High h2" = md("*Median*"), "max_High h2" = md("*Max.*"))%>%
+  fmt_number(., columns = c(4:12), decimals = 2) %>% 
+  data_color(., columns = c(7, 8, 9), colors = col_numeric(palette = "PiYG", domain = c(-1,1)))
 
 AlongEFProdTab
 ```
 
+:::
+
+:::::
+
 #### Against-gradient movement tables
 
-```{r againstEF-tables-gen, echo=TRUE, tidy=TRUE}
+::::: {.panelset}
+
+::: {.panel}
+
+##### Biomass and Nutrient Stock {.panel-name}
+```{r againstEFstock-tables-gen, echo=TRUE, tidy=TRUE}
 AgainstEFStockTab <- AgainstEFlrr_tables %>% 
   dplyr::ungroup() %>% 
   dplyr::filter(., Function == "Stock") %>% 
-  pivot_wider(., names_from = PPRec, values_from = median) %>% 
+  pivot_wider(., names_from = PPRec, values_from = c(min, median, max)) %>% 
   dplyr::mutate(., Compartment = fct_recode(Compartment, "Consumers" = "C1rr", "Consumers" = "C2rr", "Consumers" = "Crr", "Producers" = "P1rr", "Producers" = "P2rr", "Producers" = "Prr", "Nutrients" = "N1rr", "Nutrients" = "N2rr", "Nutrients" = "Nrr")) %>%
   dplyr::mutate(., Compartment = fct_relevel(Compartment, "Nutrients", "Producers", "Consumers")) %>%
   gt(groupname_col = "Scale") %>% 
   cols_hide("Function") %>% 
-  fmt_number(., columns = c(4:6), decimals = 3) %>% 
-  data_color(., columns = 4:6, colors = col_numeric(palette = "PiYG", domain = c(-1,1)))
+  tab_spanner(label = md("**Equal**"), columns = c("min_Equal h", "median_Equal h", "max_Equal h")) %>%
+  tab_spanner(label = md("**High in Donor**"), columns = c("min_High h1", "median_High h1", "max_High h1")) %>%
+  tab_spanner(label = md("**High in Recipient**"), columns = c("min_High h2", "median_High h2", "max_High h2")) %>%
+  cols_label(Compartment = md("**Compartment**"), "min_Equal h" = md("*Min.*"), "median_Equal h" = md("*Median*"), "max_Equal h" = md("*Max.*"), "min_High h1" = md("*Min.*"), "median_High h1" = md("*Median*"), "max_High h1" = md("*Max.*"), "min_High h2" = md("*Min.*"), "median_High h2" = md("*Median*"), "max_High h2" = md("*Max.*"))%>%
+  fmt_number(., columns = c(4:12), decimals = 2) %>% 
+  data_color(., columns = c(7, 8, 9), colors = col_numeric(palette = "PiYG", domain = c(-1,1)))
 
 AgainstEFStockTab
+```
 
+:::
+
+::: {.panel}
+
+##### Nutrient Flux {.panel-name}
+```{r againstEFflux-tables-gen, echo=TRUE, tidy=TRUE}
 AgainstEFFluxTab <- AgainstEFlrr_tables %>% 
   dplyr::ungroup() %>% 
   dplyr::filter(., Function == "Nutrient Flux") %>% 
-  pivot_wider(., names_from = PPRec, values_from = median) %>% 
+  pivot_wider(., names_from = PPRec, values_from = c(min, median, max)) %>% 
   dplyr::mutate(., Compartment = fct_recode(Compartment, "Consumers" = "FLUX_C1rr", "Consumers" = "FLUX_C2rr", "Consumers" = "FLUX_Crr", "Producers" = "FLUX_P1rr", "Producers" = "FLUX_P2rr", "Producers" = "FLUX_Prr")) %>%
   dplyr::mutate(., Compartment = fct_relevel(Compartment, "Producers", "Consumers")) %>%
   gt(groupname_col = "Scale") %>% 
   cols_hide("Function") %>% 
-  fmt_number(., columns = c(4:6), decimals = 3) %>% 
-  data_color(., columns = 4:6, colors = col_numeric(palette = "PiYG", domain = c(-1,1)))
+  tab_spanner(label = md("**Equal**"), columns = c("min_Equal h", "median_Equal h", "max_Equal h")) %>%
+  tab_spanner(label = md("**High in Donor**"), columns = c("min_High h1", "median_High h1", "max_High h1")) %>%
+  tab_spanner(label = md("**High in Recipient**"), columns = c("min_High h2", "median_High h2", "max_High h2")) %>%
+  cols_label(Compartment = md("**Compartment**"), "min_Equal h" = md("*Min.*"), "median_Equal h" = md("*Median*"), "max_Equal h" = md("*Max.*"), "min_High h1" = md("*Min.*"), "median_High h1" = md("*Median*"), "max_High h1" = md("*Max.*"), "min_High h2" = md("*Min.*"), "median_High h2" = md("*Median*"), "max_High h2" = md("*Max.*"))%>%
+  fmt_number(., columns = c(4:12), decimals = 2) %>% 
+  data_color(., columns = c(7, 8, 9), colors = col_numeric(palette = "PiYG", domain = c(-1,1)))
 
 AgainstEFFluxTab
+```
 
+:::
+
+::: {.panel}
+
+##### Trophic Productivity {.panel-name}
+```{r againstEFprodtables-gen, echo=TRUE, tidy=TRUE}
 AgainstEFProdTab <- AgainstEFlrr_tables %>% 
   dplyr::ungroup() %>% 
   dplyr::filter(., Function == "Trophic Productivity") %>% 
-  pivot_wider(., names_from = PPRec, values_from = median) %>% 
+  pivot_wider(., names_from = PPRec, values_from = c(min, median, max)) %>% 
   dplyr::mutate(., Compartment = fct_recode(Compartment, "Consumers" = "PROD_C1rr", "Consumers" = "PROD_C2rr", "Consumers" = "PROD_Crr", "Producers" = "PROD_P1rr", "Producers" = "PROD_P2rr", "Producers" = "PROD_Prr")) %>%
   dplyr::mutate(., Compartment = fct_relevel(Compartment, "Producers", "Consumers")) %>%
   gt(groupname_col = "Scale") %>% 
   cols_hide("Function") %>% 
-  fmt_number(., columns = c(4:6), decimals = 3) %>% 
-  data_color(., columns = 4:6, colors = col_numeric(palette = "PiYG", domain = c(-1,1)))
+  tab_spanner(label = md("**Equal**"), columns = c("min_Equal h", "median_Equal h", "max_Equal h")) %>%
+  tab_spanner(label = md("**High in Donor**"), columns = c("min_High h1", "median_High h1", "max_High h1")) %>%
+  tab_spanner(label = md("**High in Recipient**"), columns = c("min_High h2", "median_High h2", "max_High h2")) %>%
+  cols_label(Compartment = md("**Compartment**"), "min_Equal h" = md("*Min.*"), "median_Equal h" = md("*Median*"), "max_Equal h" = md("*Max.*"), "min_High h1" = md("*Min.*"), "median_High h1" = md("*Median*"), "max_High h1" = md("*Max.*"), "min_High h2" = md("*Min.*"), "median_High h2" = md("*Median*"), "max_High h2" = md("*Max.*"))%>%
+  fmt_number(., columns = c(4:12), decimals = 2) %>% 
+  data_color(., columns = c(7, 8, 9), colors = col_numeric(palette = "PiYG", domain = c(-1,1)))
 
 AgainstEFProdTab
 ```
+
+:::
+
+:::::
+
+# Stability Analyses
+
+<!-- ## Old Figures -->
+
+<!-- Below are collected several previous iterations of the visual deliverables for  -->
+<!-- this project. In these figures, scenarios are separated by primary producers  -->
+<!-- recycling rates in first instance and then by ecosystem function measured and  -->
+<!-- fertility conditions.  -->
+
+<!-- All of the code chunks below have compiling turned off. What follows is the  -->
+<!-- original text that accompanied these figures and explains how to interpret them. -->
+
+<!-- **_Old intro to figures starts_** -->
+
+<!-- Here we summarize the above results. Our batch of simulations above comprises a  -->
+<!-- _control_ scenario (section [Equal primary producers recycling rates])---where primary producers  -->
+<!-- recycling rates and environmental fertility conditions each have the same value  -->
+<!-- across local ecosystems---and several _experimental_ scenarios in which we varied -->
+<!-- both these parameters. Thus, we will use the _control_ scenario as a baseline  -->
+<!-- against which to compare the other simulations. We will do so using the ratio of -->
+<!-- the _experimental_'s simulations results to the _control_'s. Mathematically, the  -->
+<!-- ratio's formula is: -->
+
+<!-- $R = \frac{X_{i, \Delta h \in [0.1,0.9]}}{X_{i, \Delta h = 0}}$ -->
+
+<!-- where $X \in [N, P, C]$ is the trophic compartment of interest, $i \in [1, 2]$  -->
+<!-- is the local ecosystem, and $\Delta h \in [0.1,0.9]$ is the difference between  -->
+<!-- h~1~ and h~2~, the recycling rates of primary producers in ecosystem 1 and 2,  -->
+<!-- respectively. That is, we calculate the ratio of a trophic compartment's  -->
+<!-- _experimental_ productivity or nutrient flux values when h~1~ and h~2~ differ by -->
+<!-- $\Delta h$ to its _control_ values for the same metric when h~1~ = h~2~.  -->
+
+<!-- A value of $R = 1$ indicates the _experimental_ and _control_ values of the  -->
+<!-- given trophic compartment are perfectly matched. Values above 1 indicate that  -->
+<!-- the _experimental_ stock value of the trophic compartment of interest is larger  -->
+<!-- than the _control_ one. Vice versa, a value of $R < 1$ indicates that the  -->
+<!-- _control_ stock value of the given compartment is larger than the _experimental_ -->
+<!-- one. -->
+
+<!-- Given the large number of simulations we ran in previous section, to keep graphs  -->
+<!-- informative we will produce one graph each for the h~1~ > h~2~ and the  -->
+<!-- h~1~ < h~2~ scenarios. In each of these graphs, we will plot the values of each  -->
+<!-- trophic compartment grouped by environmental fertility condition: I~1~ = I~2~,  -->
+<!-- I~1~ > I~2~, and I~1~ < I~2~.  -->
+
+<!-- **How to interpret the graphs below** -->
+
+<!-- Note that in all figures below, we will apply a base-10 logarithm transformation -->
+<!-- to the ratio $R$ calculated above.  -->
+
+<!-- Using this transformation on a ratio means that, in the graphs below, the area  -->
+<!-- below 0 indicates that the denominator of the ratio---i.e., either productivity or  -->
+<!-- nutrient flux values when h~1~ = h~2~ and I~1~ = I~2~---is larger than the  -->
+<!-- numerator so that the effect of our manipulation of primary producers recycling  -->
+<!-- rates effectively **reduces** the metric of interest. Vice versa, the area above -->
+<!-- 0 indicates a larger numerator and an **increase** in the value of the metric of  -->
+<!-- interest as a consequence of our manipulation of primary producers recycling  -->
+<!-- rates.  -->
+
+<!-- **_Old intro to figures ends_** -->
+
+<!-- #### Summary of the h~1~ > h~2~ scenario -->
+
+<!-- We begin with the h~1~ > h~2~ scenario. We first combine the three dataframes -->
+<!-- that simulate cases in which h~1~ > h~2~: `PREDhigh_h1`, `PREDhigh_I1h1`, and  -->
+<!-- `PREDhigh_I2h1`. In the same code chunk, we also select only the variables of  -->
+<!-- interests. These include a origin dataframe ID, the simulation's time steps, the -->
+<!-- value of $\Delta h$, the values of I~1~ and I~2~, and the values of each trophic -->
+<!-- compartment. We then create a new variable (`Fert`) to identify the  -->
+<!-- environmental fertility conditions. The values of I~1~ and I~2~ and the origin  -->
+<!-- dataframe ID inform the creation of these variable, which is categorical with  -->
+<!-- levels `equal` for equal Is, `along` for I~1~ > I~2~, and `against` for I~1~ < I~2~. -->
+
+<!-- ```{r h1-BM-df-combine, eval=FALSE, include=FALSE, tidy=TRUE} -->
+<!-- # Combine the dataframes for the case of h1 > h2, irrespective of ∆I, then  -->
+<!-- # retain only certain columns, then create a new column for the fertility condition -->
+<!-- BMh1high <- bind_rows(list(PREDhigh_h1,PREDhigh_I1h1,PREDhigh_I2h1), .id = "id") %>% select(., id:I2, N1:Q, Ntot:Ctot) %>% dplyr::mutate(., Fert = if_else(id == "1", "equal", if_else(id == "2", "along", "against")), .after = "id")  -->
+<!-- ``` -->
+
+<!-- We then group the results by the value of $\Delta h$ and the fertility conditions. -->
+<!-- Then, we calculate the values of the ratios using the _control_ values for each  -->
+<!-- trophic compartment stored in `PREDeqrecrates` and function `mutate` in package  -->
+<!-- `dplyr`. As a final step, we retain only those simulation instances in which the -->
+<!-- trophic compartments' values are positive---i.e., > 0. -->
+
+<!-- ```{r h1-BM-ratios-calc, eval=FALSE, include=FALSE,tidy=TRUE} -->
+<!-- # now, group the resulting dataframe, then calculate the experiment:control ratio for each trophic compartment -->
+<!-- RBMh1 <- group_by(BMh1high, hDIFF, Fert) %>% dplyr::mutate(., N1ratio = N1/PREDeqrecrates$N1) %>% dplyr::mutate(., P1ratio = P1/PREDeqrecrates$P1) %>% dplyr::mutate(., C1ratio = C1/PREDeqrecrates$C1) %>% dplyr::mutate(., N2ratio = N2/PREDeqrecrates$N2) %>% dplyr::mutate(., P2ratio = P2/PREDeqrecrates$P2) %>% dplyr::mutate(., C2ratio = C2/PREDeqrecrates$C2) %>% dplyr::mutate(., Qratio = Q/PREDeqrecrates$Q) %>% dplyr::mutate(., Nratio = Ntot/PREDeqrecrates$Ntot) %>% dplyr::mutate(., Pratio = Ptot/PREDeqrecrates$Ptot) %>% dplyr::mutate(., Cratio = Ctot/PREDeqrecrates$Ctot) -->
+
+<!-- # retain only instances in which the trophic compartments are positive -->
+<!-- # we do this now because doing it earlier would have resulted in dataframes with  -->
+<!-- # different number of rows and thus prevent binding by row -->
+<!-- RBMh1_pos <- filter(RBMh1, N1>0 & P1>0 & C1>0 & N2>0 & P2>0 & C2>0 & Q>0) -->
+<!-- ``` -->
+
+<!-- Now that we have the ratios, we create a new dataframe retaining only the values -->
+<!-- of each ratio, and then use function `pivot_longer` in package `dplyr` to  -->
+<!-- transform the new dataframe from wide to long format. Finally, we produce a -->
+<!-- faceted boxplot using `ggplot2`.  -->
+
+<!-- ```{r h1-BM-plot-gen, eval=FALSE, include=FALSE,tidy=TRUE,fig.cap="Summary plot showing the variation in nutrients stocks and trophic biomass when primary producers are more recycling-available in ecosystem 1---the donor of consumers---compared to when they are equally recycling available in the two ecosystems. See text for a definition of $R$. Each facet shows the effect of an increasing difference in the primary producers' recycling rates between ecosystem 1 and 2 (top grey labels) on a given trophic compartment (right-hand side grey labels), grouped by spatial scale (x-axis). From left to right, here h~1~ values are from 10 to 90% larger than h~2~ values. If the median (thick line inside the boxes) is below the zero-intercept line (dashed black), the variation in primary producers recycling rates induces a reduction of biomass productivity. Vice versa, if the median is above the zero-intercept line, the effect is an increase in biomass production. Color of graphics indicates environmental fertility conditions.", fig.height=5} -->
+<!-- # now select only the metadata and ratios columns and pivot to a long dataframe, -->
+<!-- # then create a Scale column -->
+<!-- RBMh1_long <- select(RBMh1_pos, id:hDIFF, N1ratio:Cratio) %>% pivot_longer(., names_to = "Compartment", values_to = "Ratio", cols = N1ratio:Cratio) %>% dplyr::mutate(., Scale = if_else(Compartment == "N1ratio" | Compartment == "P1ratio" | Compartment == "C1ratio", "Donor", if_else(Compartment == "N2ratio" | Compartment == "P2ratio" | Compartment == "C2ratio", "Recipient", if_else(Compartment == "Qratio", "Dispersers' Pool", "Meta-ecosystem")))) %>% filter(Compartment != "Qratio") -->
+
+<!-- # set Compartment as a factor -->
+<!-- RBMh1_long$Compartment <- as.factor(RBMh1_long$Compartment) -->
+<!-- RBMh1_long$Fert <- as.factor(RBMh1_long$Fert) -->
+
+<!-- RBMh1_long %>%  -->
+<!--   ungroup() %>%  -->
+<!--   dplyr::mutate(., Compartment = fct_recode(Compartment, "N" = "N1ratio", "N" = "N2ratio", "N" = "Nratio", "P" = "P1ratio", "P" = "P2ratio", "P" = "Pratio", "C" = "C1ratio", "C" = "C2ratio", "C" = "Cratio")) %>%  -->
+<!--   dplyr::mutate(., Fert = fct_relevel(Fert, "equal", "along", "against")) %>%  -->
+<!--   dplyr::mutate(., Compartment = fct_relevel(Compartment, "N", "P", "C")) %>%  -->
+<!--   dplyr::mutate(., Scale = fct_relevel(Scale, "Donor", "Recipient", "Meta-ecosystem")) %>%  -->
+<!--   ggplot(., aes(x = Scale, y = log10(Ratio))) +  -->
+<!--   geom_boxplot(aes(col = Fert)) +  -->
+<!--   facet_grid(Compartment~hDIFF, scales = "free") +  -->
+<!--   geom_hline(yintercept = 0, linetype = "dashed", lwd = 0.25) +  -->
+<!--   labs(y = "Biomass R (log10)", color = "Fertility") +  -->
+<!--   ggtitle(label = "When primary producers are more recycling-available in ecosystem 1") + -->
+<!--   scale_color_hue(direction = -1, h.start = 90, labels = c("Equal", "Higher in Donor", "Higher in Recipient")) + -->
+<!--   # coord_cartesian(ylim=c(-1,1)) + -->
+<!--   # scale_y_continuous(breaks=seq(-1, 1, 1)) + -->
+<!--   theme_pubr() +  -->
+<!--   theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 8)) -->
+
+<!-- #ggsave(filename = "../Results/RBMh1.png", dpi = 600, device = "png", width = 10, height = 8) -->
+<!-- ``` -->
+
+
+<!-- Next, we summarize the nutrient flux simulations. Again, we start by combining  -->
+<!-- the datasets containing the results of the simulations, but we select the group -->
+<!-- of columns that contain the nutrient flux values for primary producers -->
+<!-- and consumers in either ecosystem, each ecosystem's total nutrient flux, and the -->
+<!-- meta-ecosystem flux.  -->
+
+<!-- ```{r h1-NF-df-combine, eval=FALSE, include=FALSE,tidy=TRUE} -->
+<!-- # Combine the dataframes for the case of h1 > h2, irrespective of ∆I, then  -->
+<!-- # retain only certain columns, then create a new column for the fertility condition -->
+<!-- NFh1high <- bind_rows(list(PREDhigh_h1,PREDhigh_I1h1,PREDhigh_I2h1), .id = "id") %>% select(., id:I2, FLUX_P1:FLUX_Q, MetaEcoFlux) %>% dplyr::mutate(., Fert = if_else(id == "1", "equal", if_else(id == "2", "along", "against")), .after = "id") -->
+<!-- ``` -->
+
+<!-- Now, we calculate the value of $R$, using the value of each flux in the h~1~ =  -->
+<!-- h~2~ scenario at the denominator fo the ratio. We further filter any negative  -->
+<!-- values, so as to be working only on positive simulations of nutrient flux in the -->
+<!-- following.  -->
+
+<!-- ```{r h1-NF-ratios-calc, eval=FALSE, include=FALSE,tidy=TRUE} -->
+<!-- # now, group the resulting dataframe, then calculate the experiment:control ratio for each trophic compartment -->
+<!-- RNFh1 <- group_by(NFh1high, hDIFF, Fert) %>% dplyr::mutate(., NFR_P1 = FLUX_P1/PREDeqrecrates$FLUX_P1) %>% dplyr::mutate(., NFR_C1 = FLUX_C1/PREDeqrecrates$FLUX_C1) %>% dplyr::mutate(., NFR_P2 = FLUX_P2/PREDeqrecrates$FLUX_P2) %>% dplyr::mutate(., NFR_C2 = FLUX_C2/PREDeqrecrates$FLUX_C2) %>% dplyr::mutate(., NFR_Q = FLUX_Q/PREDeqrecrates$FLUX_Q) %>% dplyr::mutate(., NFR_Eco1 = FLUX_Eco_1/PREDeqrecrates$FLUX_Eco_1) %>% dplyr::mutate(., NFR_Eco2 = FLUX_Eco_2/PREDeqrecrates$FLUX_Eco_2) %>% dplyr::mutate(., NFR_ME = MetaEcoFlux/PREDeqrecrates$MetaEcoFlux) %>% filter(., FLUX_P1 >0 & FLUX_C1 >0 & FLUX_P2 > 0 & FLUX_C2 > 0) -->
+<!-- ``` -->
+
+<!-- Finally, as above, we create a faceted boxplot to show variation in nutrient  -->
+<!-- flux at the local and meta-ecosystem scales for each value of  -->
+<!-- $\Delta h \in [0.1, 0.9]$.  -->
+
+<!-- ```{r h1-NF-plot-gen, eval=FALSE, include=FALSE,tidy=TRUE,fig.cap="Summary plot of the variation in nutrients flux across biotic trophic compartment and local and meta-ecosystem. Here, we compared values of nutrient flux when primary producers are more recycling-available in ecosystem 1---the donor of consumers---with nutrient flux values from the _control_ scenaro of equal recycling availability of primary producers in the two local ecosystems. Each facet shows the effect of an increasing difference in the primary producers' recycling rates between ecosystem 1 and 2 (right-hand side grey labels) on a given trophic compartment, or on the local or meta-ecosystem as a whole. Here, from top to bottom, h~1~ is 10, 30, 50, 70, or 90% higher than h~2~. See text for a definition of $R$. When the median (thick line inside the boxes) is below the zero-intercept line (dashed black), the variation in primary producers recycling rates induces a reduction of nutrient flux. Vice versa, when the median is above the zero-intercept line, the effect is an increase in nutrient flux. All other specifications as in Figure 37.", fig.height=5} -->
+<!-- # now select only the metadata and ratios columns and pivot to a long dataframe, -->
+<!-- # then create a Scale column -->
+<!-- RNFh1_long <- select(RNFh1, id:hDIFF, NFR_P1:NFR_ME) %>% pivot_longer(., names_to = "Compartment", values_to = "Ratio", cols = NFR_P1:NFR_ME) %>% dplyr::mutate(., Scale = if_else(Compartment == "NFR_P1" | Compartment == "NFR_C1" | Compartment == "NFR_Eco1", "Donor", if_else(Compartment == "NFR_P2" | Compartment == "NFR_C2" | Compartment == "NFR_Eco2", "Recipient", if_else(Compartment == "NFR_Q", "Dispersers' Pool", "Meta-ecosystem")))) %>% filter(Compartment != "NFR_Q") -->
+
+<!-- # set Compartment as a factor -->
+<!-- RNFh1_long$Compartment <- as.factor(RNFh1_long$Compartment) -->
+<!-- RNFh1_long$Fert <- as.factor(RNFh1_long$Fert) -->
+
+<!-- RNFh1_long %>%  -->
+<!--   ungroup() %>%  -->
+<!--   dplyr::mutate(., Compartment = fct_recode(Compartment, "P" = "NFR_P1", "P" = "NFR_P2", "C" = "NFR_C1", "C" = "NFR_C2", "Local" = "NFR_Eco1", "Local" = "NFR_Eco2", "Meta" = "NFR_ME")) %>%  -->
+<!--   dplyr::mutate(., Fert = fct_relevel(Fert, "equal", "along", "against")) %>%  -->
+<!--   dplyr::mutate(., Compartment = fct_relevel(Compartment, "P", "C", "Local", "Meta")) %>%  -->
+<!--   ggplot(., aes(x = Scale, y = log10(Ratio))) +  -->
+<!--   geom_boxplot(aes(col = Fert)) +  -->
+<!--   facet_grid(hDIFF~Compartment, scales = "free") +  -->
+<!--   geom_hline(yintercept = 0, linetype = "dashed", lwd = 0.25) +  -->
+<!--   labs(y = "Nutrient Flux R (log10)", color = "Fertility") +  -->
+<!--   ggtitle(label = "When primary producers are more recycling-available in ecosystem 1") + -->
+<!--   scale_color_hue(direction = -1, h.start = 90, labels = c("Equal", "Higher in Donor", "Higher in Recipient")) + -->
+<!--   # coord_cartesian(ylim=c(-1,1)) + -->
+<!--   # scale_y_continuous(breaks=seq(-1, 1, 1)) + -->
+<!--   theme_pubr() +  -->
+<!--   theme(axis.text.x = element_text(size = 8)) -->
+
+<!-- #ggsave(filename = "../Results/RNFh1.png", dpi = 600, device = "png", width = 10, height = 8) -->
+<!-- ``` -->
+
+<!-- Next, we produce a summary plot for the primary producers' and consumers'  -->
+<!-- productivity. The chunk below collates the dataframes and selects the relevant  -->
+<!-- columns to proceed. -->
+
+<!-- ```{r h1-prod-df-combine, eval=FALSE, include=FALSE,tidy=TRUE} -->
+<!-- # Combine the dataframes for the case of h1 > h2, irrespective of ∆I, then  -->
+<!-- # retain only certain columns, then create a new column for the fertility condition -->
+<!-- PRODh1high <- bind_rows(list(PREDhigh_h1,PREDhigh_I1h1,PREDhigh_I2h1), .id = "id") %>% select(., id:I2, PROD_P1:PROD_C2) %>% dplyr::mutate(., Fert = if_else(id == "1", "equal", if_else(id == "2", "along", "against")), .after = "id") -->
+<!-- ``` -->
+
+<!-- Now that all productivity data from the simulations are in a single dataframe, -->
+<!-- we proceed to calculate R (see above). -->
+
+<!-- ```{r h1-prod-ratios-calc, eval=FALSE, include=FALSE,tidy=TRUE} -->
+<!-- # now, group the resulting dataframe, then calculate the experiment:control ratio for each trophic compartment -->
+<!-- RPRODh1 <- group_by(PRODh1high, hDIFF, Fert) %>% dplyr::mutate(., RPROD_P1 = PROD_P1/PREDeqrecrates$PROD_P1) %>% dplyr::mutate(., RPROD_C1 = PROD_C1/PREDeqrecrates$PROD_C1) %>% dplyr::mutate(., RPROD_P2 = PROD_P2/PREDeqrecrates$PROD_P2) %>% dplyr::mutate(., RPROD_C2 = PROD_C2/PREDeqrecrates$PROD_C2) %>% filter(., PROD_P1 >0 & PROD_C1 >0 & PROD_P2 > 0 & PROD_C2 > 0) -->
+<!-- ``` -->
+
+<!-- Finally, we produce a summary graph.  -->
+
+<!-- >Note that in this graph we are only considering primary producers and consumers -->
+<!-- in each local ecosystem for now.  -->
+
+<!-- ```{r h1-prod-plot-gen, eval=FALSE, include=FALSE,tidy=TRUE,fig.cap="Productivity in local ecosystems' primary producers and consumers trophic compartments, when primary producers are more recycling available in ecosystem 1.", fig.height=5} -->
+<!-- # now select only the metadata and ratios columns and pivot to a long dataframe, -->
+<!-- # then create a Scale column -->
+<!-- RPRODh1_long <- select(RPRODh1, id:hDIFF, RPROD_P1:RPROD_C2) %>% pivot_longer(., names_to = "Compartment", values_to = "Ratio", cols = RPROD_P1:RPROD_C2) %>% dplyr::mutate(., Scale = if_else(Compartment == "RPROD_P1" | Compartment == "RPROD_C1", "Donor", "Recipient")) -->
+
+<!-- # set Compartment as a factor -->
+<!-- RPRODh1_long$Compartment <- as.factor(RPRODh1_long$Compartment) -->
+<!-- RPRODh1_long$Fert <- as.factor(RPRODh1_long$Fert) -->
+
+<!-- RPRODh1_long %>%  -->
+<!--   ungroup() %>%  -->
+<!--   dplyr::mutate(., Compartment = fct_recode(Compartment, "P" = "RPROD_P1", "P" = "RPROD_P2", "C" = "RPROD_C1", "C" = "RPROD_C2")) %>%  -->
+<!--   dplyr::mutate(., Fert = fct_relevel(Fert, "equal", "along", "against")) %>%  -->
+<!--   dplyr::mutate(., Compartment = fct_relevel(Compartment, "P", "C")) %>%  -->
+<!--   ggplot(., aes(x = Scale, y = log10(Ratio))) +  -->
+<!--   geom_boxplot(aes(col = Fert)) +  -->
+<!--   facet_grid(hDIFF~Compartment, scales = "free") +  -->
+<!--   geom_hline(yintercept = 0, linetype = "dashed", lwd = 0.25) +  -->
+<!--   labs(y = "Productivity R (log10)", color = "Fertility") +  -->
+<!--   ggtitle(label = "When primary producers are more recycling-available in ecosystem 1") + -->
+<!--   scale_color_hue(direction = -1, h.start = 90, labels = c("Equal", "Higher in Donor", "Higher in Recipient")) + -->
+<!--   # coord_cartesian(ylim=c(-1,1)) + -->
+<!--   # scale_y_continuous(breaks=seq(-1, 1, 1)) + -->
+<!--   theme_pubr() -->
+
+<!-- #ggsave(filename = "../Results/RPRODFh1.png", dpi = 600, device = "png", width = 10, height = 8) -->
+<!-- ``` -->
+
+<!-- ### Summary of the h~1~ < h~2~ scenario -->
+
+<!-- We now repeat the same data manipulation to produce summary plot for the case -->
+<!-- of h~1~ < h~2~. Again, we begin from the ratios of primary and secondary  -->
+<!-- productivity. First, we combine the relevant datasets. -->
+
+<!-- ```{r h2-BM-df-combine, eval=FALSE, include=FALSE,tidy=TRUE} -->
+<!-- # Combine the dataframes for the case of h1 < h2, irrespective of ∆I, then  -->
+<!-- # retain only certain columns, then create a new column for the fertility condition -->
+<!-- BMh2high <- bind_rows(list(PREDhigh_h2,PREDhigh_I1h2,PREDhigh_I2h2), .id = "id") %>% select(., id:I2, N1:Q, Ntot:Ctot) %>% dplyr::mutate(., Fert = if_else(id == "1", "equal", if_else(id == "2", "along", "against")), .after = "id")  -->
+<!-- ``` -->
+
+<!-- Then, we calculate the ratios and select only the instances in which stock  -->
+<!-- values are positive. -->
+
+<!-- ```{r h2-BM-ratios-calc, eval=FALSE, include=FALSE,tidy=TRUE} -->
+<!-- # now, group the resulting dataframe, then calculate the experiment:control ratio for each trophic compartment -->
+<!-- RBMh2 <- group_by(BMh2high, hDIFF, Fert) %>% dplyr::mutate(., N1ratio = N1/PREDeqrecrates$N1) %>% dplyr::mutate(., P1ratio = P1/PREDeqrecrates$P1) %>% dplyr::mutate(., C1ratio = C1/PREDeqrecrates$C1) %>% dplyr::mutate(., N2ratio = N2/PREDeqrecrates$N2) %>% dplyr::mutate(., P2ratio = P2/PREDeqrecrates$P2) %>% dplyr::mutate(., C2ratio = C2/PREDeqrecrates$C2) %>% dplyr::mutate(., Qratio = Q/PREDeqrecrates$Q) %>% dplyr::mutate(., Nratio = Ntot/PREDeqrecrates$Ntot) %>% dplyr::mutate(., Pratio = Ptot/PREDeqrecrates$Ptot) %>% dplyr::mutate(., Cratio = Ctot/PREDeqrecrates$Ctot) -->
+
+<!-- # retain only instances in which the trophic compartments are positive -->
+<!-- # we do this now because doing it earlier would have resulted in dataframes with  -->
+<!-- # different number of rows and thus prevent binding by row -->
+<!-- RBMh2_pos <- filter(RBMh2, N1>0 & P1>0 & C1>0 & N2>0 & P2>0 & C2>0 & Q>0) -->
+<!-- ``` -->
+
+<!-- Finally, we produce the graph after selecting only the columns of interest. -->
+
+<!-- ```{r h2-BM-plot-gen, eval=FALSE, include=FALSE,tidy=TRUE,fig.cap="Summary plot showing the variation in nutrients stocks and trophic biomass when primary producers are more recycling-available in ecosystem 2---the recipient of the consumers movement---compared to when they are equally recycling available in the two ecosystems. See text for a definition of $R$. Each facet shows the effect of an increasing difference in the primary producers' recycling rates between ecosystem 1 and 2 (top grey labels) on a given trophic compartment (right-hand side grey labels), grouped by spatial scale (x-axis). In this graph, from left to right, h~2~ is from 10 to 90% larger than h~1~. If the median (thick line inside the boxes) is below the zero-intercept line (dashed black), the variation in primary producers recycling rates induces a reduction of biomass productivity. Vice versa, if the median is above the zero-intercept line, the effect is an increase in biomass production. All other specifications as in Figure 37.", fig.height=5} -->
+<!-- # now select only the metadata and ratios columns and pivot to a long dataframe, -->
+<!-- # then create a Scale column -->
+<!-- RBMh2_long <- select(RBMh2_pos, id:hDIFF, N1ratio:Cratio) %>% pivot_longer(., names_to = "Compartment", values_to = "Ratio", cols = N1ratio:Cratio) %>% dplyr::mutate(., Scale = if_else(Compartment == "N1ratio" | Compartment == "P1ratio" | Compartment == "C1ratio", "Donor", if_else(Compartment == "N2ratio" | Compartment == "P2ratio" | Compartment == "C2ratio", "Recipient", if_else(Compartment == "Qratio", "Dispersers' Pool", "Meta-ecosystem")))) %>% filter(Compartment != "Qratio") -->
+
+<!-- # set Compartment as a factor -->
+<!-- RBMh2_long$Compartment <- as.factor(RBMh2_long$Compartment) -->
+<!-- RBMh2_long$Fert <- as.factor(RBMh2_long$Fert) -->
+
+<!-- RBMh2_long %>%  -->
+<!--   ungroup() %>%  -->
+<!--   dplyr::mutate(., Compartment = fct_recode(Compartment, "N" = "N1ratio", "N" = "N2ratio", "N" = "Nratio", "P" = "P1ratio", "P" = "P2ratio", "P" = "Pratio", "C" = "C1ratio", "C" = "C2ratio", "C" = "Cratio")) %>%  -->
+<!--   dplyr::mutate(., Fert = fct_relevel(Fert, "equal", "along", "against")) %>%  -->
+<!--   dplyr::mutate(., Compartment = fct_relevel(Compartment, "N", "P", "C")) %>%  -->
+<!--   dplyr::mutate(., Scale = fct_relevel(Scale, "Donor", "Recipient", "Meta-ecosystem")) %>%  -->
+<!--   ggplot(., aes(x = Scale, y = log10(Ratio))) +  -->
+<!--   geom_boxplot(aes(col = Fert)) +  -->
+<!--   facet_grid(Compartment~hDIFF, scales = "free") +  -->
+<!--   geom_hline(yintercept = 0, linetype = "dashed", lwd = 0.25) +  -->
+<!--   labs(y = "Biomass R", color = "Fertility") +  -->
+<!--   ggtitle(label = "When primary producers are more recycling-available in ecosystem 2") + -->
+<!--   # coord_cartesian(ylim=c(-1,1)) + -->
+<!--   # scale_y_continuous(breaks=seq(-1, 1, 1)) + -->
+<!--   scale_color_hue(direction = -1, h.start = 90, labels = c("Equal", "Higher in Donor", "Higher in Recipient")) + -->
+<!--   theme_pubr() +  -->
+<!--   theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 8)) -->
+
+<!-- #ggsave(filename = "../Results/RBMh2.png", dpi = 600, device = "png", width = 10, height = 8) -->
+<!-- ``` -->
+
+<!-- Now, we combine the relevant datasets to calculate the value of $R$ for the  -->
+<!-- nutrient flux metric. -->
+
+<!-- ```{r h2-NF-df-combine, eval=FALSE, include=FALSE,tidy=TRUE} -->
+<!-- # Combine the dataframes for the case of h1 < h2, irrespective of ∆I, then  -->
+<!-- # retain only certain columns, then create a new column for the fertility condition -->
+<!-- NFh2high <- bind_rows(list(PREDhigh_h2,PREDhigh_I1h2,PREDhigh_I2h2), .id = "id") %>% select(., id:I2, FLUX_P1:FLUX_Q, MetaEcoFlux) %>% dplyr::mutate(., Fert = if_else(id == "1", "equal", if_else(id == "2", "along", "against")), .after = "id") -->
+<!-- ``` -->
+
+<!-- Then, we calculate the ratios and select only positive instances of the metric's -->
+<!-- original values. -->
+
+<!-- ```{r h2-NF-ratios-calc, eval=FALSE, include=FALSE,tidy=TRUE} -->
+<!-- # now, group the resulting dataframe, then calculate the experiment:control ratio for each trophic compartment -->
+<!-- RNFh2 <- group_by(NFh2high, hDIFF, Fert) %>% dplyr::mutate(., NFR_P1 = FLUX_P1/PREDeqrecrates$FLUX_P1) %>% dplyr::mutate(., NFR_C1 = FLUX_C1/PREDeqrecrates$FLUX_C1) %>% dplyr::mutate(., NFR_P2 = FLUX_P2/PREDeqrecrates$FLUX_P2) %>% dplyr::mutate(., NFR_C2 = FLUX_C2/PREDeqrecrates$FLUX_C2) %>% dplyr::mutate(., NFR_Q = FLUX_Q/PREDeqrecrates$FLUX_Q) %>% dplyr::mutate(., NFR_Eco1 = FLUX_Eco_1/PREDeqrecrates$FLUX_Eco_1) %>% dplyr::mutate(., NFR_Eco2 = FLUX_Eco_2/PREDeqrecrates$FLUX_Eco_2) %>% dplyr::mutate(., NFR_ME = MetaEcoFlux/PREDeqrecrates$MetaEcoFlux) %>% filter(., FLUX_P1 >0 & FLUX_C1 >0 & FLUX_P2 > 0 & FLUX_C2 > 0) -->
+<!-- ``` -->
+
+<!-- And, finally, we produce the summary plot. -->
+
+<!-- ```{r h2-NF-plot-gen, eval=FALSE, include=FALSE,tidy=TRUE,fig.cap="Summary plot showing the variation in nutrient flux when primary producers are more recycling-available in ecosystem 2---the recipient of consumers movement---compared to the _control_ scenario of equal primary producers recycling rates in the two ecosystems. See text for a definition of $R$. Each facet shows the effect of an increasing difference in the primary producers' recycling rates between ecosystem 1 and 2 (right-hand side grey labels) on a given trophic compartment, or on the local or meta-ecosystem as a whole. In this case, from top to bottom, h~2~ is 10, 30, 50, 70, or 90% higher than h~1~. If the median (thick line inside the boxes) is below the zero-intercept line (dashed black), the variation in primary producers recycling rates induces a reduction of biomass productivity. Vice versa, if the median is above the zero-intercept line, the effect is an increase in biomass production. All other specifications as in Figure 37.", fig.height=5} -->
+<!-- # now select only the metadata and ratios columns and pivot to a long dataframe, -->
+<!-- # then create a Scale column -->
+<!-- RNFh2_long <- select(RNFh2, id:hDIFF, NFR_P1:NFR_ME) %>% pivot_longer(., names_to = "Compartment", values_to = "Ratio", cols = NFR_P1:NFR_ME) %>% dplyr::mutate(., Scale = if_else(Compartment == "NFR_P1" | Compartment == "NFR_C1" | Compartment == "NFR_Eco1", "Donor", if_else(Compartment == "NFR_P2" | Compartment == "NFR_C2" | Compartment == "NFR_Eco2", "Recipient", if_else(Compartment == "NFR_Q", "Dispersers' Pool", "Meta-ecosystem")))) %>% filter(Compartment != "NFR_Q") -->
+
+<!-- # set Compartment as a factor -->
+<!-- RNFh2_long$Compartment <- as.factor(RNFh2_long$Compartment) -->
+<!-- RNFh2_long$Fert <- as.factor(RNFh2_long$Fert) -->
+
+<!-- RNFh2_long %>%  -->
+<!--   ungroup() %>%  -->
+<!--   dplyr::mutate(., Compartment = fct_recode(Compartment, "P" = "NFR_P1", "P" = "NFR_P2", "C" = "NFR_C1", "C" = "NFR_C2", "Local" = "NFR_Eco1", "Local" = "NFR_Eco2", "Meta" = "NFR_ME")) %>%  -->
+<!--   dplyr::mutate(., Compartment = fct_relevel(Compartment, "P", "C", "Local", "Meta")) %>%  -->
+<!--   dplyr::mutate(., Fert = fct_relevel(Fert, "equal", "along", "against")) %>%  -->
+<!--   ggplot(., aes(x = Scale, y = log10(Ratio))) +  -->
+<!--   geom_boxplot(aes(col = Fert)) +  -->
+<!--   facet_grid(hDIFF~Compartment, scales = "free") +  -->
+<!--   geom_hline(yintercept = 0, linetype = "dashed", lwd = 0.25) +  -->
+<!--   labs(y = "Nutrient Flux R", color = "Fertility") +  -->
+<!--   ggtitle(label = "When primary producers are more recycling-available in ecosystem 2") + -->
+<!--   scale_color_hue(direction = -1, h.start = 90, labels = c("Equal", "Higher in Donor", "Higher in Recipient")) + -->
+<!--   # coord_cartesian(ylim = c(-1,1)) + -->
+<!--   # scale_y_continuous(breaks=seq(-1, 1, 1)) + -->
+<!--   theme_pubr() +  -->
+<!--   theme(axis.text.x = element_text(size = 8)) -->
+
+<!-- #ggsave(filename = "../Results/RNFh2.png", dpi = 600, device = "png", width = 10, height = 8) -->
+<!-- ``` -->
+
+<!-- As above, we now produce a summary plot for the primary producers' and consumers'  -->
+<!-- productivity. -->
+
+<!-- ```{r h2-prod-df-combine, eval=FALSE, include=FALSE,tidy=TRUE} -->
+<!-- # Combine the dataframes for the case of h1 > h2, irrespective of ∆I, then  -->
+<!-- # retain only certain columns, then create a new column for the fertility condition -->
+<!-- PRODh2high <- bind_rows(list(PREDhigh_h2,PREDhigh_I1h2,PREDhigh_I2h2), .id = "id") %>% select(., id:I2, PROD_P1:PROD_C2) %>% dplyr::mutate(., Fert = if_else(id == "1", "equal", if_else(id == "2", "along", "against")), .after = "id") -->
+<!-- ``` -->
+
+<!-- Now that all productivity data from the simulations are in a single dataframe, -->
+<!-- we proceed to calculate R (see above). -->
+
+<!-- ```{r h2-prod-ratios-calc, eval=FALSE, include=FALSE,tidy=TRUE} -->
+<!-- # now, group the resulting dataframe, then calculate the experiment:control ratio for each trophic compartment -->
+<!-- RPRODh2 <- group_by(PRODh2high, hDIFF, Fert) %>% dplyr::mutate(., RPROD_P1 = PROD_P1/PREDeqrecrates$PROD_P1) %>% dplyr::mutate(., RPROD_C1 = PROD_C1/PREDeqrecrates$PROD_C1) %>% dplyr::mutate(., RPROD_P2 = PROD_P2/PREDeqrecrates$PROD_P2) %>% dplyr::mutate(., RPROD_C2 = PROD_C2/PREDeqrecrates$PROD_C2) %>% filter(., PROD_P1 >0 & PROD_C1 >0 & PROD_P2 > 0 & PROD_C2 > 0) -->
+<!-- ``` -->
+
+<!-- Finally, we produce a summary graph.  -->
+
+<!-- >Note that in this graph we are only considering primary producers and consumers -->
+<!-- in each local ecosystem for now.  -->
+
+<!-- ```{r h2-prod-plot-gen, eval=FALSE, include=FALSE,tidy=TRUE,fig.cap="Productivity in local ecosystems' primary producers and consumers trophic compartments, when primary producers are more recycling available in ecosystem 2.", fig.height=5} -->
+<!-- # now select only the metadata and ratios columns and pivot to a long dataframe, -->
+<!-- # then create a Scale column -->
+<!-- RPRODh2_long <- select(RPRODh2, id:hDIFF, RPROD_P1:RPROD_C2) %>% pivot_longer(., names_to = "Compartment", values_to = "Ratio", cols = RPROD_P1:RPROD_C2) %>% dplyr::mutate(., Scale = if_else(Compartment == "RPROD_P1" | Compartment == "RPROD_C1", "Donor", "Recipient")) -->
+
+<!-- # set Compartment as a factor -->
+<!-- RPRODh2_long$Compartment <- as.factor(RPRODh2_long$Compartment) -->
+<!-- RPRODh2_long$Fert <- as.factor(RPRODh2_long$Fert) -->
+
+<!-- RPRODh2_long %>%  -->
+<!--   ungroup() %>%  -->
+<!--   dplyr::mutate(., Compartment = fct_recode(Compartment, "P" = "RPROD_P1", "P" = "RPROD_P2", "C" = "RPROD_C1", "C" = "RPROD_C2")) %>%  -->
+<!--   dplyr::mutate(., Compartment = fct_relevel(Compartment, "P", "C")) %>%  -->
+<!--   dplyr::mutate(., Fert = fct_relevel(Fert, "equal", "along", "against")) %>%  -->
+<!--   ggplot(., aes(x = Scale, y = log10(Ratio))) +  -->
+<!--   geom_boxplot(aes(col = Fert)) +  -->
+<!--   facet_grid(hDIFF~Compartment, scales = "free") +  -->
+<!--   geom_hline(yintercept = 0, linetype = "dashed", lwd = 0.25) +  -->
+<!--   labs(y = "Productivity R (log10)", color = "Fertility") +  -->
+<!--   ggtitle(label = "When primary producers are more recycling-available in ecosystem 2") + -->
+<!--   scale_color_hue(direction = -1, h.start = 90, labels = c("Equal", "Higher in Donor", "Higher in Recipient")) + -->
+<!--   # coord_cartesian(ylim=c(-1,1)) + -->
+<!--   # scale_y_continuous(breaks=seq(-1, 1, 1)) + -->
+<!--   theme_pubr() -->
+
+<!-- #ggsave(filename = "../Results/RPRODFh2.png", dpi = 600, device = "png", width = 10, height = 8) -->
+<!-- ``` -->
+
+
+<!-- ### Graphs by trophic compartment -->
+
+<!-- Here we produce the comprehensive summary figures of the simulation results for each trophic compartment.  -->
+
+<!-- ##### Nutrients -->
+<!-- ```{r nut-sum-fig, eval=FALSE, include=FALSE, tidy=TRUE} -->
+<!-- Nbmh1 <- RBMh1_long %>% filter(., Compartment == "N1ratio" | Compartment == "N2ratio" | Compartment == "Nratio") %>% dplyr::mutate(., Scale = fct_relevel(Scale, "Donor", "Recipient", "Meta-ecosystem")) -->
+<!-- Nbmh1$Cond <- "h1 > h2" -->
+<!-- Nbmh2 <- RBMh2_long %>% filter(., Compartment == "N1ratio" | Compartment == "N2ratio"| Compartment == "Nratio") %>% dplyr::mutate(., Scale = fct_relevel(Scale, "Donor", "Recipient", "Meta-ecosystem")) -->
+<!-- Nbmh2$Cond <- "h1 < h2" -->
+
+<!-- NutSimRes <- rbind(Nbmh1, Nbmh2) -->
+<!-- NutSimRes$Cond <- as.factor(NutSimRes$Cond) -->
+<!-- NutSimRes$Fert <- as.factor(NutSimRes$Fert) -->
+
+<!-- dplyr::mutate(NutSimRes, Cond = fct_relevel(Cond, "h1 > h2", "h1 < h2")) %>%  -->
+<!--   dplyr::mutate(., Fert = fct_relevel(Fert, "equal", "along", "against")) %>%  -->
+<!--   ggplot(., aes(x = Scale, y = Rlog10)) +  -->
+<!--   geom_boxplot(aes(col = Fert)) +  -->
+<!--   facet_grid(hDIFF~Cond, scales = "free") +  -->
+<!--   geom_hline(yintercept = 0, linetype = "dashed", lwd = 0.25) +  -->
+<!--   labs(y = "Biomass Ratio (log10)", color = "Fertility") +  -->
+<!--   scale_color_hue(direction = -1, h.start = 90, labels = c("Equal", "Higher in Donor", "Higher in Recipient")) + -->
+<!--   # coord_cartesian(ylim=c(-1,1)) + -->
+<!--   # scale_y_continuous(breaks=seq(-1, 1, 1)) + -->
+<!--   theme_pubr()  -->
+
+<!-- #ggsave(filename = "../Results/Nut_ModSimSummary.png", device = "png", dpi = 600, width = 8, height = 6) -->
+<!-- ``` -->
+
+<!-- ##### Producers -->
+<!-- ```{r prod-sum-fig, eval=FALSE, include=FALSE, tidy=TRUE} -->
+<!-- Pbmh1 <- RBMh1_long %>% filter(., Compartment == "P1ratio" | Compartment == "P2ratio")  -->
+<!-- Pbmh1$Cond <- "h1 > h2" -->
+<!-- Pbmh2 <- RBMh2_long %>% filter(., Compartment == "P1ratio" | Compartment == "P2ratio") -->
+<!-- Pbmh2$Cond <- "h1 < h2" -->
+
+<!-- PPbmSimRes <- rbind(Pbmh1, Pbmh2) -->
+<!-- PPbmSimRes$Cond <- as.factor(PPbmSimRes$Cond) -->
+<!-- PPbmSimRes$Fert <- as.factor(PPbmSimRes$Fert) -->
+
+<!-- pp1 <- dplyr::mutate(PPbmSimRes, Cond = fct_relevel(Cond, "h1 > h2", "h1 < h2")) %>% -->
+<!--   dplyr::mutate(., Fert = fct_relevel(Fert, "equal", "along", "against")) %>%  -->
+<!--   ggplot(., aes(x = Scale, y = Rlog10)) +  -->
+<!--   geom_boxplot(aes(col = Fert)) +  -->
+<!--   facet_grid(hDIFF~Cond, scales = "free") +  -->
+<!--   geom_hline(yintercept = 0, linetype = "dashed", lwd = 0.25) +  -->
+<!--   labs(y = NULL, color = "Fertility") +  -->
+<!--   scale_color_hue(direction = -1, h.start = 90, labels = c("Equal", "Higher in Donor", "Higher in Recipient")) + -->
+<!--   # coord_cartesian(ylim=c(-1,1)) + -->
+<!--   # scale_y_continuous(breaks=seq(-1, 1, 1)) + -->
+<!--   ggtitle("Biomass") + -->
+<!--   theme_pubr() +  -->
+<!--   theme(axis.text = element_text(size = 9)) -->
+
+<!-- Pnfh1 <- RNFh1_long %>% filter(., Compartment == "NFR_P1" | Compartment == "NFR_P2") -->
+<!-- Pnfh1$Cond <- "h1 > h2" -->
+<!-- Pnfh2 <- RNFh2_long %>% filter(., Compartment == "NFR_P1" | Compartment == "NFR_P2") -->
+<!-- Pnfh2$Cond <- "h1 < h2" -->
+
+<!-- PPnfSimRes <- rbind(Pnfh1, Pnfh2) -->
+<!-- PPnfSimRes$Cond <- as.factor(PPnfSimRes$Cond) -->
+<!-- PPnfSimRes$Fert <- as.factor(PPnfSimRes$Fert) -->
+
+<!-- pp2 <- dplyr::mutate(PPnfSimRes, Cond = fct_relevel(Cond, "h1 > h2", "h1 < h2")) %>% -->
+<!--   dplyr::mutate(., Fert = fct_relevel(Fert, "equal", "along", "against")) %>%  -->
+<!--   ggplot(., aes(x = Scale, y = Rlog10)) +  -->
+<!--   geom_boxplot(aes(col = Fert)) +  -->
+<!--   facet_grid(hDIFF~Cond, scales = "free") +  -->
+<!--   geom_hline(yintercept = 0, linetype = "dashed", lwd = 0.25) +  -->
+<!--   labs(y = NULL, color = "Fertility") +  -->
+<!--   scale_color_hue(direction = -1, h.start = 90, labels = c("Equal", "Higher in Donor", "Higher in Recipient")) + -->
+<!--   # coord_cartesian(ylim=c(-1,1)) + -->
+<!--   # scale_y_continuous(breaks=seq(-1, 1, 1)) + -->
+<!--   ggtitle("Nutrient flux") + -->
+<!--   theme_pubr() +  -->
+<!--   theme(axis.text = element_text(size = 9)) -->
+
+<!-- Pph1 <- RPRODh1_long %>% filter(., Compartment == "RPROD_P1" | Compartment == "RPROD_P2") -->
+<!-- Pph1$Cond <- "h1 > h2" -->
+<!-- Pph2 <- RPRODh2_long %>% filter(., Compartment == "RPROD_P1" | Compartment == "RPROD_P2") -->
+<!-- Pph2$Cond <- "h1 < h2" -->
+
+<!-- PPpSimRes <- rbind(Pph1, Pph2) -->
+<!-- PPpSimRes$Cond <- as.factor(PPpSimRes$Cond) -->
+<!-- PPpSimRes$Fert <- as.factor(PPpSimRes$Fert) -->
+
+<!-- pp3 <- dplyr::mutate(PPpSimRes, Cond = fct_relevel(Cond, "h1 > h2", "h1 < h2")) %>% -->
+<!--   dplyr::mutate(., Fert = fct_relevel(Fert, "equal", "along", "against")) %>%  -->
+<!--   ggplot(., aes(x = Scale, y = Rlog10)) +  -->
+<!--   geom_boxplot(aes(col = Fert)) +  -->
+<!--   facet_grid(hDIFF~Cond, scales = "free") +  -->
+<!--   geom_hline(yintercept = 0, linetype = "dashed", lwd = 0.25) +  -->
+<!--   labs(y = NULL, color = "Fertility") +  -->
+<!--   scale_color_hue(direction = -1, h.start = 90, labels = c("Equal", "Higher in Donor", "Higher in Recipient")) + -->
+<!--   # coord_cartesian(ylim=c(-1,1)) + -->
+<!--   # scale_y_continuous(breaks=seq(-1, 1, 0.5)) + -->
+<!--   ggtitle("Production") + -->
+<!--   theme_pubr() +  -->
+<!--   theme(axis.text = element_text(size = 9)) -->
+
+<!-- ppall <- pp1 + pp2 + pp3 + plot_annotation(tag_levels = 'a', tag_prefix = "(", tag_suffix = ")") + plot_layout(ncol = 3, nrow = 1, guides = "collect") & theme(legend.position = "bottom")  -->
+
+<!-- ppall -->
+
+<!-- #ggsave(ppall, filename = "../Results/PrimProd_ModSimSummary.png", device = "png", dpi = 600, width = 10, height = 8) -->
+
+<!-- ``` -->
+
+<!-- ##### Consumers -->
+<!-- ```{r cons-sum-fig, eval=FALSE, include=FALSE,tidy=TRUE} -->
+<!-- Cbmh1 <- RBMh1_long %>% filter(., Compartment == "C1ratio" | Compartment == "C2ratio") -->
+<!-- Cbmh1$Cond <- "h1 > h2" -->
+<!-- Cbmh2 <- RBMh2_long %>% filter(., Compartment == "C1ratio" | Compartment == "C2ratio") -->
+<!-- Cbmh2$Cond <- "h1 < h2" -->
+
+<!-- CbmSimRes <- rbind(Cbmh1, Cbmh2) -->
+<!-- CbmSimRes$Cond <- as.factor(CbmSimRes$Cond) -->
+<!-- CbmSimRes$Fert <- as.factor(CbmSimRes$Fert) -->
+
+<!-- c1 <- dplyr::mutate(CbmSimRes, Cond = fct_relevel(Cond, "h1 > h2", "h1 < h2")) %>% -->
+<!--   dplyr::mutate(., Fert = fct_relevel(Fert, "equal", "along", "against")) %>%  -->
+<!--   ggplot(., aes(x = Scale, y = Rlog10)) +  -->
+<!--   geom_boxplot(aes(col = Fert)) +  -->
+<!--   facet_grid(hDIFF~Cond, scales = "free") +  -->
+<!--   geom_hline(yintercept = 0, linetype = "dashed", lwd = 0.25) +  -->
+<!--   labs(y = NULL, color = "Fertility") +  -->
+<!--   scale_color_hue(direction = -1, h.start = 90, labels = c("Equal", "Higher in Donor", "Higher in Recipient")) + -->
+<!--   # coord_cartesian(ylim=c(-1,1)) + -->
+<!--   # scale_y_continuous(breaks=seq(-1, 1, 1)) + -->
+<!--   ggtitle("Biomass") + -->
+<!--   theme_pubr() +  -->
+<!--   theme(axis.text = element_text(size = 9)) -->
+
+<!-- Cnfh1 <- RNFh1_long %>% filter(., Compartment == "NFR_C1" | Compartment == "NFR_C2") -->
+<!-- Cnfh1$Cond <- "h1 > h2" -->
+<!-- Cnfh2 <- RNFh2_long %>% filter(., Compartment == "NFR_C1" | Compartment == "NFR_C2") -->
+<!-- Cnfh2$Cond <- "h1 < h2" -->
+
+<!-- CnfSimRes <- rbind(Cnfh1, Cnfh2) -->
+<!-- CnfSimRes$Cond <- as.factor(CnfSimRes$Cond) -->
+<!-- CnfSimRes$Fert <- as.factor(CnfSimRes$Fert) -->
+
+<!-- c2 <- dplyr::mutate(CnfSimRes, Cond = fct_relevel(Cond, "h1 > h2", "h1 < h2")) %>%  -->
+<!--   dplyr::mutate(., Fert = fct_relevel(Fert, "equal", "along", "against")) %>%  -->
+<!--   ggplot(., aes(x = Scale, y = Rlog10)) +  -->
+<!--   geom_boxplot(aes(col = Fert)) +  -->
+<!--   facet_grid(hDIFF~Cond, scales = "free") +  -->
+<!--   geom_hline(yintercept = 0, linetype = "dashed", lwd = 0.25) +  -->
+<!--   labs(y = NULL, color = "Fertility") +  -->
+<!--   scale_color_hue(direction = -1, h.start = 90, labels = c("Equal", "Higher in Donor", "Higher in Recipient")) + -->
+<!--   # coord_cartesian(ylim=c(-1,1)) + -->
+<!--   # scale_y_continuous(breaks=seq(-1, 1, 1)) + -->
+<!--   ggtitle("Nutrient flux") + -->
+<!--   theme_pubr() +  -->
+<!--   theme(axis.text = element_text(size = 9)) -->
+
+<!-- Cph1 <- RPRODh1_long %>% filter(., Compartment == "RPROD_C1" | Compartment == "RPROD_C2") -->
+<!-- Cph1$Cond <- "h1 > h2" -->
+<!-- Cph2 <- RPRODh2_long %>% filter(., Compartment == "RPROD_C1" | Compartment == "RPROD_C2") -->
+<!-- Cph2$Cond <- "h1 < h2" -->
+
+<!-- CpSimRes <- rbind(Cph1, Cph2) -->
+<!-- CpSimRes$Cond <- as.factor(CpSimRes$Cond) -->
+<!-- CpSimRes$Fert <- as.factor(CpSimRes$Fert) -->
+
+<!-- c3 <- dplyr::mutate(CpSimRes, Cond = fct_relevel(Cond, "h1 > h2", "h1 < h2")) %>%  -->
+<!--   dplyr::mutate(., Fert = fct_relevel(Fert, "equal", "along", "against")) %>%  -->
+<!--   ggplot(., aes(x = Scale, y = Rlog10)) +  -->
+<!--   geom_boxplot(aes(col = Fert)) +  -->
+<!--   facet_grid(hDIFF~Cond, scales = "free") +  -->
+<!--   geom_hline(yintercept = 0, linetype = "dashed", lwd = 0.25) +  -->
+<!--   labs(y = NULL, color = "Fertility") +  -->
+<!--   scale_color_hue(direction = -1, h.start = 90, labels = c("Equal", "Higher in Donor", "Higher in Recipient")) + -->
+<!--   # coord_cartesian(ylim=c(-1,1)) + -->
+<!--   # scale_y_continuous(breaks=seq(-1, 1, 0.5)) + -->
+<!--   ggtitle("Production") + -->
+<!--   theme_pubr() +  -->
+<!--   theme(axis.text = element_text(size = 9)) -->
+
+<!-- cAll <- c1 + c2 + c3 + plot_annotation(tag_levels = 'a', tag_prefix = "(", tag_suffix = ")") + plot_layout(ncol = 3, nrow = 1, guides = "collect") & theme(legend.position = "bottom")  -->
+
+<!-- cAll -->
+
+<!-- #ggsave(cAll, filename = "../Results/Cons_ModSimSummary.png", device = "png", dpi = 600, width = 10, height = 8) -->
+<!-- ``` -->
+
+<!-- ##### Nutrient Flux in Local and Meta-ecosystem -->
+<!-- ```{r eval=FALSE, include=FALSE,tidy=TRUE} -->
+<!-- localNFh1 <- RNFh1_long %>% filter(., Compartment == "NFR_Eco1" | Compartment == "NFR_Eco2" | Compartment == "NFR_ME") -->
+<!-- localNFh1$Cond <- "h1 > h2" -->
+<!-- localNFh2 <- RNFh2_long %>% filter(., Compartment == "NFR_Eco1" | Compartment == "NFR_Eco2" | Compartment == "NFR_ME") -->
+<!-- localNFh2$Cond <- "h1 < h2" -->
+
+<!-- localNF <- rbind(localNFh1, localNFh2) -->
+<!-- localNF$Cond <- as.factor(localNF$Cond) -->
+<!-- localNF$Fert <- as.factor(localNF$Fert) -->
+
+<!-- dplyr::mutate(localNF, Fert = fct_relevel(Fert, "equal", "along", "against")) %>%  -->
+<!--   dplyr::mutate(., Cond = fct_relevel(Cond, "h1 > h2", "h1 < h2")) %>% -->
+<!--   dplyr::mutate(., Scale = fct_relevel(Scale, "Donor", "Recipient", "Meta-ecosystem")) %>% -->
+<!--   ggplot(., aes(x = Scale, y = Rlog10)) +  -->
+<!--   geom_boxplot(aes(col = Fert)) +  -->
+<!--   facet_grid(hDIFF~Cond, scale = "free") +  -->
+<!--   geom_hline(yintercept = 0, linetype = "dashed", lwd = 0.25) +  -->
+<!--   labs(y = NULL, color = "Fertility") +  -->
+<!--   scale_color_hue(direction = -1, h.start = 90, labels = c("Equal", "Higher in Donor", "Higher in Recipient")) + -->
+<!--   # coord_cartesian(ylim=c(-1,1)) + -->
+<!--   scale_y_continuous(breaks=seq(-1, 1, 0.5)) + -->
+<!--   theme_pubr() +  -->
+<!--   theme(axis.text = element_text(size = 9)) -->
+
+<!-- #ggsave(filename = "../Results/NutrientFluxSummary.png", device = "png", dpi = 600, width = 8, height = 6) -->
+<!-- ``` -->
+
+<!-- ## Old Tables -->
+
+<!-- ##### Biomass tables -->
+
+<!-- The tables below summarise information on median change in biomass in the two  -->
+<!-- local ecosystems and in the meta-ecosystem, when both I~i~ and h~i~ vary. -->
+
+<!-- ```{r rbm-summary-tab-eco1, eval=FALSE, include=FALSE, tidy=TRUE} -->
+<!-- RBM_summtab_1 <- RBM_medians %>% ungroup() %>% dplyr::group_by(., Case, hDIFF, Scale, Fert) %>% pivot_wider(., names_from = c(Case, hDIFF), values_from = median) %>% dplyr::mutate(., Compartment = fct_recode(Compartment, Consumers = "C1ratio", Consumers = "C2ratio", Consumers = "Cratio", Producers = "P1ratio", Producers = "P2ratio", Producers = "Pratio", Nutrient = "N1ratio", Nutrients = "N2ratio", Nutrients = "Nratio")) %>% dplyr::filter(., Scale == "Donor") %>% ungroup() %>% gt(groupname_col = "Fert") %>% cols_hide(., "Scale") %>% tab_spanner(., label = "High P recycling rate in Ecosystem 1", columns = c(4:8)) %>% tab_spanner(., label = "High P recycling rate in Ecosystem 2", columns = c(9:13)) %>% fmt_number(., columns = c(4:13), decimals = 3) %>% cols_label(., RBMh1_0.1 = "10%", RBMh1_0.3 = "30%", RBMh1_0.5 = "50%", RBMh1_0.7 = "70%", RBMh1_0.9 = "90%", RBMh2_0.1 = "10%", RBMh2_0.3 = "30%", RBMh2_0.5 = "50%", RBMh2_0.7 = "70%", RBMh2_0.9 = "90%") %>% data_color(., columns = 4:13, colors = col_numeric(palette = "PiYG", domain = c(-1,1))) %>% tab_header(., title = "Table 1. Change in biomass production in Ecosystem 1", subtitle = "We report medians of the log10 values of the ratio of biomass production in the experimental aginst the control scenarios. Experimental conditions involve different fertility conditions, and increasingly larger differences in the primary producers recycling rates. Row group headers refer to the fertility conditions: equal, same fertility in both local ecosystem; along, higher fertility in the donor ecosystem; against, higher fertility in the recipient ecosystem.") %>% tab_options(heading.align = "left") -->
+
+<!-- RBM_summtab_1 -->
+
+<!-- # gtsave(RBM_summtab_1, filename = "RBMEco1_summary.tex", path = "../Results/") -->
+<!-- ``` -->
+
+<!-- ```{r rbm-summary-tab-eco2, eval=FALSE, include=FALSE, tidy=TRUE} -->
+<!-- RBM_summtab_2 <- RBM_medians %>% ungroup() %>% dplyr::group_by(., Case, hDIFF, Scale, Fert) %>% pivot_wider(., names_from = c(Case, hDIFF), values_from = median) %>% dplyr::mutate(., Compartment = fct_recode(Compartment, Consumers = "C1ratio", Consumers = "C2ratio", Consumers = "Cratio", Producers = "P1ratio", Producers = "P2ratio", Producers = "Pratio", Nutrient = "N1ratio", Nutrients = "N2ratio", Nutrients = "Nratio")) %>% dplyr::filter(., Scale == "Recipient") %>% ungroup() %>% gt(groupname_col = "Fert") %>% cols_hide(., "Scale") %>% tab_spanner(., label = "High P recycling rate in Ecosystem 1", columns = c(4:8)) %>% tab_spanner(., label = "High P recycling rate in Ecosystem 2", columns = c(9:13)) %>% fmt_number(., columns = c(4:13), decimals = 3) %>% cols_label(., RBMh1_0.1 = "10%", RBMh1_0.3 = "30%", RBMh1_0.5 = "50%", RBMh1_0.7 = "70%", RBMh1_0.9 = "90%", RBMh2_0.1 = "10%", RBMh2_0.3 = "30%", RBMh2_0.5 = "50%", RBMh2_0.7 = "70%", RBMh2_0.9 = "90%") %>% data_color(., columns = 4:13, colors = col_numeric(palette = "PiYG", domain = c(-1,1))) %>% tab_header(., title = "Table 2. Change in biomass production in Ecosystem 2", subtitle = "We report medians of the log10 values of the ratio of biomass production in the experimental aginst the control scenarios. Experimental conditions involve different fertility conditions, and increasingly larger differences in the primary producers recycling rates. Row group headers refer to the fertility conditions: equal, same fertility in both local ecosystem; along, higher fertility in the donor ecosystem; against, higher fertility in the recipient ecosystem.") %>% tab_options(heading.align = "left") -->
+
+<!-- RBM_summtab_2 -->
+
+<!-- # gtsave(RBM_summtab_2, filename = "RBMEco2_summary.tex", path = "../Results/") -->
+<!-- ``` -->
+
+<!-- ```{r rbm-summary-tab-eco3,eval=FALSE, include=FALSE,tidy=TRUE} -->
+<!-- RBM_summtab_3 <- RBM_medians %>% ungroup() %>% dplyr::group_by(., Case, hDIFF, Scale, Fert) %>% pivot_wider(., names_from = c(Case, hDIFF), values_from = median) %>% dplyr::mutate(., Compartment = fct_recode(Compartment, Consumers = "C1ratio", Consumers = "C2ratio", Consumers = "Cratio", Producers = "P1ratio", Producers = "P2ratio", Producers = "Pratio", Nutrient = "N1ratio", Nutrients = "N2ratio", Nutrients = "Nratio")) %>% dplyr::filter(., Scale == "Meta-ecosystem") %>% ungroup() %>% gt(groupname_col = "Fert") %>% cols_hide(., "Scale") %>% tab_spanner(., label = "High P recycling rate in Ecosystem 1", columns = c(4:8)) %>% tab_spanner(., label = "High P recycling rate in Ecosystem 2", columns = c(9:13)) %>% fmt_number(., columns = c(4:13), decimals = 3) %>% cols_label(., RBMh1_0.1 = "10%", RBMh1_0.3 = "30%", RBMh1_0.5 = "50%", RBMh1_0.7 = "70%", RBMh1_0.9 = "90%", RBMh2_0.1 = "10%", RBMh2_0.3 = "30%", RBMh2_0.5 = "50%", RBMh2_0.7 = "70%", RBMh2_0.9 = "90%") %>% data_color(., columns = 4:13, colors = col_numeric(palette = "PiYG", domain = c(-1,1))) %>% tab_header(., title = "Table 3. Change in biomass production in the Meta-ecosystem", subtitle = "We report medians of the log10 values of the ratio of biomass production in the experimental aginst the control scenarios. Experimental conditions involve different fertility conditions, and increasingly larger differences in the primary producers recycling rates. Row group headers refer to the fertility conditions: equal, same fertility in both local ecosystem; along, higher fertility in the donor ecosystem; against, higher fertility in the recipient ecosystem.") %>% tab_options(heading.align = "left") -->
+
+<!-- RBM_summtab_3 -->
+
+<!-- # gtsave(RBM_summtab_3, filename = "RBMmetaeco_summary.tex", path = "../Results/") -->
+<!-- ``` -->
+
+<!-- ##### Nutrient Flux tables -->
+
+<!-- ```{r rnf-summary-tab_eco1, eval=FALSE, include=FALSE,tidy=TRUE} -->
+<!-- RNF_summarytab_1 <- RNF_medians %>% ungroup() %>% dplyr::group_by(., Case, hDIFF, Scale, Fert) %>% pivot_wider(., names_from = c(Case, hDIFF), values_from = median) %>% dplyr::mutate(., Compartment = fct_recode(Compartment, Consumers = "NFR_C1", Consumers = "NFR_C2", Ecosystem = "NFR_Eco1", Ecosystem = "NFR_Eco2", Producers = "NFR_P1", Producers = "NFR_P2", Metaecosystem = "NFR_ME")) %>% dplyr::filter(., Scale == "Donor") %>% ungroup() %>% gt(groupname_col = "Fert") %>% cols_hide(., "Scale") %>% tab_spanner(., label = "High P recycling rate in Ecosystem 1", columns = c(4:8)) %>% tab_spanner(., label = "High P recycling rate in Ecosystem 2", columns = c(9:13)) %>% fmt_number(., columns = c(4:13), decimals = 3) %>% cols_label(., RNFh1_0.1 = "10%", RNFh1_0.3 = "30%", RNFh1_0.5 = "50%", RNFh1_0.7 = "70%", RNFh1_0.9 = "90%", RNFh2_0.1 = "10%", RNFh2_0.3 = "30%", RNFh2_0.5 = "50%", RNFh2_0.7 = "70%", RNFh2_0.9 = "90%") %>% data_color(., columns = 4:13, colors = col_numeric(palette = "PiYG", domain = c(-1,1))) %>% tab_header(., title = "Table 4. Change in nutrient flux in Ecosystem 1", subtitle = "We report medians of the log10 values of the ratio of nutrient flux in the experimental aginst the control scenarios. Experimental conditions involve different fertility conditions, and increasingly larger differences in the primary producers recycling rates. All specifications as in Table 1.") %>% tab_options(heading.align = "left") -->
+
+<!-- RNF_summarytab_1 -->
+
+<!-- # gtsave(RNF_summarytab_1, filename = "RNFEco1_summary.tex", path = "../Results/") -->
+<!-- ``` -->
+
+<!-- ```{r rnf-summary-tab_eco2, eval=FALSE, include=FALSE,tidy=TRUE} -->
+<!-- RNF_summtab_2 <- RNF_medians %>% ungroup() %>% dplyr::group_by(., Case, hDIFF, Scale, Fert) %>% pivot_wider(., names_from = c(Case, hDIFF), values_from = median) %>% dplyr::mutate(., Compartment = fct_recode(Compartment, Consumers = "NFR_C1", Consumers = "NFR_C2", Ecosystem = "NFR_Eco1", Ecosystem = "NFR_Eco2", Producers = "NFR_P1", Producers = "NFR_P2", Metaecosystem = "NFR_ME")) %>% dplyr::filter(., Scale == "Recipient") %>% ungroup() %>% gt(groupname_col = "Fert") %>% cols_hide(., "Scale") %>% tab_spanner(., label = "High P recycling rate in Ecosystem 1", columns = c(4:8)) %>% tab_spanner(., label = "High P recycling rate in Ecosystem 2", columns = c(9:13)) %>% fmt_number(., columns = c(4:13), decimals = 3) %>% cols_label(., RNFh1_0.1 = "10%", RNFh1_0.3 = "30%", RNFh1_0.5 = "50%", RNFh1_0.7 = "70%", RNFh1_0.9 = "90%", RNFh2_0.1 = "10%", RNFh2_0.3 = "30%", RNFh2_0.5 = "50%", RNFh2_0.7 = "70%", RNFh2_0.9 = "90%") %>% data_color(., columns = 4:13, colors = col_numeric(palette = "PiYG", domain = c(-1,1))) %>% tab_header(., title = "Table 5. Change in nutrient flux in Ecosystem 2", subtitle = "We report medians of the log10 values of the ratio of nutrient flux in the experimental aginst the control scenarios. Experimental conditions involve different fertility conditions, and increasingly larger differences in the primary producers recycling rates. All specifications as in Table 1.") %>% tab_options(heading.align = "left") -->
+
+<!-- RNF_summtab_2 -->
+
+<!-- # gtsave(RNF_summtab_2, filename = "RNFEco2_summary.tex", path = "../Results/") -->
+<!-- ``` -->
+
+<!-- ```{r rnf-summary-tab_eco3, eval=FALSE, include=FALSE,tidy=TRUE} -->
+<!-- RNF_summtab_3 <- RNF_medians %>% ungroup() %>% dplyr::group_by(., Case, hDIFF, Scale, Fert) %>% pivot_wider(., names_from = c(Case, hDIFF), values_from = median) %>% dplyr::mutate(., Compartment = fct_recode(Compartment, Consumers = "NFR_C1", Consumers = "NFR_C2", Ecosystem = "NFR_Eco1", Ecosystem = "NFR_Eco2", Producers = "NFR_P1", Producers = "NFR_P2", Metaecosystem = "NFR_ME")) %>% dplyr::filter(., Scale == "Meta-ecosystem") %>% ungroup() %>% gt(groupname_col = "Fert") %>% cols_hide(., c("Scale", "Compartment")) %>% tab_spanner(., label = "High P recycling rate in Ecosystem 1", columns = c(4:8)) %>% tab_spanner(., label = "High P recycling rate in Ecosystem 2", columns = c(9:13)) %>% fmt_number(., columns = c(4:13), decimals = 3) %>% cols_label(., RNFh1_0.1 = "10%", RNFh1_0.3 = "30%", RNFh1_0.5 = "50%", RNFh1_0.7 = "70%", RNFh1_0.9 = "90%", RNFh2_0.1 = "10%", RNFh2_0.3 = "30%", RNFh2_0.5 = "50%", RNFh2_0.7 = "70%", RNFh2_0.9 = "90%") %>% data_color(., columns = 4:13, colors = col_numeric(palette = "PiYG", domain = c(-1,1))) %>% tab_header(., title = "Table 6. Change in nutrient flux in the Meta-ecosystem", subtitle = "We report medians of the log10 values of the ratio of nutrient flux in the experimental aginst the control scenarios. Experimental conditions involve different fertility conditions, and increasingly larger differences in the primary producers recycling rates. All specifications as in Table 1.") %>% tab_options(heading.align = "left") -->
+
+<!-- RNF_summtab_3  -->
+
+<!-- # gtsave(RNF_summtab_3, filename = "RNFmetaeco_summary.tex", path = "../Results/") -->
+<!-- ``` -->
+
+<!-- ##### Productivity tables -->
+
+<!-- ```{r prod-summary-tab-eco1, eval=FALSE, include=FALSE,tidy=TRUE} -->
+<!-- RPROD_summtab_1 <- RPROD_medians %>% ungroup() %>% dplyr::group_by(., Case, hDIFF, Scale, Fert) %>% pivot_wider(., names_from = c(Case, hDIFF), values_from = median) %>% dplyr::mutate(., Compartment = fct_recode(Compartment, Consumers = "RPROD_C1", Consumers = "RPROD_C2", Producers = "RPROD_P1", Producers = "RPROD_P2")) %>% dplyr::filter(., Scale == "Donor") %>% ungroup() %>% gt(groupname_col = "Fert") %>% cols_hide(., "Scale") %>% tab_spanner(., label = "High P recycling rate in Ecosystem 1", columns = c(4:8)) %>% tab_spanner(., label = "High P recycling rate in Ecosystem 2", columns = c(9:13)) %>% fmt_number(., columns = c(4:13), decimals = 3) %>% cols_label(., RPRODh1_0.1 = "10%", RPRODh1_0.3 = "30%", RPRODh1_0.5 = "50%", RPRODh1_0.7 = "70%", RPRODh1_0.9 = "90%", RPRODh2_0.1 = "10%", RPRODh2_0.3 = "30%", RPRODh2_0.5 = "50%", RPRODh2_0.7 = "70%", RPRODh2_0.9 = "90%") %>% data_color(., columns = 4:13, colors = col_numeric(palette = "PiYG", domain = c(-1,1))) %>% tab_header(., title = "Table 7. Change in trophic compartment production in Ecosystem 1", subtitle = "We report medians of the log10 values of the ratio of nutrient flux in the experimental aginst the control scenarios. Experimental conditions involve different fertility conditions, and increasingly larger differences in the primary producers recycling rates. All specifications as in Table 1.") %>% tab_options(heading.align = "left") -->
+
+<!-- RPROD_summtab_1 -->
+
+<!-- # gtsave(RPROD_summtab_1, filename = "RPRODEco1_summary.tex", path = "../Results/") -->
+<!-- ``` -->
+
+<!-- ```{r prod-summary-tab-eco2, eval=FALSE, include=FALSE,tidy=TRUE} -->
+<!-- RPROD_summtab_2 <- RPROD_medians %>% ungroup() %>% dplyr::group_by(., Case, hDIFF, Scale, Fert) %>% pivot_wider(., names_from = c(Case, hDIFF), values_from = median) %>% dplyr::mutate(., Compartment = fct_recode(Compartment, Consumers = "RPROD_C1", Consumers = "RPROD_C2", Producers = "RPROD_P1", Producers = "RPROD_P2")) %>% dplyr::filter(., Scale == "Recipient") %>% ungroup() %>% gt(groupname_col = "Fert") %>% cols_hide(., "Scale") %>% tab_spanner(., label = "High P recycling rate in Ecosystem 1", columns = c(4:8)) %>% tab_spanner(., label = "High P recycling rate in Ecosystem 2", columns = c(9:13)) %>% fmt_number(., columns = c(4:13), decimals = 3) %>% cols_label(., RPRODh1_0.1 = "10%", RPRODh1_0.3 = "30%", RPRODh1_0.5 = "50%", RPRODh1_0.7 = "70%", RPRODh1_0.9 = "90%", RPRODh2_0.1 = "10%", RPRODh2_0.3 = "30%", RPRODh2_0.5 = "50%", RPRODh2_0.7 = "70%", RPRODh2_0.9 = "90%") %>% data_color(., columns = 4:13, colors = col_numeric(palette = "PiYG", domain = c(-1,1))) %>% tab_header(., title = "Table 8. Change in trophic compartment production in Ecosystem 2", subtitle = "We report medians of the log10 values of the ratio of nutrient flux in the experimental aginst the control scenarios. Experimental conditions involve different fertility conditions, and increasingly larger differences in the primary producers recycling rates. All specifications as in Table 1.") %>% tab_options(heading.align = "left") -->
+
+<!-- RPROD_summtab_2 -->
+
+<!-- # gtsave(RPROD_summtab_2, filename = "RPRODEco2_summary.tex", path = "../Results/") -->
+<!-- ``` -->
+
+<!-- ```{r prod-summary-tab-eco3, eval=FALSE, include=FALSE, tidy=TRUE} -->
+<!-- RPROD_summtab_3 <- RPROD_medians %>% ungroup() %>% dplyr::group_by(., Case, hDIFF, Scale, Fert) %>% pivot_wider(., names_from = c(Case, hDIFF), values_from = median) %>% dplyr::mutate(., Compartment = fct_recode(Compartment, Consumers = "RPROD_C1", Consumers = "RPROD_C2", Producers = "RPROD_P1", Producers = "RPROD_P2")) %>% dplyr::filter(., Scale == "Meta-ecosystem") %>% ungroup() %>% gt(groupname_col = "Fert") %>% cols_hide(., "Scale") %>% tab_spanner(., label = "High P recycling rate in Ecosystem 1", columns = c(4:8)) %>% tab_spanner(., label = "High P recycling rate in Ecosystem 2", columns = c(9:13)) %>% fmt_number(., columns = c(4:13), decimals = 3) %>% cols_label(., RPRODh1_0.1 = "10%", RPRODh1_0.3 = "30%", RPRODh1_0.5 = "50%", RPRODh1_0.7 = "70%", RPRODh1_0.9 = "90%", RPRODh2_0.1 = "10%", RPRODh2_0.3 = "30%", RPRODh2_0.5 = "50%", RPRODh2_0.7 = "70%", RPRODh2_0.9 = "90%") %>% data_color(., columns = 4:13, colors = col_numeric(palette = "PiYG", domain = c(-1,1))) %>% tab_header(., title = "Table 9. Change in trophic compartment production in the Meta-ecosystem", subtitle = "We report medians of the log10 values of the ratio of nutrient flux in the experimental aginst the control scenarios. Experimental conditions involve different fertility conditions, and increasingly larger differences in the primary producers recycling rates. All specifications as in Table 1.") %>% tab_options(heading.align = "left") -->
+
+<!-- # RPROD_summtab_3 -->
+<!-- #  -->
+<!-- # gtsave(RPROD_summtab_3, filename = "RPRODmetaeco_summary.tex", path = "../Results/") -->
+<!-- ``` -->
+
