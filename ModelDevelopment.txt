@@ -1,0 +1,299 @@
+(*A model with consumer movement through a disperser pool, complete recycling from both Producers and Consumers, and uptake rate fo the Producers *)
+(*Parameters and Variables
+N1,N2 \[Dash] nutrient stock in patch 1,2
+P1,P2 \[Dash] producer stock in patch 1,2
+C1,C2 \[Dash] consumer stock in patch 1,2
+J1,J2 \[Dash] inorganic input to nutrients stocks in patch 1,2
+l \[Dash] leaching rate
+u1,u2 \[Dash] producers uptake rate
+h1,h2 \[Dash] producers death rate
+a1,a1 \[Dash] consumers uptake rate
+e1,e2 \[Dash] consumers efficiency rate
+d1,d2 \[Dash] consumers death rate
+g1 \[Dash] movement rate of consumers from patch 1 to disperser pool Q
+m1 \[Dash] movement rate of consumers from disperser pool Q to patch 2
+c1 \[Dash] consumers death rate in disperser pool Q
+*)
+
+ClearAll[N1, N2, P1, P2,C1,C2, a1, a2, l, J1, J2,e1,e2,m1,m2,g1,g2,Q,d1,d2,p, h1, h2,u1,u2];
+
+eqns = {0 == J1 - u1*N1*P1 - l*N1 + h1*P1+d1*C1,
+0 == u1*N1*P1 - a1*P1*C1 - h1*P1,
+0 == e1*a1*P1*C1 - g1*C1 - d1*C1,
+0== J2- u2*N2*P2 - l*N2 + h2*P2+d2*C2,
+0 == u2*N2*P2 - a2*P2*C2- h2*P2,
+0 ==  e2*a2*P2*C2 - d2*C2 + m1*(g1*C1)/(m1+c1)};
+
+sol == FullSimplify[Solve[eqns, {N1, P1,C1,N2,P2,C2}]]
+
+Out[6]= sol=={{N1->J1/l,P1->0,C1->0,N2->J2/l,P2->0,C2->0},{N1->((d1-d1 e1+g1) h1+a1 e1 J1)/(a1 e1 l+(d1-d1 e1+g1) u1),P1->(d1+g1)/(a1 e1),C1->(e1 (-h1 l+J1 u1))/(a1 e1 l+(d1-d1 e1+g1) u1),N2->(a1 e1 J2 l (c1+m1)+(d1+g1) J2 (c1+m1) u1-e1 (d1 J2 (c1+m1) u1+g1 m1 (h1 l-J1 u1)))/(l (c1+m1) (a1 e1 l+(d1-d1 e1+g1) u1)),P2->0,C2->(e1 g1 m1 (-h1 l+J1 u1))/(d2 (c1+m1) (a1 e1 l+(d1-d1 e1+g1) u1))},{N1->J1/l,P1->0,C1->0,N2->(d2 h2-d2 e2 h2+a2 e2 J2)/(a2 e2 l+d2 u2-d2 e2 u2),P2->d2/(a2 e2),C2->(e2 (-h2 l+J2 u2))/(a2 e2 l-d2 (-1+e2) u2)},{N1->((d1-d1 e1+g1) h1+a1 e1 J1)/(a1 e1 l+(d1-d1 e1+g1) u1),P1->(d1+g1)/(a1 e1),C1->(e1 (-h1 l+J1 u1))/(a1 e1 l+(d1-d1 e1+g1) u1),N2->(-a1 e1 (d2 (-1+e2) h2-a2 e2 J2) l (c1+m1)+d2 (-1+e2) (d1 (-1+e1)-g1) h2 (c1+m1) u1+a2 (e2 (d1+g1) J2 (c1+m1) u1-e1 (d1 e2 J2 (c1+m1) u1+g1 m1 (h1 l-J1 u1))))/((c1+m1) (a1 e1 l+(d1-d1 e1+g1) u1) (a2 e2 l-d2 (-1+e2) u2)),P2->(l (-d2 (d1 (-1+e1)-g1) h2 (c1+m1) u1+a2 e1 g1 m1 (-h1 l+J1 u1))+d2 (d1 e1 J2 (c1+m1) u1-(d1+g1) J2 (c1+m1) u1+e1 g1 m1 (h1 l-J1 u1)) u2+a1 d2 e1 l (c1+m1) (h2 l-J2 u2))/(a2 e2 h2 l (c1+m1) (a1 e1 l+(d1-d1 e1+g1) u1)-a2 (a1 e1 e2 J2 l (c1+m1)+e2 (d1+g1) J2 (c1+m1) u1-e1 (d1 e2 J2 (c1+m1) u1+g1 m1 (h1 l-J1 u1))) u2),C2->((e1 g1 m1 (-h1 l+J1 u1) u2)/((c1+m1) (a1 e1 l+(d1-d1 e1+g1) u1))+e2 (-h2 l+J2 u2))/(a2 e2 l-d2 (-1+e2) u2)}}
+
+In[5]:= (*Solving for Q's quasi-equilibrium, i.e. finding our the Dispersers' Pool dynamics when the slow processes vary*)
+
+ClearAll[N1, N2, P1, P2,C1,C2, a1, a2, l, J1, J2,e1,e2,m1,m2,g1,g2,Q,d1,d2,p, h1, h2,u1,u2];
+
+(g1*(e1 (-h1 l+J1 u1))/(a1 e1 l+(d1-d1 e1+g1) u1))/(m1+c1)
+
+Out[6]= (e1 g1 (-h1 l+J1 u1))/((c1+m1) (a1 e1 l+(d1-d1 e1+g1) u1))
+
+(*Calculating Nutrient flux in local and meta-ecosystem*)
+(*Ecosystem 1*)
+(*Let's start by finding the formula for recycling flux for producers in ecosystem 1, when using equilibrium values for the state variables*)
+
+ClearAll[N1, N2, P1, P2,C1,C2, a1, a2, l, J1, J2,e1,e2,m1,m2,g1,g2,Q,d1,d2,p, h1, h2,u1,u2];FullSimplify[h1*(d1+g1)/(a1 e1)]
+
+Out[1]= ((d1+g1) h1)/(a1 e1)
+
+In[2]:= (*Now let's find the formula for consumers' recycling flux*)
+
+ClearAll[N1, N2, P1, P2,C1,C2, a1, a2, l, J1, J2,e1,e2,m1,m2,g1,g2,Q,d1,d2,p, h1, h2,u1,u2];FullSimplify[d1*(e1 (-h1 l+J1 u1))/(a1 e1 l+(d1-d1 e1+g1) u1)]
+
+Out[2]= (d1 e1 (-h1 l+J1 u1))/(a1 e1 l+(d1-d1 e1+g1) u1)
+
+In[8]:= (*At the ecosystem 1 level, the recycling flux will be the sum of these two fluxes*)
+
+ClearAll[N1, N2, P1, P2,C1,C2, a1, a2, l, J1, J2,e1,e2,m1,m2,g1,g2,Q,d1,d2,p, h1, h2,u1,u2];FullSimplify[h1*(d1+g1)/(a1 e1)+d1*(e1 (-h1 l+J1 u1))/(a1 e1 l+(d1-d1 e1+g1) u1)]
+
+Out[8]= ((d1+g1) h1)/(a1 e1)+(d1 e1 (-h1 l+J1 u1))/(a1 e1 l+(d1-d1 e1+g1) u1)
+
+In[9]:= (*Ecosystem 2*)
+
+(*Find the formula for producers' recycling flux in ecosystem 2, when using equilibrium values for the state variables*)
+
+ClearAll[N1, N2, P1, P2,C1,C2, a1, a2, l, J1, J2,e1,e2,m1,m2,g1,g2,Q,d1,d2,p, h1, h2,u1,u2];
+
+FullSimplify[h2*(l (-d2 (d1 (-1+e1)-g1) h2 (c1+m1) u1+a2 e1 g1 m1 (-h1 l+J1 u1))+d2 (d1 e1 J2 (c1+m1) u1-(d1+g1) J2 (c1+m1) u1+e1 g1 m1 (h1 l-J1 u1)) u2+a1 d2 e1 l (c1+m1) (h2 l-J2 u2))/(a2 e2 h2 l (c1+m1) (a1 e1 l+(d1-d1 e1+g1) u1)-a2 (a1 e1 e2 J2 l (c1+m1)+e2 (d1+g1) J2 (c1+m1) u1-e1 (d1 e2 J2 (c1+m1) u1+g1 m1 (h1 l-J1 u1))) u2)]
+
+Out[10]= (h2 (l (-d2 (d1 (-1+e1)-g1) h2 (c1+m1) u1+a2 e1 g1 m1 (-h1 l+J1 u1))+d2 (d1 e1 J2 (c1+m1) u1-(d1+g1) J2 (c1+m1) u1+e1 g1 m1 (h1 l-J1 u1)) u2+a1 d2 e1 l (c1+m1) (h2 l-J2 u2)))/(a2 e2 h2 l (c1+m1) (a1 e1 l+(d1-d1 e1+g1) u1)-a2 (a1 e1 e2 J2 l (c1+m1)+e2 (d1+g1) J2 (c1+m1) u1-e1 (d1 e2 J2 (c1+m1) u1+g1 m1 (h1 l-J1 u1))) u2)
+
+(*Now let's find the consumers' recycling flux formula in ecosystem 2*)
+
+ClearAll[N1, N2, P1, P2,C1,C2, a1, a2, l, J1, J2,e1,e2,m1,m2,g1,g2,Q,d1,d2,p, h1, h2,u1,u2];
+
+FullSimplify[d2*((e1 g1 m1 (-h1 l+J1 u1) u2)/((c1+m1) (a1 e1 l+(d1-d1 e1+g1) u1))+e2 (-h2 l+J2 u2))/(a2 e2 l-d2 (-1+e2) u2)]
+
+Out[12]= (d2 ((e1 g1 m1 (-h1 l+J1 u1) u2)/((c1+m1) (a1 e1 l+(d1-d1 e1+g1) u1))+e2 (-h2 l+J2 u2)))/(a2 e2 l-d2 (-1+e2) u2)
+
+In[1]:= (*And the ecosystem 2 recycling flux, which will be the sum of the two expressions above*)
+
+ClearAll[N1, N2, P1, P2,C1,C2, a1, a2, l, J1, J2,e1,e2,m1,m2,g1,g2,Q,d1,d2,p, h1, h2,u1,u2];
+
+FullSimplify[h2*(l (-d2 (d1 (-1+e1)-g1) h2 (c1+m1) u1+a2 e1 g1 m1 (-h1 l+J1 u1))+d2 (d1 e1 J2 (c1+m1) u1-(d1+g1) J2 (c1+m1) u1+e1 g1 m1 (h1 l-J1 u1)) u2+a1 d2 e1 l (c1+m1) (h2 l-J2 u2))/(a2 e2 h2 l (c1+m1) (a1 e1 l+(d1-d1 e1+g1) u1)-a2 (a1 e1 e2 J2 l (c1+m1)+e2 (d1+g1) J2 (c1+m1) u1-e1 (d1 e2 J2 (c1+m1) u1+g1 m1 (h1 l-J1 u1))) u2)+d2*((e1 g1 m1 (-h1 l+J1 u1) u2)/((c1+m1) (a1 e1 l+(d1-d1 e1+g1) u1))+e2 (-h2 l+J2 u2))/(a2 e2 l-d2 (-1+e2) u2)]
+
+Out[2]= (h2 (l (-d2 (d1 (-1+e1)-g1) h2 (c1+m1) u1+a2 e1 g1 m1 (-h1 l+J1 u1))+d2 (d1 e1 J2 (c1+m1) u1-(d1+g1) J2 (c1+m1) u1+e1 g1 m1 (h1 l-J1 u1)) u2+a1 d2 e1 l (c1+m1) (h2 l-J2 u2)))/(a2 e2 h2 l (c1+m1) (a1 e1 l+(d1-d1 e1+g1) u1)-a2 (a1 e1 e2 J2 l (c1+m1)+e2 (d1+g1) J2 (c1+m1) u1-e1 (d1 e2 J2 (c1+m1) u1+g1 m1 (h1 l-J1 u1))) u2)+(d2 ((e1 g1 m1 (-h1 l+J1 u1) u2)/((c1+m1) (a1 e1 l+(d1-d1 e1+g1) u1))+e2 (-h2 l+J2 u2)))/(a2 e2 l-d2 (-1+e2) u2)
+
+In[22]:= (*What about the recycling flux in the Dispersers' Pool? This compartment, external to both ecosystems, has a loss term as part of its differential equation, that represents biomass (hence, nutrients) lost while traveling from one eecosystem to the other due to predation, stochastic death, hunting, etc.*)
+
+ClearAll[N1, N2, P1, P2,C1,C2, a1, a2, l, J1, J2,e1,e2,m1,m2,g1,g2,Q,d1,d2,p, h1, h2,u1,u2];
+
+FullSimplify[c1*(e1 g1 (-h1 l+J1 u1))/((c1+m1) (a1 e1 l+(d1-d1 e1+g1) u1))]
+
+Out[23]= (c1 e1 g1 (-h1 l+J1 u1))/((c1+m1) (a1 e1 l+(d1-d1 e1+g1) u1))
+
+In[9]:= (*What about the recycling flux for the meta-ecosystem? This metric would be the sum of the individual ecosystems' recycling fluxes, minus the flux in in the Dispersers' pool which is the loss term that was just calculated*)
+
+ClearAll[N1, N2, P1, P2,C1,C2, a1, a2, l, J1, J2,e1,e2,m1,m2,g1,g2,Q,d1,d2,p, h1, h2,u1,u2];
+
+FullSimplify[h1*(d1+g1)/(a1 e1)+d1*(e1 (-h1 l+J1 u1))/(a1 e1 l+(d1-d1 e1+g1) u1)+h2*(l (-d2 (d1 (-1+e1)-g1) h2 (c1+m1) u1+a2 e1 g1 m1 (-h1 l+J1 u1))+d2 (d1 e1 J2 (c1+m1) u1-(d1+g1) J2 (c1+m1) u1+e1 g1 m1 (h1 l-J1 u1)) u2+a1 d2 e1 l (c1+m1) (h2 l-J2 u2))/(a2 e2 h2 l (c1+m1) (a1 e1 l+(d1-d1 e1+g1) u1)-a2 (a1 e1 e2 J2 l (c1+m1)+e2 (d1+g1) J2 (c1+m1) u1-e1 (d1 e2 J2 (c1+m1) u1+g1 m1 (h1 l-J1 u1))) u2)+d2*((e1 g1 m1 (-h1 l+J1 u1) u2)/((c1+m1) (a1 e1 l+(d1-d1 e1+g1) u1))+e2 (-h2 l+J2 u2))/(a2 e2 l-d2 (-1+e2) u2)-c1*(e1 g1 (-h1 l+J1 u1))/((c1+m1) (a1 e1 l+(d1-d1 e1+g1) u1))]
+Out[10]= ((d1+g1) h1)/(a1 e1)+(c1 e1 g1 (h1 l-J1 u1))/((c1+m1) (a1 e1 l+(d1-d1 e1+g1) u1))+(d1 e1 (-h1 l+J1 u1))/(a1 e1 l+(d1-d1 e1+g1) u1)+(h2 (l (-d2 (d1 (-1+e1)-g1) h2 (c1+m1) u1+a2 e1 g1 m1 (-h1 l+J1 u1))+d2 (d1 e1 J2 (c1+m1) u1-(d1+g1) J2 (c1+m1) u1+e1 g1 m1 (h1 l-J1 u1)) u2+a1 d2 e1 l (c1+m1) (h2 l-J2 u2)))/(a2 e2 h2 l (c1+m1) (a1 e1 l+(d1-d1 e1+g1) u1)-a2 (a1 e1 e2 J2 l (c1+m1)+e2 (d1+g1) J2 (c1+m1) u1-e1 (d1 e2 J2 (c1+m1) u1+g1 m1 (h1 l-J1 u1))) u2)+(d2 ((e1 g1 m1 (-h1 l+J1 u1) u2)/((c1+m1) (a1 e1 l+(d1-d1 e1+g1) u1))+e2 (-h2 l+J2 u2)))/(a2 e2 l-d2 (-1+e2) u2)
+
+(*Partial Derivative for primary, secondary productivity and nutrient flux in both local ecosystems*)
+(*Ecosystem 1*)
+(*Partial Derivative of Consumers Flux w.r.t. movement rate from ecosystem 1, i.e., g_1*)
+
+ClearAll[N1, N2, P1, P2,C1,C2, a1, a2, l, J1, J2,e1,e2,m1,m2,g1,g2,Q,d1,d2,p, h1, h2,u1,u2];
+
+eqns2=D[(d1 e1 (-h1 l+J1 u1))/(a1 e1 l+(d1-d1 e1+g1) u1),g1];
+
+FullSimplify[eqns2]
+
+Out[3]= (d1 e1 u1 (h1 l-J1 u1))/(a1 e1 l+(d1-d1 e1+g1) u1)^2
+
+In[4]:= (*Partial Derivative of Ecosystem 1 Flux w.r.t. consumers' movement rate from ecosystem 1, i.e., g_1*)
+
+ClearAll[N1, N2, P1, P2,C1,C2, a1, a2, l, J1, J2,e1,e2,m1,m2,g1,g2,Q,d1,d2,p, h1, h2,u1,u2];
+
+eqns3=D[((d1+g1) h1)/(a1 e1)+(d1 e1 (-h1 l+J1 u1))/(a1 e1 l+(d1-d1 e1+g1) u1),g1];
+
+FullSimplify[eqns3]
+
+Out[6]= h1/(a1 e1)+(d1 e1 u1 (h1 l-J1 u1))/(a1 e1 l+(d1-d1 e1+g1) u1)^2
+
+In[4]:= (*Partial derivative of primary productivity in ecosystem 1 w.r.t g_1*)
+
+ClearAll[N1, N2, P1, P2,C1,C2, a1, a2, l, J1, J2,e1,e2,m1,m2,g1,g2,Q,d1,d2,p, h1, h2,u1,u2];
+
+eqns4=D[(d1+g1)/(a1 e1),g1];
+
+FullSimplify[eqns4]
+
+Out[6]= 1/(a1 e1)
+
+In[28]:= (*Partial derivative of secondary productivity in ecosystem 1 w.r.t g_1*)
+
+ClearAll[N1, N2, P1, P2,C1,C2, a1, a2, l, J1, J2,e1,e2,m1,m2,g1,g2,Q,d1,d2,p, h1, h2,u1,u2];
+
+eqns5=D[(e1 (-h1 l+J1 u1))/(a1 e1 l+(d1-d1 e1+g1) u1),g1];
+
+FullSimplify[eqns5]
+
+Out[30]= (e1 u1 (h1 l-J1 u1))/(a1 e1 l+(d1-d1 e1+g1) u1)^2
+
+(*Ecosystem 2*)
+(*Partial Derivative of Consumers Flux in ecosystem 2 w.r.t. movement rate into ecosystem 2, i.e., m_1*)
+
+ClearAll[N1, N2, P1, P2,C1,C2, a1, a2, l, J1, J2,e1,e2,m1,m2,g1,g2,Q,d1,d2,p, h1, h2,u1,u2];
+
+eqns6=D[(d2 ((e1 g1 m1 (-h1 l+J1 u1) u2)/((c1+m1) (a1 e1 l+(d1-d1 e1+g1) u1))+e2 (-h2 l+J2 u2)))/(a2 e2 l-d2 (-1+e2) u2),m1];
+
+FullSimplify[eqns6]
+
+Out[12]= (d2 e2 l)/(-a2 e2 l+d2 (-1+e2) u2)
+
+In[34]:= (*Now let's find the partial derivative of recycling flux in ecosystem 2 w.r.t the movement rate into ecosystem 2 (m1)*)
+
+ClearAll[N1, N2, P1, P2,C1,C2, a1, a2, l, J1, J2,e1,e2,m1,m2,g1,g2,Q,d1,d2,p, h1, h2,u1,u2];
+
+eqns7 =D[(h2 (l (-d2 (d1 (-1+e1)-g1) h2 (c1+m1) u1+a2 e1 g1 m1 (-h1 l+J1 u1))+d2 (d1 e1 J2 (c1+m1) u1-(d1+g1) J2 (c1+m1) u1+e1 g1 m1 (h1 l-J1 u1)) u2+a1 d2 e1 l (c1+m1) (h2 l-J2 u2)))/(a2 e2 h2 l (c1+m1) (a1 e1 l+(d1-d1 e1+g1) u1)-a2 (a1 e1 e2 J2 l (c1+m1)+e2 (d1+g1) J2 (c1+m1) u1-e1 (d1 e2 J2 (c1+m1) u1+g1 m1 (h1 l-J1 u1))) u2)+(d2 ((e1 g1 m1 (-h1 l+J1 u1) u2)/((c1+m1) (a1 e1 l+(d1-d1 e1+g1) u1))+e2 (-h2 l+J2 u2)))/(a2 e2 l-d2 (-1+e2) u2), m1];
+
+FullSimplify[eqns7]
+
+Out[36]= (c1 d2 e1 g1 (-h1 l+J1 u1) u2)/((c1+m1)^2 (a1 e1 l+(d1-d1 e1+g1) u1) (a2 e2 l-d2 (-1+e2) u2))+(h2 (e2 (d1-d1 e1+g1) h2 l u1+e1 g1 h1 l u2-(e1 g1 J1+e2 (d1-d1 e1+g1) J2) u1 u2+a1 e1 e2 l (h2 l-J2 u2)) (d2 (d1 (-1+e1)-g1) h2 l (c1+m1) u1+a2 e1 g1 l m1 (h1 l-J1 u1)+d2 (d1+g1) J2 (c1+m1) u1 u2-d2 e1 (d1 J2 (c1+m1) u1+g1 m1 (h1 l-J1 u1)) u2-a1 d2 e1 l (c1+m1) (h2 l-J2 u2)))/(a2 (e2 h2 l (c1+m1) (a1 e1 l+(d1-d1 e1+g1) u1)-(a1 e1 e2 J2 l (c1+m1)+e2 (d1+g1) J2 (c1+m1) u1-e1 (d1 e2 J2 (c1+m1) u1+g1 m1 (h1 l-J1 u1))) u2)^2)+(a2 e1 g1 h2 l (-h1 l+J1 u1)+d2 h2 ((d1-d1 e1+g1) h2 l u1+e1 g1 h1 l u2-(e1 g1 J1+(d1-d1 e1+g1) J2) u1 u2+a1 e1 l (h2 l-J2 u2)))/(a2 e2 h2 l (c1+m1) (a1 e1 l+(d1-d1 e1+g1) u1)-a2 (a1 e1 e2 J2 l (c1+m1)+e2 (d1+g1) J2 (c1+m1) u1-e1 (d1 e2 J2 (c1+m1) u1+g1 m1 (h1 l-J1 u1))) u2)
+
+In[28]:= (*What about the partial derivative w.r.t. the movement rate from ecosystem 1 (g1).*)
+
+ClearAll[N1, N2, P1, P2,C1,C2, a1, a2, l, J1, J2,e1,e2,m1,m2,g1,g2,Q,d1,d2,p, h1, h2,u1,u2];
+
+eqns8 =D[(h2 (l (-d2 (d1 (-1+e1)-g1) h2 (c1+m1) u1+a2 e1 g1 m1 (-h1 l+J1 u1))+d2 (d1 e1 J2 (c1+m1) u1-(d1+g1) J2 (c1+m1) u1+e1 g1 m1 (h1 l-J1 u1)) u2+a1 d2 e1 l (c1+m1) (h2 l-J2 u2)))/(a2 e2 h2 l (c1+m1) (a1 e1 l+(d1-d1 e1+g1) u1)-a2 (a1 e1 e2 J2 l (c1+m1)+e2 (d1+g1) J2 (c1+m1) u1-e1 (d1 e2 J2 (c1+m1) u1+g1 m1 (h1 l-J1 u1))) u2)+(d2 ((e1 g1 m1 (-h1 l+J1 u1) u2)/((c1+m1) (a1 e1 l+(d1-d1 e1+g1) u1))+e2 (-h2 l+J2 u2)))/(a2 e2 l-d2 (-1+e2) u2), g1];
+
+FullSimplify[eqns8]
+
+Out[30]= $Aborted
+
+In[16]:= (*Partial derivative of primary productivity in ecosystem 2 w.r.t. m1*)
+
+ClearAll[N1, N2, P1, P2,C1,C2, a1, a2, l, J1, J2,e1,e2,m1,m2,g1,g2,Q,d1,d2,p, h1, h2,u1,u2];
+eqns9 = D[(l (-d2 (d1 (-1+e1)-g1) h2 (c1+m1) u1+a2 e1 g1 m1 (-h1 l+J1 u1))+d2 (d1 e1 J2 (c1+m1) u1-(d1+g1) J2 (c1+m1) u1+e1 g1 m1 (h1 l-J1 u1)) u2+a1 d2 e1 l (c1+m1) (h2 l-J2 u2))/(a2 e2 h2 l (c1+m1) (a1 e1 l+(d1-d1 e1+g1) u1)-a2 (a1 e1 e2 J2 l (c1+m1)+e2 (d1+g1) J2 (c1+m1) u1-e1 (d1 e2 J2 (c1+m1) u1+g1 m1 (h1 l-J1 u1))) u2), m1];
+
+FullSimplify[eqns9]
+
+Out[18]= -((a2 c1 e1 g1 (a1 e1 l+(d1-d1 e1+g1) u1) (h1 l-J1 u1) (a2 e2 l-d2 (-1+e2) u2) (h2 l-J2 u2))/(a2 e2 h2 l (c1+m1) (a1 e1 l+(d1-d1 e1+g1) u1)-a2 (a1 e1 e2 J2 l (c1+m1)+e2 (d1+g1) J2 (c1+m1) u1-e1 (d1 e2 J2 (c1+m1) u1+g1 m1 (h1 l-J1 u1))) u2)^2)
+
+In[19]:= (*Partial derivative of primary productivity in ecosystem 2 w.r.t. g1*)
+
+ClearAll[N1, N2, P1, P2,C1,C2, a1, a2, l, J1, J2,e1,e2,m1,m2,g1,g2,Q,d1,d2,p, h1, h2,u1,u2];
+
+eqns10 = D[(l (-d2 (d1 (-1+e1)-g1) h2 (c1+m1) u1+a2 e1 g1 m1 (-h1 l+J1 u1))+d2 (d1 e1 J2 (c1+m1) u1-(d1+g1) J2 (c1+m1) u1+e1 g1 m1 (h1 l-J1 u1)) u2+a1 d2 e1 l (c1+m1) (h2 l-J2 u2))/(a2 e2 h2 l (c1+m1) (a1 e1 l+(d1-d1 e1+g1) u1)-a2 (a1 e1 e2 J2 l (c1+m1)+e2 (d1+g1) J2 (c1+m1) u1-e1 (d1 e2 J2 (c1+m1) u1+g1 m1 (h1 l-J1 u1))) u2), g1];
+
+FullSimplify[eqns10]
+
+Out[21]= -((a2 e1 m1 (c1+m1) (a1 e1 l-d1 (-1+e1) u1) (h1 l-J1 u1) (a2 e2 l-d2 (-1+e2) u2) (h2 l-J2 u2))/(a2 e2 h2 l (c1+m1) (a1 e1 l+(d1-d1 e1+g1) u1)-a2 (a1 e1 e2 J2 l (c1+m1)+e2 (d1+g1) J2 (c1+m1) u1-e1 (d1 e2 J2 (c1+m1) u1+g1 m1 (h1 l-J1 u1))) u2)^2)
+
+In[22]:= (*Partial derivative of secondary productivity in ecosystem 2 w.r.t. m1*)
+
+ClearAll[N1, N2, P1, P2,C1,C2, a1, a2, l, J1, J2,e1,e2,m1,m2,g1,g2,Q,d1,d2,p, h1, h2,u1,u2];
+
+eqns11 = D[((e1 g1 m1 (-h1 l+J1 u1) u2)/((c1+m1) (a1 e1 l+(d1-d1 e1+g1) u1))+e2 (-h2 l+J2 u2))/(a2 e2 l-d2 (-1+e2) u2), m1];
+
+FullSimplify[eqns11]
+
+Out[24]= (c1 e1 g1 (-h1 l+J1 u1) u2)/((c1+m1)^2 (a1 e1 l+(d1-d1 e1+g1) u1) (a2 e2 l-d2 (-1+e2) u2))
+
+In[25]:= (*Partial derivative of secondary productivity in ecosystem 2 w.r.t. g1*)
+
+ClearAll[N1, N2, P1, P2,C1,C2, a1, a2, l, J1, J2,e1,e2,m1,m2,g1,g2,Q,d1,d2,p, h1, h2,u1,u2];
+
+eqns12 = D[((e1 g1 m1 (-h1 l+J1 u1) u2)/((c1+m1) (a1 e1 l+(d1-d1 e1+g1) u1))+e2 (-h2 l+J2 u2))/(a2 e2 l-d2 (-1+e2) u2), g1];
+
+FullSimplify[eqns11]
+
+Out[27]= (c1 e1 g1 (-h1 l+J1 u1) u2)/((c1+m1)^2 (a1 e1 l+(d1-d1 e1+g1) u1) (a2 e2 l-d2 (-1+e2) u2))
+
+In[7]:= (*Productivity in local and meta-ecosystem*)
+
+(*Ecosystem 1*)
+(*Primary Producers Productivity*)
+
+ClearAll[N1, N2, P1, P2,C1,C2, a1, a2, l, J1, J2,e1,e2,m1,m2,g1,g2,Q,d1,d2,p, h1, h2,u1,u2];
+
+eqns13=u1*((d1-d1 e1+g1) h1+a1 e1 J1)/(a1 e1 l+(d1-d1 e1+g1) u1)*(d1+g1)/(a1 e1);
+
+FullSimplify[eqns13]
+
+Out[9]= ((d1+g1) ((d1-d1 e1+g1) h1+a1 e1 J1) u1)/(a1 e1 (a1 e1 l+(d1-d1 e1+g1) u1))
+
+In[10]:= (*Consumers Productivity*)
+
+ClearAll[N1, N2, P1, P2,C1,C2, a1, a2, l, J1, J2,e1,e2,m1,m2,g1,g2,Q,d1,d2,p, h1, h2,u1,u2];
+
+eqns14=e1*a1*(d1+g1)/(a1 e1)*(e1 (-h1 l+J1 u1))/(a1 e1 l+(d1-d1 e1+g1) u1);
+
+FullSimplify[eqns14]
+
+Out[12]= (e1 (d1+g1) (-h1 l+J1 u1))/(a1 e1 l+(d1-d1 e1+g1) u1)
+
+In[13]:= (*Ecosystem 2*)
+
+(*Primary Producers Productivity*)
+
+ClearAll[N1, N2, P1, P2,C1,C2, a1, a2, l, J1, J2,e1,e2,m1,m2,g1,g2,Q,d1,d2,p, h1, h2,u1,u2];
+
+eqns15=u2*(-a1 e1 (d2 (-1+e2) h2-a2 e2 J2) l (c1+m1)+d2 (-1+e2) (d1 (-1+e1)-g1) h2 (c1+m1) u1+a2 (e2 (d1+g1) J2 (c1+m1) u1-e1 (d1 e2 J2 (c1+m1) u1+g1 m1 (h1 l-J1 u1))))/((c1+m1) (a1 e1 l+(d1-d1 e1+g1) u1) (a2 e2 l-d2 (-1+e2) u2))*(l (-d2 (d1 (-1+e1)-g1) h2 (c1+m1) u1+a2 e1 g1 m1 (-h1 l+J1 u1))+d2 (d1 e1 J2 (c1+m1) u1-(d1+g1) J2 (c1+m1) u1+e1 g1 m1 (h1 l-J1 u1)) u2+a1 d2 e1 l (c1+m1) (h2 l-J2 u2))/(a2 e2 h2 l (c1+m1) (a1 e1 l+(d1-d1 e1+g1) u1)-a2 (a1 e1 e2 J2 l (c1+m1)+e2 (d1+g1) J2 (c1+m1) u1-e1 (d1 e2 J2 (c1+m1) u1+g1 m1 (h1 l-J1 u1))) u2);
+
+FullSimplify[eqns15]
+
+Out[15]= ((-a1 e1 (d2 (-1+e2) h2-a2 e2 J2) l (c1+m1)+d2 (-1+e2) (d1 (-1+e1)-g1) h2 (c1+m1) u1+a2 (e2 (d1+g1) J2 (c1+m1) u1-e1 (d1 e2 J2 (c1+m1) u1+g1 m1 (h1 l-J1 u1)))) u2 (l (-d2 (d1 (-1+e1)-g1) h2 (c1+m1) u1+a2 e1 g1 m1 (-h1 l+J1 u1))+d2 (d1 e1 J2 (c1+m1) u1-(d1+g1) J2 (c1+m1) u1+e1 g1 m1 (h1 l-J1 u1)) u2+a1 d2 e1 l (c1+m1) (h2 l-J2 u2)))/((c1+m1) (a1 e1 l+(d1-d1 e1+g1) u1) (a2 e2 l-d2 (-1+e2) u2) (a2 e2 h2 l (c1+m1) (a1 e1 l+(d1-d1 e1+g1) u1)-a2 (a1 e1 e2 J2 l (c1+m1)+e2 (d1+g1) J2 (c1+m1) u1-e1 (d1 e2 J2 (c1+m1) u1+g1 m1 (h1 l-J1 u1))) u2))
+
+In[16]:= (*Consumers Productivity*)
+
+ClearAll[N1, N2, P1, P2,C1,C2, a1, a2, l, J1, J2,e1,e2,m1,m2,g1,g2,Q,d1,d2,p, h1, h2,u1,u2];
+
+eqns16=e2*a2*(l (-d2 (d1 (-1+e1)-g1) h2 (c1+m1) u1+a2 e1 g1 m1 (-h1 l+J1 u1))+d2 (d1 e1 J2 (c1+m1) u1-(d1+g1) J2 (c1+m1) u1+e1 g1 m1 (h1 l-J1 u1)) u2+a1 d2 e1 l (c1+m1) (h2 l-J2 u2))/(a2 e2 h2 l (c1+m1) (a1 e1 l+(d1-d1 e1+g1) u1)-a2 (a1 e1 e2 J2 l (c1+m1)+e2 (d1+g1) J2 (c1+m1) u1-e1 (d1 e2 J2 (c1+m1) u1+g1 m1 (h1 l-J1 u1))) u2)*((e1 g1 m1 (-h1 l+J1 u1) u2)/((c1+m1) (a1 e1 l+(d1-d1 e1+g1) u1))+e2 (-h2 l+J2 u2))/(a2 e2 l-d2 (-1+e2) u2);
+
+FullSimplify[eqns16]
+
+Out[18]= (e2 l (-a1 d2 e1 h2 l (c1+m1)+d2 (d1 (-1+e1)-g1) h2 (c1+m1) u1+a2 e1 g1 m1 (h1 l-J1 u1))+d2 e2 (a1 e1 J2 l (c1+m1)+(d1+g1) J2 (c1+m1) u1-e1 (d1 J2 (c1+m1) u1+g1 m1 (h1 l-J1 u1))) u2)/((c1+m1) (a1 e1 l+(d1-d1 e1+g1) u1) (a2 e2 l-d2 (-1+e2) u2))
+
+In[19]:= (*Productivity Partial Derivatives*)
+
+(*Ecosystem 1*) 
+(*Primary Producers*)
+
+ClearAll[N1, N2, P1, P2,C1,C2, a1, a2, l, J1, J2,e1,e2,m1,m2,g1,g2,Q,d1,d2,p, h1, h2,u1,u2];
+
+eqns17=D[((d1+g1) ((d1-d1 e1+g1) h1+a1 e1 J1) u1)/(a1 e1 (a1 e1 l+(d1-d1 e1+g1) u1)),g1];
+
+FullSimplify[eqns17]
+
+Out[21]= (u1 (a1 e1 (-d1 (-2+e1) h1+2 g1 h1+a1 e1 J1) l+((d1-d1 e1+g1)^2 h1-a1 d1 e1^2 J1) u1))/(a1 e1 (a1 e1 l+(d1-d1 e1+g1) u1)^2)
+
+In[22]:= (*Consumers*)
+
+ClearAll[N1, N2, P1, P2,C1,C2, a1, a2, l, J1, J2,e1,e2,m1,m2,g1,g2,Q,d1,d2,p, h1, h2,u1,u2];
+
+eqns18=D[(e1 (d1+g1) (-h1 l+J1 u1))/(a1 e1 l+(d1-d1 e1+g1) u1),g1];
+
+FullSimplify[eqns18]
+
+Out[24]= -((e1^2 (a1 l-d1 u1) (h1 l-J1 u1))/(a1 e1 l+(d1-d1 e1+g1) u1)^2)
+
+In[34]:= (*Ecosystem 2*)
+
+(*Primary Producers*)
+
+ClearAll[N1, N2, P1, P2,C1,C2, a1, a2, l, J1, J2,e1,e2,m1,m2,g1,g2,Q,d1,d2,p, h1, h2,u1,u2];
+eqns19=D[((-a1 e1 (d2 (-1+e2) h2-a2 e2 J2) l (c1+m1)+d2 (-1+e2) (d1 (-1+e1)-g1) h2 (c1+m1) u1+a2 (e2 (d1+g1) J2 (c1+m1) u1-e1 (d1 e2 J2 (c1+m1) u1+g1 m1 (h1 l-J1 u1)))) u2 (l (-d2 (d1 (-1+e1)-g1) h2 (c1+m1) u1+a2 e1 g1 m1 (-h1 l+J1 u1))+d2 (d1 e1 J2 (c1+m1) u1-(d1+g1) J2 (c1+m1) u1+e1 g1 m1 (h1 l-J1 u1)) u2+a1 d2 e1 l (c1+m1) (h2 l-J2 u2)))/((c1+m1) (a1 e1 l+(d1-d1 e1+g1) u1) (a2 e2 l-d2 (-1+e2) u2) (a2 e2 h2 l (c1+m1) (a1 e1 l+(d1-d1 e1+g1) u1)-a2 (a1 e1 e2 J2 l (c1+m1)+e2 (d1+g1) J2 (c1+m1) u1-e1 (d1 e2 J2 (c1+m1) u1+g1 m1 (h1 l-J1 u1))) u2)), m1];
+
+FullSimplify[eqns19]
+
+Out[36]= (a2 c1 e1 g1 (h1 l-J1 u1) u2 (-d2^2 (-1+e2)^2 (d1-d1 e1+g1)^2 h2 (c1+m1)^2 u1^2 u2 (h2 l-J2 u2)+a1^2 e1^2 l^2 (c1+m1)^2 (h2 l-J2 u2) (a2 e2 (d2 (-2+e2) h2-a2 e2 J2) l+d2 (-d2 (-1+e2)^2 h2+a2 e2^2 J2) u2)+a2^2 l (-e2 (d1 (-1+e1)-g1) h2 l (c1+m1) u1 (d1 e1 e2 J2 (c1+m1) u1-e2 (d1+g1) J2 (c1+m1) u1+2 e1 g1 m1 (h1 l-J1 u1))+(e2 (d1+g1) J2 (c1+m1) u1-e1 (d1 e2 J2 (c1+m1) u1+g1 m1 (h1 l-J1 u1)))^2 u2)-2 a1 e1 l (c1+m1) (h2 l-J2 u2) (a2^2 e2 l (e2 (d1+g1) J2 (c1+m1) u1-e1 (d1 e2 J2 (c1+m1) u1+g1 m1 (h1 l-J1 u1)))-d2^2 (-1+e2)^2 (d1 (-1+e1)-g1) h2 (c1+m1) u1 u2+a2 d2 e2 ((-2+e2) (d1 (-1+e1)-g1) h2 l (c1+m1) u1+(d1 e1 e2 J2 (c1+m1) u1-e2 (d1+g1) J2 (c1+m1) u1+e1 g1 m1 (h1 l-J1 u1)) u2))+a2 d2 (c1^2 e2 (d1-d1 e1+g1)^2 u1^2 (h2 l-J2 u2) ((-2+e2) h2 l+e2 J2 u2)+2 c1 e2 (d1 (-1+e1)-g1) m1 u1 (h2 l-J2 u2) ((-2+e2) (d1 (-1+e1)-g1) h2 l u1+(e1 g1 h1 l-(e1 g1 J1+e2 (d1-d1 e1+g1) J2) u1) u2)+m1^2 ((-2+e2) e2 (d1-d1 e1+g1)^2 h2^2 l^2 u1^2+2 e2 (d1 (-1+e1)-g1) h2 l u1 (e1 g1 h1 l-(e1 g1 J1+(d1-d1 e1+g1) J2) u1) u2-(-e1 g1 h1 l+e1 g1 J1 u1+e2 (d1-d1 e1+g1) J2 u1)^2 u2^2))))/((c1+m1)^2 (a1 e1 l+(d1-d1 e1+g1) u1) (a2 e2 l-d2 (-1+e2) u2) (a2 e2 h2 l (c1+m1) (a1 e1 l+(d1-d1 e1+g1) u1)-a2 (a1 e1 e2 J2 l (c1+m1)+e2 (d1+g1) J2 (c1+m1) u1-e1 (d1 e2 J2 (c1+m1) u1+g1 m1 (h1 l-J1 u1))) u2)^2)
+
+In[31]:= (*Consumers*)
+
+ClearAll[N1, N2, P1, P2,C1,C2, a1, a2, l, J1, J2,e1,e2,m1,m2,g1,g2,Q,d1,d2,p, h1, h2,u1,u2];
+
+eqns20=D[(e2 l (-a1 d2 e1 h2 l (c1+m1)+d2 (d1 (-1+e1)-g1) h2 (c1+m1) u1+a2 e1 g1 m1 (h1 l-J1 u1))+d2 e2 (a1 e1 J2 l (c1+m1)+(d1+g1) J2 (c1+m1) u1-e1 (d1 J2 (c1+m1) u1+g1 m1 (h1 l-J1 u1))) u2)/((c1+m1) (a1 e1 l+(d1-d1 e1+g1) u1) (a2 e2 l-d2 (-1+e2) u2)), m1];
+
+FullSimplify[eqns20]
+
+Out[33]= (c1 e1 e2 g1 (h1 l-J1 u1) (a2 l-d2 u2))/((c1+m1)^2 (a1 e1 l+(d1-d1 e1+g1) u1) (a2 e2 l-d2 (-1+e2) u2))
