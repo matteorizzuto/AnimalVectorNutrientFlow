@@ -18,6 +18,6 @@ This repository contains:
 
 Information on the versions of R and of the packages used is provided in the html and Rmd files.
 
-To reproduce our model analyses, please run all code chunks or knit the SupportingCode.Rmd file. Please note that any change to the structure of the folder needs to be reflected in an update to the relative paths used in this notebook. A simple search for "../" should be sufficient to find all instances in which relative paths are used, to update them as needed.
+To reproduce our model analyses, please run all code chunks or knit the SupportingCode.Rmd file. Please note that any change to the structure of the folder needs to be reflected in an update to the relative paths used in this notebook. A simple search for “../“ should be sufficient to find all instances in which relative paths are used, to update them as needed.
 
-The code presented in ModelDevelopment.txt and StabilityAnalyses.txt can be copy-pasted in a Mathematica notebook to find the model’s equilibria and evaluated the Jacobian of the single equilibrium that has biological meaning, respectively.
+The code presented in ModelDevelopment.nb and StabilityAnalyses.nb can be used in Wolfram Mathematica to find the model’s equilibria and evaluated the Jacobian of the single equilibrium that has biological meaning, respectively. Alternative .txt versions of these notebooks can be perused, if Wolfram Mathematica is not available.
