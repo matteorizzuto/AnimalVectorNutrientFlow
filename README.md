@@ -3,9 +3,9 @@
 This repository contains the code to replicate the numerical analyses of the model presentence in Rizzuto et al. _Animal-vectored nutrient flow along different resource gradients influences the nature of local and meta-ecosystem functioning_.
 
 This repository contains:
-  * ModelDevelopment.txt, a text copy of the Wolfram Mathematica notebook we used to find the equilibria of the model and calculate mathematical expresions for ecosystem functions of interest, which are used in the SupportingCode.Rmd R notebook in this folder (also available as .nb)
+  * ModelDevelopment.nb, the Wolfram Mathematica notebook we used to find the equilibria of the model and calculate mathematical expresions for ecosystem functions of interest, which are used in the SupportingCode.Rmd R notebook in this folder (also available as .txt)
 
-  * StabilityAnalyses.txt, a text copy of the Wolfram Mathematica notebook detailing how we evaluated the model’s Jacobian matrix and then use its expressions in R to assess stability of the parameter sets used in our numerical analyses of the model (also available as .nb)
+  * StabilityAnalyses.nb, the Wolfram Mathematica notebook detailing how we evaluated the model’s Jacobian matrix and then use its expressions in R to assess stability of the parameter sets used in our numerical analyses of the model (also available as .txt)
 
   * SupportingCode.Rmd, the R markdown notebook containing the code to replicate the numerical analyses of the model and produce the figures in the manuscript and appendices. It uses relative paths to load data and save results in deticated folders. A compiled, easier to read version of this file is provided as "SupportingCode.html" in this same folder.
 
