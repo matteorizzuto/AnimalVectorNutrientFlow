@@ -1,0 +1,1 @@
+This folder is used to store the results produced by the SupportingCode.Rmd file in folder "../Code/"
