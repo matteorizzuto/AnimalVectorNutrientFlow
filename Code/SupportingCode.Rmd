@@ -34,7 +34,7 @@ author:
     affiliation_url: https://www.gov.bc.ca/gov/content/home
     orcid_id: 0000-0002-3993-6450
 date: "`r Sys.Date()`"
-bibliography: ../Manuscripts/Rizzuto_ActiveNutrientTransport.bib
+bibliography: SupportingCode.bib
 creative_commons: CC BY-SA
 repository_url: https://github.com/matteorizzuto/AnimalVectorNutrientFlow
 output:
@@ -52,8 +52,6 @@ output:
 ```{r start-timer, include=FALSE}
 tictoc::tic()
 ```
-
-<!-- > NOTE TO SELF: This document needs a bit more guiding text throughout to be useful for interested readers. This should be text that clearly links parts of this document to elements of the main text. Doing this will require having a clear idea of what will end up in the final ms in terms of figures, tables, and results. REMOVE ME AFTER ADDRESSING ME. -->
 
 # Introduction
 
@@ -105,15 +103,6 @@ for a new suitable ecosystem, traversing the so-called "unsuitable" matrix
 for this time spent outside ecosystem borders, as it may lead to loss of biomass
 and nutrients from the system [@Gounand2018]. 
 
-<!-- We model organismal movement using a the framework developed by @Weisser1996.  -->
-<!-- Briefly, in their model of host-parasitoid dynamics, @Weisser1996 introduce a  -->
-<!-- dispersers' pool connecting two hosts, so that individuals move from the original  -->
-<!-- host to the dispersers' pool first, and then to a new host from there. Adapting  -->
-<!-- this framework, consumers in our model leave the _donor_ ecosystem 1 and enter a  -->
-<!-- dispersers' pool (_Q_). From there, consumers then travel to the _recipient_  -->
-<!-- ecosystem 2. This approach has the advantage of decoupling local dynamics from  -->
-<!-- regional movement process and dynamics.  -->
-
 We model consumer movement in our meta-ecosystem model by combining a dispersers' 
 pool [@Weisser1996] with the _time scales separation_ (TSS) mathematical 
 technique [@OttoDay2011]. Briefly, adding a dispersers' pool to a classic 
@@ -137,10 +126,6 @@ regional dynamics in our system and to investigate the effects of consumer
 movement at either spatial extent at the same time. See section **Model 
 Derivation** in the main text for further details on our novel approach to 
 model consumer movement in meta-ecosystems.
-
-<!-- The model also includes a  -->
-<!-- simplified version of recycling in each local ecosystem and accounts  -->
-<!-- for consumer biomass lost while in transit from one ecosystem to the other.  -->
 
 #### State variables and parameters of the model
 
@@ -226,6 +211,8 @@ library(ggpubr)
 library(ggpol) 
 # easily create and layout multi-panel plots
 library(patchwork)
+# save ggplot2 objects as svg
+library(svglite)
 
 # Packages that need to be installed but do not require loading
 
@@ -567,11 +554,6 @@ whether the real part of the leading eigenvalue of the Jacobian is positive or
 negative [@OttoDay2011]. If the real part of the Jacobian's leading eigenvalue 
 is negative, the equilibrium is stable [@OttoDay2011].
 
-<!-- We are grateful to -->
-<!-- [Dr. Anne McLeod](https://scholar.google.ca/citations?user=Ruyr3McAAAAJ&hl=en)  -->
-<!-- and [Dr. Robert Buchkowski](https://robertwbuchkowski.github.io) for their help -->
-<!-- in developing the code used in this section. -->
-
 ```{r pred-jacobian-solve, echo=TRUE, tidy=TRUE}
 # create an empty dataframe
 MathStab <- NULL
@@ -815,7 +797,7 @@ ggplot(PRED_long, aes(m, log10(Stock), col = Ecosystem)) +
         text = element_text(size = 11))
 ```
 
-Finally, we can see a similar effect when looking at the change in biomass in
+We can see a similar effect when looking at the change in biomass in
 the two local ecosystems with change in the mortality rate of consumers while in
 the dispersers' pool (parameter `c` in the model; Figure \@ref(fig:c-change)).
 
@@ -901,576 +883,6 @@ FluxPRED %>%
   theme(legend.position = "none", axis.title.x = element_blank())
 ```
 
-<!-- ### Effects of consumer movement rates in an homogeneous meta-ecosystem -->
-
-<!-- Here, we investigate the behavior of the system when one of the two parameters -->
-<!-- regulating movement to/from the dispersers' pool is set to 0. That is, when -->
-<!-- movement still happens in the system but does not connect the two local -->
-<!-- ecosystems. -->
-
-<!-- #### No Consumer influx to Ecosystem 2 -->
-
-<!-- We begin with the case of `m = 0`, and `g = [0, 10]`. Consumers leave ecosystem -->
-<!-- 1 and enter the dispersers' pool `Q`, but do not proceed further towards -->
-<!-- ecosystem 2. The chunk below performs the dataframe allocation and model -->
-<!-- iterations, using parameter values drawn from `DATA1` and `DATA2`. Figure -->
-<!-- \@ref(fig:simuls-m0) shows the results of this analysis. Here again we use a -->
-<!-- subset of 1k parameter sets randomly-drawn from the total 10k parameter sets -->
-<!-- used in the model iterations to produce the figure. -->
-
-<!-- ```{r simuls-m0, echo=TRUE, tidy=TRUE, fig.cap="Biomass stock values at equilibrium for local and meta-ecosystem scale, when the rate of movement from the dispersers' pool to ecosystem 2 (m) is set to 0. This results in a smaller consumers stock in ecosystem 2, in turn allowing Producers to grow more biomass and depress Nutrient stocks. Here again we use a subset of 1k parameter sets randomly-drawn from the total 10k parameter sets used in the model iterations to produce the figure. All other specifications as in Figure 1."} -->
-<!-- # Allocate an empty data frame to save the data in -->
-<!-- PREDm0 <- NULL -->
-<!-- # Allocate some rows and columns. We will replace the current numbers with results below -->
-<!-- # Data we are calculating are (bio)mass for soil nutrients (N1, N2), producers (P1, P2), consumers (C1,C2), disperses (Q) -->
-
-<!-- PREDm0 <-rbind(PREDm0, data.frame(TIME=seq(0,100,1), I1 = I1,  I2 = I2, l = l, -->
-<!--                                   u1 = seq(0,100,1), u2 = seq(0,100,1), -->
-<!--                                   a1 = seq(0,100,1), a2 = seq(0,100,1), -->
-<!--                                   h1 = seq(0,100,1), h2 = seq(0,100,1), -->
-<!--                                   d1 = seq(0,100,1), d2 = seq(0,100,1), -->
-<!--                                   g = seq(0,100,1), m = seq(0,100,1), -->
-<!--                                   c = seq(0,100,1), e1 = seq(0,100,1), -->
-<!--                                   e2 = seq(0,100,1), N1=seq(0,100,1), -->
-<!--                                   P1=seq(0,100,1), C1=seq(0,100,1), -->
-<!--                                   N2=seq(0,100,1), P2=seq(0,100,1), -->
-<!--                                   C2=seq(0,100,1))) -->
-
-<!-- # We want to start simulations at 0 -->
-<!-- i1 = 0 -->
-
-<!-- for (i in seq(0,9999,1)){ -->
-<!-- 	# go to the next row -->
-<!-- 	i1 = i1 + 1 -->
-
-<!-- # Let's sample the parameter values from DATA. We will sample these x times as defined by the i for loop above -->
-<!-- # producers uptake rates -->
-<!-- u1 = DATA1[i1,2] # in ecosystem 1 -->
-<!-- u2 = DATA1[i1,3] # in ecosystem 2 -->
-<!-- # consumers attack rates -->
-<!-- a1 = DATA1[i1,4] -->
-<!-- a2 = DATA1[i1,5] -->
-<!-- # death rates (= recycling rate) -->
-<!-- h1 = DATA1[i1,6] # death (=recycling) rate for producers in ecosystems 1 -->
-<!-- h2 = DATA1[i1,7] # death (=recycling) rate for producers in ecosystem 2 -->
-<!-- d1 = DATA1[i1,8] # death (=recycling) rate for consumers in ecosystem 1 -->
-<!-- d2 = DATA1[i1,9] # death (=recycling) rate for consumers in ecosystem 2 -->
-<!-- c = DATA1[i1,10] # death rate in the disperser's pool Q -->
-<!-- # movement rate to the Disperser's pool Q -->
-<!-- g = DATA1[i1,11] -->
-<!-- # movement rate from the Disperser's pool Q -->
-<!-- m = 0 -->
-<!-- # efficiency of consumers -->
-<!-- e1 = DATA2[i1,2] # in ecosystem 1 -->
-<!-- e2 = DATA2[i1,3] # in ecosystem 2 -->
-
-<!-- PREDm0[i1,] <- c(i1, I1, I2, l, u1, u2, a1, a2, h1, h2, d1, d2, g, m, c, e1, e2, -->
-<!--                ((d1 - d1*e1 + g)*h1 + a1*e1*I1)/(a1*e1*l + (d1 - d1*e1 + g)*u1), -->
-<!--                (d1 + g)/(a1*e1), -->
-<!--                (e1*(-h1*l + I1*u1))/(a1*e1*l + (d1 - d1*e1 + g)*u1), -->
-<!--                (-a1*e1*(d2*(-1 + e2)*h2 - a2*e2*I2)*l*(c + m) + d2*(-1 + e2)*(d1*(-1 + e1) - g)*h2*(c + m)*u1 + a2*(e2*(d1 + g)*I2*(c + m)*u1 - e1*(d1*e2*I2*(c + m)*u1 + g*m*(h1*l - I1*u1))))/((c + m)*(a1*e1*l + (d1 - d1*e1 + g)*u1)*(a2*e2*l - d2*(-1 + e2)*u2)), -->
-<!--                (l*(-d2*(d1*(-1 + e1) - g)*h2*(c + m)*u1 + a2*e1*g*m*(-h1*l + I1*u1)) + d2*(d1*e1*I2*(c + m)*u1 - (d1 + g)*I2*(c + m)*u1 + e1*g*m*(h1*l - I1*u1))*u2 + a1*d2*e1*l*(c + m)*(h2*l - I2*u2))/(a2*e2*h2*l*(c + m)*(a1*e1*l + (d1 - d1*e1 + g)*u1) - a2*(a1*e1*e2*I2*l*(c + m) + e2*(d1 + g)*I2*(c + m)*u1 - e1*(d1*e2*I2*(c + m)*u1 + g*m*(h1*l - I1*u1)))*u2), -->
-<!--                ((e1*g*m*(-h1*l + I1*u1)*u2)/((c + m)*(a1*e1*l + (d1 - d1*e1 + g)*u1)) + e2*(-h2*l + I2*u2))/(a2*e2*l - d2*(-1 + e2)*u2)) -->
-<!-- } -->
-
-<!-- # calculate meta-ecosystem biomass stocks for each trophic compartment, -->
-<!-- # a.k.a., meta-ecosystem productivity -->
-<!-- PREDm0$Ntot <- PREDm0$N1 + PREDm0$N2 -->
-<!-- PREDm0$Ptot <- PREDm0$P1 + PREDm0$P2 -->
-<!-- PREDm0$Ctot <- PREDm0$C1 + PREDm0$C2 -->
-
-<!-- # Equilibrium stocks less than or equal to 0 make no biological sense, so we -->
-<!-- # will remove them from the PRED dataset. -->
-<!-- PREDm0pos <- subset(PREDm0, N1>0 & P1>0 & C1>0 & N2>0 & P2>0 & C2>0) -->
-<!-- PREDm0_sample1000 <- PREDm0pos[sample(nrow(PREDm0pos),size=1000),] -->
-
-<!-- # pivot the -->
-<!-- PREDm0_long <- pivot_longer(PREDm0_sample1000, -->
-<!--                             names_to = "Compartment", -->
-<!--                             values_to = "Stock", -->
-<!--                             cols = c(N1, P1, C1, N2, P2, -->
-<!--                                      C2, Ntot, Ptot, Ctot)) %>% -->
-<!--   dplyr::mutate(., Ecosystem = if_else(Compartment == "N1" | -->
-<!--                                         Compartment == "C1" | -->
-<!--                                         Compartment == "P1", -->
-<!--                                        "Donor", if_else(Compartment == "N2" | -->
-<!--                                                           Compartment == "P2" | -->
-<!--                                                           Compartment=="C2", -->
-<!--                                                         "Recipient", -->
-<!--                                                         "Meta-ecosystem"))) -->
-
-<!-- PREDm0_long$Compartment <- as_factor(PREDm0_long$Compartment) -->
-<!-- PREDm0_long$Ecosystem <- as_factor(PREDm0_long$Ecosystem) -->
-
-<!-- comparts_medians <- PREDm0_long %>% -->
-<!--   dplyr::group_by(Compartment, Ecosystem) %>% -->
-<!--   dplyr::summarise(., -->
-<!--                    median = median(Stock), -->
-<!--                    .groups = "keep") -->
-
-<!-- ggplot(data=PREDm0_long, -->
-<!--        aes(x = Compartment, y = Stock, fill = Ecosystem, col = Ecosystem)) + -->
-<!--   geom_boxjitter(alpha = 0.25, outlier.intersect = TRUE, outlier.shape = 25, jitter.shape = 21) + -->
-<!--   geom_label(data = comparts_medians, -->
-<!--              aes(y = median, label = round(median,2)), -->
-<!--              col = "black", size = 3, fill = "#FFFFFF", alpha = 0.75, -->
-<!--              nudge_x = -0.18, label.padding = unit(0.15, "lines"), -->
-<!--              label.size = 0.15) + -->
-<!--   facet_grid(.~Ecosystem, scales = "free") + -->
-<!--   scale_color_manual(values = met.brewer("Egypt", 4)) + -->
-<!--   scale_fill_manual(values = met.brewer("Egypt", 4)) + -->
-<!--   theme_pubr() + -->
-<!--   coord_cartesian(y = c(0, 100)) + -->
-<!--   theme(legend.position = "none") -->
-
-
-<!-- # + stat_summary(aes(label=round(after_stat(y),2)), fun=median, geom="text", color = "black") # sanity check on median calculations above -->
-<!-- ``` -->
-
-<!-- While the difference in the relative biomass stocks among the trophic -->
-<!-- compartments in Ecosystem 2 is small compared to Figure 1, -->
-<!-- there is no trophic cascade in Ecosystem 2 in this scenario and the system is -->
-<!-- strongly bottom-up controlled. Conversely, in Ecosystem 1, Consumers are still -->
-<!-- reduced to minimal abundance over time, while Producers are free to depress -->
-<!-- Nutrients and grow. -->
-
-<!-- ```{r echo=TRUE, tidy=TRUE, fig.cap="Change in biomass of the two ecosystems’ compartment, the dispersers’ pool, and the meta-ecostystem with change in the value of the rate of the rate of immigration into the disperser pool (g)---i.e., the rate at which consumers leave ecosystem 1. All other specifications as in Figure 2.", fig.show='asis'} -->
-
-<!-- ggplot(PRED_long, aes(g, log10(Stock), col = Ecosystem)) + -->
-<!--   geom_point(alpha = 0.15) + -->
-<!--   geom_smooth(method = "lm", col = "white", alpha = 1, se = T) + -->
-<!--   facet_grid(.~Compartment) + -->
-<!--   scale_color_manual(values = met.brewer("Egypt", 4)) + -->
-<!--   theme_pubr() + -->
-<!--   guides(colour = guide_legend(override.aes = list(alpha = 1))) + -->
-<!--   theme(axis.text.x = element_text(angle = 45, vjust = 0.5, size = 8), -->
-<!--         text = element_text(size = 11)) -->
-<!-- ``` -->
-
-<!-- ```{r echo=TRUE, tidy=TRUE, fig.cap="Change in biomass of the two ecosystems’ compartment, the dispersers’ pool, and the meta-ecostystem with change in the value of the rate of the consumer death rate while in the dispersers' pool (c). All other specifications as in Figure 2.", fig.show='asis'} -->
-
-<!-- ggplot(PRED_long, aes(c, log10(Stock), col = Ecosystem)) + -->
-<!--   geom_point(alpha = 0.15) + -->
-<!--   geom_smooth(method = "lm", col = "white", alpha = 1, se = T) + -->
-<!--   facet_grid(.~Compartment) + -->
-<!--   scale_color_manual(values = met.brewer("Egypt", 4)) + -->
-<!--   theme_pubr() + -->
-<!--   guides(colour = guide_legend(override.aes = list(alpha = 1))) + -->
-<!--   theme(axis.text.x = element_text(angle = 45, vjust = 0.5, size = 8), -->
-<!--         text = element_text(size = 11)) -->
-<!-- ``` -->
-
-<!-- #### No immigration into the Dispersers' Pool from Ecosystem 1 -->
-
-<!-- Now, for the case in which Consumers from Ecosystem 1 do not emigrate to the -->
-<!-- Dispersers' Pool. In this scenario, we will set `g = 0` from the start of the -->
-<!-- simulations, and draw `m` values from `DATA1` as all other parameters scaled -->
-<!-- $\in [0,10]$. Results are shown in Figure \@ref(fig:simuls-g0) below. -->
-
-<!-- ```{r simuls-g0,echo=TRUE,tidy=TRUE,fig.cap="Biomass stock values at equilibrium for local and meta-ecosystem scale, when the rate of movement from ecosystem 1 to the dispersers' pool (g) is set to 0. This establishes bottom-up control in both ecosystems. All other specifications as in Figure 1."} -->
-<!-- # Allocate an empty data frame to save the data in -->
-<!-- PREDg0 <- NULL -->
-<!-- # Allocate some rows and columns. We will replace the current numbers with results below -->
-<!-- # Data we are calculating are (bio)mass for soil nutrients (N1, N2), producers (P1, P2), consumers (C1,C2), disperses (Q) -->
-
-<!-- PREDg0 <-rbind(PREDg0, data.frame(TIME=seq(0,100,1), I1 = I1,  I2 = I2, l = l, u1 = seq(0,100,1), u2 = seq(0,100,1), a1 = seq(0,100,1), a2 = seq(0,100,1), h1 = seq(0,100,1), h2 = seq(0,100,1), d1 = seq(0,100,1), d2 = seq(0,100,1), g = seq(0,100,1), m = seq(0,100,1), c = seq(0,100,1), e1 = seq(0,100,1), e2 = seq(0,100,1), N1=seq(0,100,1), P1=seq(0,100,1), C1=seq(0,100,1), N2=seq(0,100,1), P2=seq(0,100,1), C2=seq(0,100,1))) -->
-
-<!-- # We want to start simulations at 0 -->
-<!-- i1 = 0 -->
-
-<!-- for (i in seq(0,9999,1)){ -->
-<!-- 	# go to the next row -->
-<!-- 	i1 = i1 + 1 -->
-
-<!-- # Let's sample the parameter values from DATA. We will sample these x times as defined by the i for loop above -->
-<!-- # producers uptake rates -->
-<!-- u1 = DATA1[i1,2] # in ecosystem 1 -->
-<!-- u2 = DATA1[i1,3] # in ecosystem 2 -->
-<!-- # consumers attack rates -->
-<!-- a1 = DATA1[i1,4] -->
-<!-- a2 = DATA1[i1,5] -->
-<!-- # death rates (= recycling rate) -->
-<!-- h1 = DATA1[i1,6] # death (=recycling) rate for producers in ecosystems 1 -->
-<!-- h2 = DATA1[i1,7] # death (=recycling) rate for producers in ecosystem 2 -->
-<!-- d1 = DATA1[i1,8] # death (=recycling) rate for consumers in ecosystem 1 -->
-<!-- d2 = DATA1[i1,9] # death (=recycling) rate for consumers in ecosystem 2 -->
-<!-- c = DATA1[i1,10] # death rate in the disperser's pool Q -->
-<!-- # movement rate to the Disperser's pool Q -->
-<!-- g = 0 -->
-<!-- # movement rate from the Disperser's pool Q -->
-<!-- m = DATA1[i1,11] -->
-<!-- # efficiency of consumers -->
-<!-- e1 = DATA2[i1,2] # in ecosystem 1 -->
-<!-- e2 = DATA2[i1,3] # in ecosystem 2 -->
-
-<!-- PREDg0[i1,] <- c(i1, I1, I2, l, u1, u2, a1, a2, h1, h2, d1, d2, g, m, c, e1, e2, -->
-<!--                ((d1 - d1*e1 + g)*h1 + a1*e1*I1)/(a1*e1*l + (d1 - d1*e1 + g)*u1), -->
-<!--                (d1 + g)/(a1*e1), -->
-<!--                (e1*(-h1*l + I1*u1))/(a1*e1*l + (d1 - d1*e1 + g)*u1), -->
-<!--                (-a1*e1*(d2*(-1 + e2)*h2 - a2*e2*I2)*l*(c + m) + d2*(-1 + e2)*(d1*(-1 + e1) - g)*h2*(c + m)*u1 + a2*(e2*(d1 + g)*I2*(c + m)*u1 - e1*(d1*e2*I2*(c + m)*u1 + g*m*(h1*l - I1*u1))))/((c + m)*(a1*e1*l + (d1 - d1*e1 + g)*u1)*(a2*e2*l - d2*(-1 + e2)*u2)), -->
-<!--                (l*(-d2*(d1*(-1 + e1) - g)*h2*(c + m)*u1 + a2*e1*g*m*(-h1*l + I1*u1)) + d2*(d1*e1*I2*(c + m)*u1 - (d1 + g)*I2*(c + m)*u1 + e1*g*m*(h1*l - I1*u1))*u2 + a1*d2*e1*l*(c + m)*(h2*l - I2*u2))/(a2*e2*h2*l*(c + m)*(a1*e1*l + (d1 - d1*e1 + g)*u1) - a2*(a1*e1*e2*I2*l*(c + m) + e2*(d1 + g)*I2*(c + m)*u1 - e1*(d1*e2*I2*(c + m)*u1 + g*m*(h1*l - I1*u1)))*u2), -->
-<!--                ((e1*g*m*(-h1*l + I1*u1)*u2)/((c + m)*(a1*e1*l + (d1 - d1*e1 + g)*u1)) + e2*(-h2*l + I2*u2))/(a2*e2*l - d2*(-1 + e2)*u2)) -->
-<!-- } -->
-
-<!-- # calculate meta-ecosystem biomass stocks for each trophic compartment, -->
-<!-- # a.k.a., meta-ecosystem productivity -->
-<!-- PREDg0$Ntot <- PREDg0$N1 + PREDg0$N2 -->
-<!-- PREDg0$Ptot <- PREDg0$P1 + PREDg0$P2 -->
-<!-- PREDg0$Ctot <- PREDg0$C1 + PREDg0$C2 -->
-
-<!-- # Equilibrium stocks less than or equal to 0 make no biological sense, so we -->
-<!-- # will remove them from the PRED dataset. -->
-<!-- PREDg0pos <- subset(PREDg0, N1>0 & P1>0 & C1>0 & N2>0 & P2>0 & C2>0) -->
-<!-- PREDg0_sample1000 <- PREDg0pos[sample(nrow(PREDg0pos),size=1000),] -->
-
-<!-- # pivot the -->
-<!-- PREDg0_long <- pivot_longer(PREDg0_sample1000, -->
-<!--                             names_to = "Compartment", -->
-<!--                             values_to = "Stock", -->
-<!--                             cols = c(N1, P1, C1, N2, P2, C2, -->
-<!--                                      Ntot, Ptot, Ctot)) %>% -->
-<!--   dplyr::mutate(., Ecosystem = if_else(Compartment == "N1"| -->
-<!--                                          Compartment == "C1" | -->
-<!--                                          Compartment == "P1", -->
-<!--                                        "Donor", -->
-<!--                                        if_else(Compartment == "N2" | -->
-<!--                                                  Compartment == "P2" | -->
-<!--                                                  Compartment=="C2", -->
-<!--                                                "Recipient", -->
-<!--                                                "Meta-ecosystem"))) -->
-
-<!-- PREDg0_long$Compartment <- as_factor(PREDg0_long$Compartment) -->
-<!-- PREDg0_long$Ecosystem <- as_factor(PREDg0_long$Ecosystem) -->
-
-<!-- comparts_medians <- PREDg0_long %>% -->
-<!--   dplyr::group_by(Compartment, Ecosystem) %>% -->
-<!--   dplyr::summarise(., median = median(Stock), .groups = "keep") -->
-
-<!-- ggplot(data=PREDg0_long, -->
-<!--        aes(x = Compartment, y = Stock, fill = Ecosystem, col = Ecosystem)) + -->
-<!--   geom_boxjitter(alpha = 0.25, outlier.intersect = TRUE, outlier.shape = 25, jitter.shape = 21) + -->
-<!--   geom_label(data = comparts_medians, aes(y = median, label = round(median,2)), -->
-<!--              col = "black", size = 3, fill = "#FFFFFF", alpha = 0.75, -->
-<!--              nudge_x = -0.18, label.padding = unit(0.16, "lines"), -->
-<!--              label.size = 0.15) + -->
-<!--   facet_grid(.~Ecosystem, scales = "free") + -->
-<!--   scale_color_manual(values = met.brewer("Egypt", 4)) + -->
-<!--   scale_fill_manual(values = met.brewer("Egypt", 4)) + -->
-<!--   theme_pubr() + -->
-<!--   coord_cartesian(y = c(0, 100)) + -->
-<!--   theme(legend.position = "none") -->
-<!-- ``` -->
-
-<!-- In this case, the lack of movement from the Consumer trophic compartment to -->
-<!-- the Dispersers' Pools establishes a classic bottom-up control in both -->
-<!-- ecosystems. As there is no movement through the dispersers' pool Q, we will not -->
-<!-- show scatterplots like Figures \@ref(fig:g-change), \@ref(fig:m-change), or -->
-<!-- \@ref(fig:c-change) above. -->
-
-<!-- #### Sampling `g` from a set of values -->
-
-<!-- Here we run the model using a set value of `m` (= 0) and drawing `g` from a -->
-<!-- set of [0,10] values. To do this, we will use a nested for loop. In the outer -->
-<!-- loop, we will sequentially draw a value for `g`. We will then use this value to -->
-<!-- run the model in the inner loop. Here, we create object `gvar`, to store the -->
-<!-- values for `g`: these are values between 0 and 10, in 0.5 increments. -->
-
-<!-- ```{r gvar-values, echo=TRUE, tidy=TRUE} -->
-<!-- gvar <- seq(0, 10, 0.5) -->
-<!-- ``` -->
-
-<!-- Now, we run the model. -->
-
-<!-- ```{r simuls-gvar,echo=TRUE,tidy=TRUE,fig.cap="Biomass stock values at equilibrium for local and meta-ecosystem scale when m is held constant, g is allowed to vary, and the other parameters are randomly drawn. The consumers' collapse in ecosystem 1, and consequent increase in producer biomass, is even more evident than in previous scenarios. Ecosystem 2 is largely untouched by this situation. Parameter values and ranges: m = 0, g = [0,10]. All other specifications as in Figure 1. "} -->
-<!-- # Allocate an empty data frame to save the data in -->
-<!-- PREDgvar <- NULL -->
-
-<!-- for (j in 1:length(gvar)) { -->
-<!--   # movement rate to the Disperser's pool Q -->
-<!--   g = gvar[j] -->
-<!--   # movement rate from the Disperser's pool Q -->
-<!--   m = 0 -->
-
-<!--   PREDtemp <- NULL -->
-
-<!--   PREDtemp <- rbind(PREDtemp, data.frame(TIME=seq(0,100,1), -->
-<!--                                          I1 = I1,  I2 = I2, l = l, -->
-<!--                                          u1 = seq(0,100,1), u2 = seq(0,100,1), -->
-<!--                                          a1 = seq(0,100,1), a2 = seq(0,100,1), -->
-<!--                                          h1 = seq(0,100,1), h2 = seq(0,100,1), -->
-<!--                                          d1 = seq(0,100,1), d2 = seq(0,100,1), -->
-<!--                                          g = seq(0,100,1), m = seq(0,100,1), -->
-<!--                                          c = seq(0,100,1), -->
-<!--                                          e1 = seq(0,100,1), e2 = seq(0,100,1), -->
-<!--                                          N1=seq(0,100,1), P1=seq(0,100,1), -->
-<!--                                          C1=seq(0,100,1), N2=seq(0,100,1), -->
-<!--                                          P2=seq(0,100,1), C2=seq(0,100,1))) -->
-
-<!--   # We want to start simulations at 0 -->
-<!--   i1 = 0 -->
-
-<!--   for (i in seq(0,199,1)){ -->
-<!--   	# go to the next row -->
-<!--   	i1 = i1 + 1 -->
-
-<!--   # Let's sample the parameter values from DATA. We will sample these x times as defined by the i for loop above -->
-<!--   # producers uptake rates -->
-<!--   u1 = DATA1[i1,2] # in ecosystem 1 -->
-<!--   u2 = DATA1[i1,3] # in ecosystem 2 -->
-<!--   # consumers attack rates -->
-<!--   a1 = DATA1[i1,4] -->
-<!--   a2 = DATA1[i1,5] -->
-<!--   # death rates (= recycling rate) -->
-<!--   h1 = DATA1[i1,6] # death (=recycling) rate for producers in ecosystems 1 -->
-<!--   h2 = DATA1[i1,7] # death (=recycling) rate for producers in ecosystem 2 -->
-<!--   d1 = DATA1[i1,8] # death (=recycling) rate for consumers in ecosystem 1 -->
-<!--   d2 = DATA1[i1,9] # death (=recycling) rate for consumers in ecosystem 2 -->
-<!--   c = DATA1[i1,10] # death rate in the disperser's pool Q -->
-<!--   # efficiency of consumers -->
-<!--   e1 = DATA2[i1,2] # in ecosystem 1 -->
-<!--   e2 = DATA2[i1,3] # in ecosystem 2 -->
-
-<!--   PREDtemp[i1,] <- c(i1, I1, I2, l, u1, u2, a1, a2, h1, h2, d1, d2, g, m, c, e1, e2, -->
-<!--                  ((d1 - d1*e1 + g)*h1 + a1*e1*I1)/(a1*e1*l + (d1 - d1*e1 + g)*u1), -->
-<!--                  (d1 + g)/(a1*e1), -->
-<!--                  (e1*(-h1*l + I1*u1))/(a1*e1*l + (d1 - d1*e1 + g)*u1), -->
-<!--                  (-a1*e1*(d2*(-1 + e2)*h2 - a2*e2*I2)*l*(c + m) + d2*(-1 + e2)*(d1*(-1 + e1) - g)*h2*(c + m)*u1 + a2*(e2*(d1 + g)*I2*(c + m)*u1 - e1*(d1*e2*I2*(c + m)*u1 + g*m*(h1*l - I1*u1))))/((c + m)*(a1*e1*l + (d1 - d1*e1 + g)*u1)*(a2*e2*l - d2*(-1 + e2)*u2)), -->
-<!--                  (l*(-d2*(d1*(-1 + e1) - g)*h2*(c + m)*u1 + a2*e1*g*m*(-h1*l + I1*u1)) + d2*(d1*e1*I2*(c + m)*u1 - (d1 + g)*I2*(c + m)*u1 + e1*g*m*(h1*l - I1*u1))*u2 + a1*d2*e1*l*(c + m)*(h2*l - I2*u2))/(a2*e2*h2*l*(c + m)*(a1*e1*l + (d1 - d1*e1 + g)*u1) - a2*(a1*e1*e2*I2*l*(c + m) + e2*(d1 + g)*I2*(c + m)*u1 - e1*(d1*e2*I2*(c + m)*u1 + g*m*(h1*l - I1*u1)))*u2), -->
-<!--                  ((e1*g*m*(-h1*l + I1*u1)*u2)/((c + m)*(a1*e1*l + (d1 - d1*e1 + g)*u1)) + e2*(-h2*l + I2*u2))/(a2*e2*l - d2*(-1 + e2)*u2)) -->
-<!--   } -->
-<!--   PREDgvar <- rbind(PREDgvar, PREDtemp) -->
-<!--   rm(PREDtemp) -->
-<!-- } -->
-
-<!-- # calculate meta-ecosystem biomass stocks for each trophic compartment, -->
-<!-- # a.k.a., meta-ecosystem productivity -->
-<!-- PREDgvar$Ntot <- PREDgvar$N1 + PREDgvar$N2 -->
-<!-- PREDgvar$Ptot <- PREDgvar$P1 + PREDgvar$P2 -->
-<!-- PREDgvar$Ctot <- PREDgvar$C1 + PREDgvar$C2 -->
-
-<!-- # Equilibrium stocks less than or equal to 0 make no biological sense, so we -->
-<!-- # will remove them from the PRED dataset. -->
-<!-- PREDgvarpos <- subset(PREDgvar, N1>0 & P1>0 & C1>0 & N2>0 & P2>0 & C2>0) -->
-<!-- PREDgvar_sample100 <- PREDgvarpos[sample(nrow(PREDgvarpos),size=1000),] -->
-
-<!-- # pivot the -->
-<!-- PREDgvar_long <- pivot_longer(PREDgvar_sample100, -->
-<!--                               names_to = "Compartment", -->
-<!--                               values_to = "Stock", -->
-<!--                               cols = c(N1, P1, C1, N2, P2, C2, -->
-<!--                                        Ntot, Ptot, Ctot)) %>% -->
-<!--   dplyr::mutate(., Ecosystem = if_else(Compartment == "N1" | -->
-<!--                                          Compartment == "C1" | -->
-<!--                                          Compartment == "P1", -->
-<!--                                        "Donor", -->
-<!--                                        if_else(Compartment == "N2" | -->
-<!--                                                  Compartment == "P2" | -->
-<!--                                                  Compartment=="C2", -->
-<!--                                                "Recipient", -->
-<!--                                                "Meta-ecosystem"))) -->
-
-<!-- PREDgvar_long$Compartment <- as_factor(PREDgvar_long$Compartment) -->
-<!-- PREDgvar_long$Ecosystem <- as_factor(PREDgvar_long$Ecosystem) -->
-
-<!-- comparts_medians <- PREDgvar_long %>% -->
-<!--   dplyr::group_by(Compartment, Ecosystem) %>% -->
-<!--   dplyr::summarise(., median = median(Stock), .groups = "keep") -->
-
-<!-- ggplot(data=PREDgvar_long, aes(x = Compartment, y = Stock, fill = Ecosystem, col = Ecosystem)) + -->
-<!--   geom_boxjitter(alpha = 0.1, outlier.intersect = TRUE, outlier.shape = 25, jitter.shape = 21) + -->
-<!--   geom_label(data = comparts_medians, -->
-<!--              aes(y = median, label = round(median,2)), -->
-<!--              col = "black", size = 3, fill = "#FFFFFF", -->
-<!--              alpha = 0.75, nudge_x = -0.18, -->
-<!--              label.padding = unit(0.15, "lines"), -->
-<!--              label.size = 0.15) + -->
-<!--   facet_grid(.~Ecosystem, scales = "free") + -->
-<!--   scale_color_manual(values = met.brewer("Egypt", 4)) + -->
-<!--   scale_fill_manual(values = met.brewer("Egypt", 4)) + -->
-<!--   theme_pubr() + -->
-<!--   coord_cartesian(y = c(0, 100)) + -->
-<!--   theme(legend.position = "none") -->
-<!-- ``` -->
-
-<!-- ```{r echo=TRUE,tidy=TRUE, fig.cap="Change in biomass of the two ecosystems’ compartment, the dispersers’ pool, and the meta-ecostystem as g increases from 0 to 10, in increments of 0.5. The value of m is held constant at 0. All other specifications as in Figure 2.", fig.show='asis'} -->
-
-<!-- ggplot(data = PREDgvar_long, aes(x = g, y = log10(Stock), col = Ecosystem)) + -->
-<!--   geom_point(alpha = 0.1) + -->
-<!--   geom_smooth(method = "lm", col = "white", alpha = 1, se = T) + -->
-<!--   facet_grid(.~Compartment) + -->
-<!--   scale_color_manual(values = met.brewer("Egypt", 4)) + -->
-<!--   theme_pubr() + -->
-<!--   guides(colour = guide_legend(override.aes = list(alpha = 1))) + -->
-<!--   theme(axis.text.x = element_text(angle = 45, vjust = 0.5, size = 8), -->
-<!--         text = element_text(size = 11)) -->
-<!-- ``` -->
-
-<!-- ```{r echo=TRUE,tidy=TRUE,fig.cap="Change in biomass of the two ecosystems’ compartment, the dispersers’ pool, and the meta-ecostystem with change in the value of the consumer death rate while in the dispersers' pool (c) when g varies between 0 and 10. All specificatons as in Figure 2.", fig.show='asis'} -->
-
-<!-- ggplot(PREDgvar_long, aes(c, log10(Stock), col = Ecosystem)) + -->
-<!--   geom_point(alpha = 0.1) + -->
-<!--   geom_smooth(method = "lm", col = "white", alpha = 1, se = T) + -->
-<!--   facet_grid(.~Compartment) + -->
-<!--   scale_color_manual(values = met.brewer("Egypt", 4)) + -->
-<!--   theme_pubr() + -->
-<!--   guides(colour = guide_legend(override.aes = list(alpha = 1))) + -->
-<!--   theme(axis.text.x = element_text(angle = 45, vjust = 0.5, size = 8), -->
-<!--         text = element_text(size = 11)) -->
-<!-- ``` -->
-
-<!-- #### Potential Interaction between `g` and `m` -->
-
-<!-- Inspecting the above results, it seems there may be an interaction between `g` -->
-<!-- and `m`, the two parameters that regulate movement to and from the Dispersers' -->
-<!-- Pool (`Q`), respectively. Here, we try to disentangle this interactions, by -->
-<!-- randomly drawing `m` from a [0,10] distribution like before, but instead -->
-<!-- fixing the value of `g`. We will run three such simulations, with `g = 0`, -->
-<!-- `g = 5`, and `g = 9`. -->
-
-<!-- ```{r simuls-gm-interact,echo=TRUE,tidy=TRUE,fig.cap="Comparison of biomass stock values at equilibrium for local and meta-ecosystem scale for three cases of increasing g values; low (g = 0), medium (g = 5), and high (g = 9), respectively. All other parameters values, including m, are randomly drawn. In all scenarios, consumers collapse in ecosystem 1 following movement to the dispersers pool, leading to the establishment of a spatial trophic cascade at the meta-ecosystem scale. Simulations were ran for 1000 time steps for each value of g. All other specifications as in Figure 1."} -->
-
-<!-- gset <- c(0, 5, 9) -->
-
-<!-- # Allocate an empty data frame to save the data in -->
-<!-- PREDint <- NULL -->
-
-<!-- for (j in 1:length(gset)) { -->
-<!--   # movement rate to the Disperser's pool Q -->
-<!--   g = gset[j] -->
-
-<!--   PREDtemp <- NULL -->
-
-<!--   PREDtemp <- rbind(PREDtemp, data.frame(TIME=seq(0,100,1), -->
-<!--                                          I1 = I1,  I2 = I2, l = l, -->
-<!--                                          u1 = seq(0,100,1), u2 = seq(0,100,1), -->
-<!--                                          a1 = seq(0,100,1), a2 = seq(0,100,1), -->
-<!--                                          h1 = seq(0,100,1), h2 = seq(0,100,1), -->
-<!--                                          d1 = seq(0,100,1), d2 = seq(0,100,1), -->
-<!--                                          g = seq(0,100,1), m = seq(0,100,1), -->
-<!--                                          c = seq(0,100,1), -->
-<!--                                          e1 = seq(0,100,1), e2 = seq(0,100,1), -->
-<!--                                          N1=seq(0,100,1), P1=seq(0,100,1), -->
-<!--                                          C1=seq(0,100,1), N2=seq(0,100,1), -->
-<!--                                          P2=seq(0,100,1), C2=seq(0,100,1))) -->
-
-<!--   # We want to start simulations at 0 -->
-<!--   i1 = 0 -->
-
-<!--   for (i in seq(0,9999,1)){ -->
-<!--   	# go to the next row -->
-<!--   	i1 = i1 + 1 -->
-
-<!--   # Let's sample the parameter values from DATA. We will sample these x times as defined by the i for loop above -->
-<!--   # producers uptake rates -->
-<!--   u1 = DATA1[i1,2] # in ecosystem 1 -->
-<!--   u2 = DATA1[i1,3] # in ecosystem 2 -->
-<!--   # consumers attack rates -->
-<!--   a1 = DATA1[i1,4] -->
-<!--   a2 = DATA1[i1,5] -->
-<!--   # death rates (= recycling rate) -->
-<!--   h1 = DATA1[i1,6] # death (=recycling) rate for producers in ecosystems 1 -->
-<!--   h2 = DATA1[i1,7] # death (=recycling) rate for producers in ecosystem 2 -->
-<!--   d1 = DATA1[i1,8] # death (=recycling) rate for consumers in ecosystem 1 -->
-<!--   d2 = DATA1[i1,9] # death (=recycling) rate for consumers in ecosystem 2 -->
-<!--   c = DATA1[i1,10] # death rate in the disperser's pool Q -->
-<!--   # movement rate from the Disperser's pool Q -->
-<!--   m = DATA1[i1,11] -->
-<!--   # efficiency of consumers -->
-<!--   e1 = DATA2[i1,2] # in ecosystem 1 -->
-<!--   e2 = DATA2[i1,3] # in ecosystem 2 -->
-
-<!--   PREDtemp[i1,] <- c(i1, I1, I2, l, u1, u2, a1, a2, h1, h2, d1, d2, g, m, c, e1, e2, -->
-<!--                  ((d1 - d1*e1 + g)*h1 + a1*e1*I1)/(a1*e1*l + (d1 - d1*e1 + g)*u1), -->
-<!--                  (d1 + g)/(a1*e1), -->
-<!--                  (e1*(-h1*l + I1*u1))/(a1*e1*l + (d1 - d1*e1 + g)*u1), -->
-<!--                  (-a1*e1*(d2*(-1 + e2)*h2 - a2*e2*I2)*l*(c + m) + d2*(-1 + e2)*(d1*(-1 + e1) - g)*h2*(c + m)*u1 + a2*(e2*(d1 + g)*I2*(c + m)*u1 - e1*(d1*e2*I2*(c + m)*u1 + g*m*(h1*l - I1*u1))))/((c + m)*(a1*e1*l + (d1 - d1*e1 + g)*u1)*(a2*e2*l - d2*(-1 + e2)*u2)), -->
-<!--                  (l*(-d2*(d1*(-1 + e1) - g)*h2*(c + m)*u1 + a2*e1*g*m*(-h1*l + I1*u1)) + d2*(d1*e1*I2*(c + m)*u1 - (d1 + g)*I2*(c + m)*u1 + e1*g*m*(h1*l - I1*u1))*u2 + a1*d2*e1*l*(c + m)*(h2*l - I2*u2))/(a2*e2*h2*l*(c + m)*(a1*e1*l + (d1 - d1*e1 + g)*u1) - a2*(a1*e1*e2*I2*l*(c + m) + e2*(d1 + g)*I2*(c + m)*u1 - e1*(d1*e2*I2*(c + m)*u1 + g*m*(h1*l - I1*u1)))*u2), -->
-<!--                  ((e1*g*m*(-h1*l + I1*u1)*u2)/((c + m)*(a1*e1*l + (d1 - d1*e1 + g)*u1)) + e2*(-h2*l + I2*u2))/(a2*e2*l - d2*(-1 + e2)*u2)) -->
-<!--   } -->
-<!--   PREDint<- rbind(PREDint, PREDtemp) -->
-<!--   rm(PREDtemp) -->
-<!-- } -->
-
-<!-- # calculate meta-ecosystem biomass stocks for each trophic compartment, -->
-<!-- # a.k.a., meta-ecosystem productivity -->
-<!-- PREDint$Ntot <- PREDint$N1 + PREDint$N2 -->
-<!-- PREDint$Ptot <- PREDint$P1 + PREDint$P2 -->
-<!-- PREDint$Ctot <- PREDint$C1 + PREDint$C2 -->
-
-<!-- # Equilibrium stocks less than or equal to 0 make no biological sense, so we -->
-<!-- # will remove them from the PRED dataset. -->
-<!-- PREDintpos <- subset(PREDint, N1>0 & P1>0 & C1>0 & N2>0 & P2>0 & C2>0) -->
-<!-- PREDint_sample1000 <- PREDintpos[sample(nrow(PREDintpos),size=1000),] -->
-
-<!-- # pivot the -->
-<!-- PREDint_long <- pivot_longer(PREDint_sample1000, -->
-<!--                              names_to = "Compartment", -->
-<!--                              values_to = "Stock", -->
-<!--                              cols = c(N1, P1, C1, N2, P2, C2, -->
-<!--                                       Ntot, Ptot, Ctot)) %>% -->
-<!--   dplyr::mutate(., Ecosystem = if_else(Compartment == "N1" | -->
-<!--                                          Compartment == "C1" | -->
-<!--                                          Compartment == "P1", -->
-<!--                                        "Donor", -->
-<!--                                        if_else(Compartment == "N2" | -->
-<!--                                                  Compartment == "P2" | -->
-<!--                                                  Compartment=="C2", -->
-<!--                                                "Recipient", -->
-<!--                                                "Meta-ecosystem"))) -->
-
-<!-- PREDint_long$Compartment <- as_factor(PREDint_long$Compartment) -->
-<!-- PREDint_long$Ecosystem <- as_factor(PREDint_long$Ecosystem) -->
-<!-- PREDint_long$g <- as_factor(PREDint_long$g) -->
-
-<!-- comparts_medians <- PREDint_long %>% -->
-<!--   dplyr::group_by(Compartment, Ecosystem, g) %>% -->
-<!--   dplyr::summarise(., median = median(Stock), .groups = "keep") -->
-
-<!-- g_levels <- c("0" = "g = 0", "5" = "g = 5", "9" = "g = 9") -->
-
-<!-- ggplot(data=PREDint_long, aes(x = Compartment, y = Stock, fill = Ecosystem, col = Ecosystem)) + -->
-<!--   geom_boxjitter(alpha = 0.1, outlier.intersect = TRUE, outlier.shape = 25, jitter.shape = 21) + -->
-<!--  geom_label(data = comparts_medians, -->
-<!--              aes(y = median, label = round(median,2)), -->
-<!--              col = "black", size = 3, fill = "#FFFFFF", alpha = 0.75, -->
-<!--              nudge_x = -0.18, label.padding = unit(0.15, "lines"), -->
-<!--              label.size = 0.15) + -->
-<!--   facet_grid(g~Ecosystem, scales = "free") + -->
-<!--   scale_color_manual(values = met.brewer("Egypt", 4)) + -->
-<!--   scale_fill_manual(values = met.brewer("Egypt", 4)) + -->
-<!--   theme_pubr() + -->
-<!--   coord_cartesian(y = c(-5, 100)) + -->
-<!--   theme(legend.position = "none") -->
-<!-- ``` -->
-
-<!-- ```{r gm-int-stock, echo=TRUE,tidy=TRUE, fig.cap="Change in biomass stock values over change in the rate of consumer movement from the dispersers' pool to ecosystem 2 (m), when the rate of consumer movememnt to the dispersers' pool from ecosystem 1 (g) is drawn from three alternative values: low (g = 0), medium (g = 5), and high (g = 9). All other specifications as in Figure 2.", fig.show='asis'} -->
-
-<!-- ggplot(data=PREDint_long, aes(x = m, y = log10(Stock), col = Ecosystem)) + -->
-<!--   geom_point(alpha = 0.1) + -->
-<!--   geom_smooth(method = "lm", col = "white", alpha = 1, se = T) + -->
-<!--   facet_grid(g~Compartment, scales = "free", -->
-<!--              labeller = labeller(g = g_levels)) + -->
-<!--   scale_color_manual(values = met.brewer("Egypt", 4)) + -->
-<!--   theme_pubr() + -->
-<!--   guides(colour = guide_legend(override.aes = list(alpha = 1))) + -->
-<!--   theme(axis.text.x = element_text(angle = 45, vjust = 0.5, size = 8), -->
-<!--         text = element_text(size = 10)) -->
-<!-- ``` -->
-
-<!-- ```{r echo=TRUE,tidy=TRUE,fig.cap="Change in biomass stock values with change in the value of the consumer death rate while in the dispersers' pool (c), when g is either low (g = 0), medium (g = 5), and high (g = 9). All other specifications as in Figure 2.", fig.show='asis'} -->
-
-<!-- ggplot(PREDint_long, aes(c, log10(Stock), col = Ecosystem)) + -->
-<!--   geom_point(alpha = 0.15) + -->
-<!--   geom_smooth(method = "lm", col = "white", alpha = 1, se = T) + -->
-<!--   facet_grid(g~Compartment, scale = "free", -->
-<!--              labeller = labeller(g = g_levels)) + -->
-<!--   scale_color_manual(values = met.brewer("Egypt", 4)) + -->
-<!--   theme_pubr() + -->
-<!--   guides(colour = guide_legend(override.aes = list(alpha = 1))) + -->
-<!--   theme(axis.text.x = element_text(angle = 45, vjust = 0.5, size = 8), -->
-<!--         text = element_text(size = 10)) -->
-<!-- ``` -->
-
 ## Experimental scenarios: along- and against-gradient consumer movement
 
 Here, we investigate the influence of consumers moving from ecosystem 1 to 
@@ -1486,12 +898,6 @@ The analysis will follow the same steps as before: draw parameter values
 from our `DATA1` and `DATA2` data objects, simulate model 
 behavior, run stability analyses, remove equilibria that are unstable and/or 
 lack biological sense, and graphically inspect and interpret the results.
-
-<!-- <aside> -->
-<!-- Note that in the graphs below, we will not be showing values for the  -->
-<!-- dispersers' pool, `Q`, as these tend to be negligible compared to the local and  -->
-<!-- meta-ecosystem values for all ecosystem functions. -->
-<!-- </aside> -->
 
 ### Along-gradient consumer movement
 
@@ -1788,7 +1194,7 @@ I2bm <- ggplot(data=PREDI2_biomass_long,
 I2bm
 ```
 
-```{r I2small-flux, echo=TRUE, tidy=TRUE,fig.cap="With a higher fertility in the ecosystem 1 (i.e., I~1~ >> I~2~) nutrient flux in this ecosystem increases, most likely as a consequence of the release primary producers. Conversely, ecosystem 2 shows lower and less variable levels of nutrient flux. At the meta-ecosystem scale, nutrient flux is higher than in either local ecosystems but lower than in the case of equal environmental fertility across ecosystems (Figure 5). Environmental fertility values: I~1~ = 18, I~2~ = 2. All other specifications as in Figure 5."}
+```{r I2small-flux, echo=TRUE, tidy=TRUE,fig.cap="With a higher fertility in the ecosystem 1 (i.e., I~1~ >> I~2~) nutrient flux in this ecosystem increases, most likely as a consequence of the release primary producers. Conversely, ecosystem 2 shows lower and less variable levels of nutrient flux. At the meta-ecosystem scale, nutrient flux is higher than in either local ecosystems but lower than in the case of equal environmental fertility across ecosystems (Figure 7). Environmental fertility values: I~1~ = 18, I~2~ = 2. All other specifications as in Figure 7."}
 
 FluxPREDI2 <- PREDI2_1k %>%
   dplyr::select(.,
@@ -1861,9 +1267,6 @@ I2nf
 The code chunk below analyses the experimental scenario of higher environmental 
 fertility in ecosystem 2. In this case, consumer movement happens counter to the
 resource availability gradient  (i.e., _non-diffusive_ movement; @Gounand2018). 
-<!-- The resulting spatial trophic cascade involving the local ecosystem is much  -->
-<!-- stronger than in the scenario of equal fertility conditions (see [Visual  -->
-<!-- Deliverables]). -->
 
 ```{r simuls-I1small, echo=TRUE, tidy=TRUE}
 # Here we set values for inorganic Nutrients input rate in each patch
@@ -2130,7 +1533,7 @@ nutrient flux at the meta-ecosystem scale is higher than in either the
 along-gradient (Figure \@ref(fig:I2small-flux)) and no-gradient
 (Figure \@ref(fig:nut-flux-equal-I)) cases.
 
-```{r I1small-flux, echo=TRUE, tidy=TRUE, fig.cap="Nutrient flux more than doubles in ecosystem 2, when this is the more fertile of the two ecosystem and is also the recipient of consumer movement. In turn, this leads to an overall increase in the nutrient flux at the meta-ecosystem scale, compared to scenarios where environmental fertility is equal among local ecosystem (Figure 5) or is higher in the donor ecosystem (Figure 19). Environmental fertility values: I~1~ = 2, I~2~ = 18."}
+```{r I1small-flux, echo=TRUE, tidy=TRUE, fig.cap="Nutrient flux more than doubles in ecosystem 2, when this is the more fertile of the two ecosystem and is also the recipient of consumer movement. In turn, this leads to an overall increase in the nutrient flux at the meta-ecosystem scale, compared to scenarios where environmental fertility is equal among local ecosystem (Figure 7) or is higher in the donor ecosystem (Figure 21). Environmental fertility values: I~1~ = 2, I~2~ = 18."}
 FluxPREDI1 <- PREDI1_1k %>% dplyr::select(TIME:c, FLUX_P1:FLUX_Eco_2, MetaEcoFlux) %>% tidyr::pivot_longer(names_to = "Compartment", values_to = "Flux", cols = c(FLUX_P1:MetaEcoFlux)) %>% dplyr::mutate(Scale = if_else(Compartment == "FLUX_P1" | Compartment == "FLUX_C1" | Compartment == "FLUX_Eco_1", "Donor", if_else(Compartment == "FLUX_P2" | Compartment == "FLUX_C2" | Compartment == "FLUX_Eco_2", "Recipient", "Meta-ecosystem"))) %>% dplyr::mutate(., Scale = fct_relevel(Scale, "Donor", "Recipient", "Meta-ecosystem"))
 
 FluxPREDI1$Scale <- as.factor(FluxPREDI1$Scale)
@@ -2240,7 +1643,7 @@ SAsummary
 ## Visual Deliverables---Ecosystem functions
 
 Here we summarize the above results and produce **Figures 2, 3, and 4** shown in
-the main text and **Figures S1 to S5** in the Supplementary Materials. We refer 
+the main text and **Figures D.2 to D.8** in the Supplementary Materials. We refer 
 the reader to those documents to see the actual figures; here we only present 
 the code used to generate them.
 
@@ -2262,16 +1665,8 @@ is either the local or meta-ecosystem, and $I_1 \gtrless I_2$ at the numerator
 represents the direction of fertility gradient in the **experimental** scenario of 
 interest. At the denominator, $I_1 = I_2$ represents the equal fertility 
 conditions of the **control** scenario. Please, see the **Numerical Analyses**
-section of the manuscript as well as **Supplementary Figure A.1** for a primer
+section of the manuscript as well as **Appendix Figure D.1** for a primer
 on how to interpret the _LRR_ graphs.
-
-<!-- A value of $LRR_X = 0$ indicates that the ecosystem function values in the -->
-<!-- experimental scenario does not differ from that in the control scenario. Values  -->
-<!-- above 0 (on a white background) indicate that the ecosystem function values in  -->
-<!-- the experimental scenario are larger than in the control---hence, consumer movement  -->
-<!-- **increases** them. Viceversa, values of $LRR_X < 0$ (on a grey background)  -->
-<!-- indicate that ecosystem function values in the control scenario are larger than  -->
-<!-- in the experimental one---hence, consumer movement **decreases** them. -->
 
 ### All stable parameter sets
 
@@ -2288,6 +1683,26 @@ consmov_theme <- theme_pubr() + theme(legend.position = "bottom",
                                       axis.title.y = element_text(size = 17, 
                                                                   face = "bold"),
                                       strip.text = element_text(size = 16))
+# custom theme for ppt
+ppt_theme <- theme_bw() + theme(
+  aspect.ratio = 1,
+  legend.position = "bottom", 
+  legend.background = element_blank(), 
+  text = element_text(color = "white", size = 15), 
+  axis.text = element_text(color = "white"), 
+  axis.line = element_line(color = "white"), 
+  axis.ticks = element_line(color = "white"), 
+  strip.background = element_blank(), 
+  strip.text = element_text(color = "white"), 
+  panel.border = element_rect(fill = NA, color = "white"), 
+  panel.background = element_blank(),
+  panel.grid = element_blank(),
+  plot.background = element_blank()
+  )
+
+# set width and height for 16:9 graphs
+width <- 10
+height <- (9/16)*width
 ```
 
 We are working with the `PRED`, `PREDI2`, and `PREDI1` datasets we produced 
@@ -2389,7 +1804,7 @@ head(EnvFert_long)
 ```
 
 Now that we have a dataset ready for plotting, we produce the graphs. The next
-code chunk produces **Figure A.2** in the Supplementary Materials. Note that we 
+code chunk produces **Figure D.2** in the Supplementary Materials. Note that we 
 show the code, but not the figure itself as it is presented in the 
 Supplementary Materials.
 
@@ -2490,7 +1905,7 @@ FuncAll <- StockSumm + FluxSumm + ProdSumm +
   plot_annotation(tag_levels = "a", tag_prefix = "(", tag_suffix = ")") & 
   consmov_theme
 
-# FuncAll
+FuncAll
 
 #ggsave(FuncAll, filename = "../Results/FunctionSummary_10kN.pdf", device = "pdf", dpi = 300, width = 11, height = 10)
 ```
@@ -2779,27 +2194,14 @@ EFallLRR <- EFstockLRR + EFfluxLRR + EFprodLRR +
   plot_annotation(tag_levels = "a", tag_prefix = "(", tag_suffix = ")") &
   consmov_theme
 
-# EFallLRR
+EFallLRR
 
 #ggsave(EFallLRR, filename = "../Results/FunctionSummary_LRR_10kN.pdf", device = "pdf", dpi = 300, width = 10, height = 10)
 ```
 
-<!-- The table below reports mean values of the model's parameters in the sets  -->
-<!-- included in these graphs. -->
-
-```{r median-param-values-all-lrr, eval=FALSE, include=FALSE}
-EnvFertRR %>% select(., Fertility, u1:e2) %>% ungroup() %>% group_by(., Fertility) %>% pivot_longer(., cols = -Fertility, names_to = "Parameter", values_to = "value") %>% mutate(., Parameter = as_factor(Parameter)) %>% ungroup() %>% group_by(., Fertility, Parameter) %>% summarise(., across(.cols = value, .fns = list(mean = mean, sd = sd)), .groups = "keep") %>% pivot_wider(., names_from = "Fertility", values_from = c("value_mean", "value_sd"))%>% gt(rowname_col = "Parameter", groupname_col = "Fertility") %>% fmt_number(., columns = 2:5, decimals = 2) %>% tab_spanner(label = md("Along-gradient movement"), columns = c("value_mean_Along", "value_sd_Along")) %>% tab_spanner(label = md("Against-gradient movement"), columns = c("value_mean_Against", "value_sd_Against")) %>% cols_label(value_mean_Against = "mean", value_sd_Against = "sd", value_mean_Along = "mean", value_sd_Along = "sd") 
-
-# %>% gtsave(., filename = "../Results/MeanParam_LRR.rtf")
-
-EnvFertRR %>% select(., Fertility, u1:e2) %>% ungroup() %>% group_by(., Fertility) %>% pivot_longer(., cols = -Fertility, names_to = "Parameter", values_to = "value") %>% mutate(., Parameter = as_factor(Parameter), Fertility = as_factor(Fertility)) %>% ggplot(., aes(x = Parameter, y = value)) + geom_boxjitter(aes(fill = Parameter, col = Parameter), jitter.fill = NULL, alpha = 0.1) + scale_color_manual(values=met.brewer("Signac", 13)) + scale_fill_manual(values=met.brewer("Signac", 13)) + theme_pubr(legend = "none") + ylab("Mean") + facet_grid(.~Fertility, labeller = as_labeller(c(`Against` = "Against-gradient Consumer movement", `Along` = "Along-gradient Consumer movement"))) 
-
-#ggsave(filename = "../Results/MeanParam_LRR.pdf", dpi = 300, device = "pdf")
-```
-
 In the two sections below, we investigate if our results are robust to changes 
 in biomass distribution within the system caused by moving consumers and produce
-**Figures S2 to S5** in the Supplementary Materials.
+**Figures D.3 to D.7** in the Supplementary Materials.
 
 ### Consumer movement in bottom-heavy systems
 
@@ -2881,7 +2283,7 @@ head(EnvFert_CRbelow1_long)
 ```
 
 And now we use the newly created dataframe `EnvFert_CRbelow1_long` to produce a 
-figure analogous to **Supplementary Figure A.2**. Unlike previous figures, the
+figure analogous to **Appendix Figure D.2**. Unlike previous figures, the
 following one does not appear in the **Supplementary Material** and is thus shown here.
 
 ```{r envfert-cr-below-1-fig, echo=TRUE, tidy=TRUE, fig.width=10, fig.height=9, fig.cap="Change in nutrient stock and biomass (a), nutrient flux (b), and trophic compartment productivity (c) when consumers move in a heterogeneous meta-ecosystem, considering only parameters sets for which _C:R_ < 1 (unstransformed data). Notably, we observe a clear quantative difference in the nutrient stock at the meta-ecosystem scale, compared with Figure A.2. However, this does not appear to cause a qualitative change in the patterns of local and meta-ecosystem functioning observe, as noted in Figure A.3. All specifications as in Figure A.2."}
@@ -2987,13 +2389,7 @@ FuncAllCRbelow1
 While the quantitative changes are more noticeable here, again in the distance 
 between the upper and lower hinges of the boxes, there does not seem to be a 
 marked change in the qualitative pattern observed in our results for any of the
-ecosystem functions of interest.
-
-```{r median-param-values-cr-below-1, eval=FALSE, include=FALSE}
-EnvFert_CRbelow1 %>% select(., Fertility, u1:e2) %>% ungroup() %>% group_by(., Fertility) %>% pivot_longer(., cols = -Fertility, names_to = "Parameter", values_to = "value") %>% mutate(., Parameter = as_factor(Parameter)) %>% ungroup() %>% group_by(., Fertility, Parameter) %>% summarise(., across(.cols = value, .fns = list(mean = mean, sd = sd)), .groups = "keep") %>% pivot_wider(., names_from = "Fertility", values_from = c("value_mean", "value_sd"))%>% gt(rowname_col = "Parameter", groupname_col = "Fertility") %>% fmt_number(., columns = 2:7, decimals = 2) %>% tab_spanner(label = md("Equal"), columns = c("value_mean_Equal", "value_sd_Equal")) %>% tab_spanner(label = md("Along"), columns = c("value_mean_Along", "value_sd_Along")) %>% tab_spanner(label = md("Against"), columns = c("value_mean_Against", "value_sd_Against")) %>% cols_label(value_mean_Against = "mean", value_sd_Against = "sd", value_mean_Along = "mean", value_sd_Along = "sd", value_mean_Equal = "mean", value_sd_Equal = "sd")
-```
-
-Let's proceed to work on the _LRR_ values. 
+ecosystem functions of interest. Let's proceed to work on the _LRR_ values. 
 
 #### Log-transformed Response Ratio
 
@@ -3062,7 +2458,7 @@ EnvFertRR_CRbelow1_long <- select(EnvFertRR_CRbelow1, !(N1:e2)) %>%
                 stable = fct_drop(stable))
 ```
 
-And finally we produce **Supplementary Figure A.3**. Accordingly, we show the 
+And finally we produce **Appendix Figure D.4**. Accordingly, we show the 
 code here but not the figure itself.
 
 ```{r envfert-lrr-cr-below-1-fig, echo=TRUE,tidy=TRUE, fig.show='hide'}
@@ -3181,19 +2577,15 @@ EFallLRR_CRbelow1 <- EFstockLRR_CRbelow1 + EFfluxLRR_CRbelow1 + EFprodLRR_CRbelo
   plot_annotation(tag_levels = "a", tag_prefix = "(", tag_suffix = ")") &
   consmov_theme
 
-# EFallLRR_CRbelow1
+EFallLRR_CRbelow1
 
 #ggsave(EFallLRR_CRbelow1, filename = "../Results/FunctionSummary_LRR_CRbelow1.pdf", device = "pdf", dpi = 300, width = 10, height = 10)
 ```
 
-<!-- We do not observe any qualitative change in the patterns described in Figure  -->
-<!-- \@ref(fig:envfert-lrr-fig) for this slice of the data either. This is further confirmed by lookin at mean parameter values in the C:R < 1 subset (Fig. \@ref(fig:median-param-values-cr-below-1-lrr)). No clear pattern of variation from the mean value of 5---or 0.5 for parameters e~1~ and e~2~---stands out.  -->
+And here, we show median parameter values for the subset of results where 
+$C{:}R < 1$.
 
-And here, we produce **Supplementary Figure A.5**, showing 
-median parameter values for the subset of results where $C{:}R < 1$. Again, we 
-show the code but not the figure itself.
-
-```{r median-param-values-cr-below-1-lrr, echo=TRUE, tidy=TRUE, fig.show='hide'}
+```{r median-param-values-cr-below-1-lrr, echo=TRUE, tidy=TRUE}
 # table of median parameter values
 # EnvFertRR_CRbelow1 %>% select(., Fertility, u1:e2) %>% ungroup() %>% group_by(., Fertility) %>% pivot_longer(., cols = -Fertility, names_to = "Parameter", values_to = "value") %>% mutate(., Parameter = as_factor(Parameter)) %>% ungroup() %>% group_by(., Fertility, Parameter) %>% summarise(., across(.cols = value, .fns = list(mean = mean, sd = sd)), .groups = "keep") %>% pivot_wider(., names_from = "Fertility", values_from = c("value_mean", "value_sd"))%>% gt(rowname_col = "Parameter", groupname_col = "Fertility") %>% fmt_number(., columns = 2:5, decimals = 2) %>% tab_spanner(label = md("Along"), columns = c("value_mean_Along", "value_sd_Along")) %>% tab_spanner(label = md("Against"), columns = c("value_mean_Against", "value_sd_Against")) %>% cols_label(value_mean_Against = "mean", value_sd_Against = "sd", value_mean_Along = "mean", value_sd_Along = "sd") 
 
@@ -3225,7 +2617,7 @@ EnvFertRR_CRbelow1 %>%
 ### Consumer movement in top-heavy systems
 
 Here we reproduce **Figures 2**, **3**, and **4** from the main text and 
-**Supplementary Figure A.2** using only parameter sets that produce 
+**Appendix Figure D.2** using only parameter sets that produce 
 $C{:}R \in (1,10)$. We exclude $C{:}R > 10$ values, as these are likely 
 extremely rare in real-world ecosystems. We begin, as usual, with the 
 untransformed dataframe.
@@ -3303,7 +2695,7 @@ EnvFert_CRabove1_long <- select(EnvFert_CRabove1, !u1:e2) %>%
 head(EnvFert_CRabove1_long)
 ```
 
-And, finally, we reproduce **Supplementary Figure A.2**. Note that, again, this
+And, finally, we reproduce **Appendix Figure D.2**. Note that, again, this
 figure does not appear in the **Supplementary Materials** and is thus shown here.
 
 ```{r envfert-cr-above-1-fig, echo=TRUE, tidy=TRUE, fig.width=10, fig.height=9, fig.cap="Change in nutrient stock and biomass (a), nutrient flux (b), and trophic compartment productivity (c) when consumers move in a heterogeneous meta-ecosystem, considering only parameter sets for which _C:R_ > 1 and < 10 (unstransformed data). Here, biomass and nutrient stock results appear to more clearly point towards a trophic cascade at play at the meta-ecosystem scale, compared to Figure A.2. Patterns of nutrient flux and trophic compartment productivity appear qualitatively unchanged. All specifications as in Figure A.2."}
@@ -3408,17 +2800,13 @@ FuncAllCRabove1
 #ggsave(FuncAllCRabove1, filename = "../Results/FunctionSummary_CRabove1.pdf", device = "pdf", dpi = 300, width = 10, height = 10)
 ```
 
-Compared with **Supplementary Figure A.2**, we see a clear change in the pattern
+Compared with **Appendix Figure D.2**, we see a clear change in the pattern
 of biomass accumulation---consistent with the inverted, top-heavy biomass 
 pyramid expected when $C{:}R > 1$ [@McCauley2018].
 
-```{r median-param-values-cr-above-1, eval=FALSE, include=FALSE}
-EnvFert_CRabove1 %>% select(., Fertility, u1:e2) %>% ungroup() %>% group_by(., Fertility) %>% pivot_longer(., cols = -Fertility, names_to = "Parameter", values_to = "value") %>% mutate(., Parameter = as_factor(Parameter)) %>% ungroup() %>% group_by(., Fertility, Parameter) %>% summarise(., across(.cols = value, .fns = list(mean = mean, sd = sd)), .groups = "keep") %>% pivot_wider(., names_from = "Fertility", values_from = c("value_mean", "value_sd"))%>% gt(rowname_col = "Parameter", groupname_col = "Fertility") %>% fmt_number(., columns = 2:7, decimals = 2) %>% tab_spanner(label = md("Equal"), columns = c("value_mean_Equal", "value_sd_Equal")) %>% tab_spanner(label = md("Along"), columns = c("value_mean_Along", "value_sd_Along")) %>% tab_spanner(label = md("Against"), columns = c("value_mean_Against", "value_sd_Against")) %>% cols_label(value_mean_Against = "mean", value_sd_Against = "sd", value_mean_Along = "mean", value_sd_Along = "sd", value_mean_Equal = "mean", value_sd_Equal = "sd")
-```
-
 #### Log-transformed Response Ratio
 
-Here, we produce **Supplementary Figure A.4**. We use only parameter sets that 
+Here, we produce **Appendix Figure D.6**. We use only parameter sets that 
 produce $C{:}R \in (1,10)$. First, we exclude all $C{:}R$ values below 1. 
 
 ```{r filter-lrr-cr-above-1, echo=TRUE,tidy=TRUE}
@@ -3485,7 +2873,7 @@ EnvFertRR_CRabove1_long <- select(EnvFertRR_CRabove1, !(N1:e2)) %>%
                 stable = fct_drop(stable))
 ```
 
-And now we produce **Supplementary Figure A.4**. Note that, as above, we do not 
+And now we produce **Appendix Figure D.6**. Note that, as above, we do not 
 show the figure itself here but only the code needed to produce it.
 
 ```{r envfert-lrr-cr-above-1-fig, echo=TRUE,tidy=TRUE, fig.show='hide'}
@@ -3593,19 +2981,11 @@ EFallLRR_CRabove1 <- EFstockLRR_CRabove1 + EFfluxLRR_CRabove1 + EFprodLRR_CRabov
 #ggsave(EFallLRR_CRabove1, filename = "../Results/FunctionSummary_LRR_CRabove1.pdf", device = "pdf", dpi = 300, width = 10, height = 10)
 ```
 
-<!-- We observe some small quantitative changes in the mean values of the ecosystem  -->
-<!-- functions of interest in Fig. \@ref(fig:envfert-lrr-cr-above-1-fig), but not strong enough to qualitatively alter the main results of our analyses.  -->
-<!-- To investigate them further, let's have a look at the mean values of the  -->
-<!-- parameters in the subset of parameter sets that produce C:R > 1. -->
+As above, we now plot the median parameter values for these parameter sets.
 
-As above, we now plot the median parameter values for these parameter sets, which 
-are shown in **Supplementary Figure A.6**. Accordingly, we only show the code to
-produce the figure and not the figure itself.
-
-```{r median-param-values-cr-above-1-lrr, echo=TRUE, tidy=TRUE, fig.show='hide'}
+```{r median-param-values-cr-above-1-lrr, echo=TRUE, tidy=TRUE}
 # table of median parameter sets
 
-# EnvFertRR_CRabove1 %>% select(., Fertility, u1:e2) %>% ungroup() %>% group_by(., Fertility) %>% pivot_longer(., cols = -Fertility, names_to = "Parameter", values_to = "value") %>% mutate(., Parameter = as_factor(Parameter)) %>% ungroup() %>% group_by(., Fertility, Parameter) %>% summarise(., across(.cols = value, .fns = list(mean = mean, sd = sd)), .groups = "keep") %>% pivot_wider(., names_from = "Fertility", values_from = c("value_mean", "value_sd"))%>% gt(rowname_col = "Parameter", groupname_col = "Fertility") %>% fmt_number(., columns = 2:5, decimals = 2) %>% tab_spanner(label = md("Along"), columns = c("value_mean_Along", "value_sd_Along")) %>% tab_spanner(label = md("Against"), columns = c("value_mean_Against", "value_sd_Against")) %>% cols_label(value_mean_Against = "mean", value_sd_Against = "sd", value_mean_Along = "mean", value_sd_Along = "sd") 
 EnvFertRR_CRabove1 %>% 
   select(., Fertility, u1:e2) %>% 
   ungroup() %>%
@@ -3628,17 +3008,59 @@ EnvFertRR_CRabove1 %>%
 # ggsave(filename = "../Results/MeanParam_LRR_CRabove1.pdf", dpi = 300, device = "pdf")
 ```
 
-<!-- As shown in Fig. \@ref(median-param-values-cr-above-1-lrr), in these  -->
-<!-- parameter sets we see increased average trophic efficiency for consumers in  -->
-<!-- ecosystem 1 (parameters a~1~ and e~1~), as well as lower average recycling rates  -->
-<!-- (d~1~) and lower average movement rates (g) for consumers in ecosystem 1 when  -->
-<!-- they move against-gradient. These mean parameter values, together with the  -->
-<!-- relative rarity of parameter sets producing stable ecosystems with a C:R > 1,  -->
-<!-- appear to agree with theoretical expectations that inverted biomass pyramids  -->
-<!-- lead to ecosystem instability [@McCauley2018;@Trebilco2013]. Further, these  -->
-<!-- results lend support to hypotheses regarding consumer movement across ecosystems  -->
-<!-- as having a potential stabilizing effect on ecosystems characterized by inverted  -->
-<!-- biomass pyramids [@McCauley2018]. -->
+## Consumer Biomass in Dispersers' Pool
+
+Finally, we can explore how much of the consumers' biomass remains in the 
+dispersers' pool at equilibrium (Figure \@ref(fig:disp-pool-bp)) and how it 
+varies over time as the simulation progress (**Appendix Figure D.8**; not 
+shown here as it appears in the manuscript's appendices).
+
+```{r disp-pool-bp, echo=TRUE, tidy=TRUE, fig.cap="Here we show in more details the accumulation of consumer biomass in the disperser's pool Q at equilibrium, in all three consumer movement scenarios. As shown above (Figures 1--4), consumer biomass in the dispersers' pool Q is negligible at equilibrium, regardless of the way consumers move in the meta-ecosystems."}
+Qres <-  bind_rows("Equal" = PRED, 
+                   "Along" = PREDI2, 
+                   "Against" = PREDI1, 
+                   .id = "Fertility") %>% 
+    select(., biosense, Fertility, TIME, Q)
+
+Qrespos <- filter(Qres, biosense == "yes")
+
+dplyr::mutate(Qrespos, Fertility = fct_relevel(Fertility,
+                                         "Equal", 
+                                         "Along", 
+                                         "Against")) %>% 
+  ggplot(., aes(x = Fertility, y = Q, col = Fertility, group = Fertility)) + 
+  geom_boxjitter(alpha = 0.25, outlier.intersect = TRUE, outlier.shape = 21, 
+                 jitter.shape = 21, outlier.stroke = 2, jitter.stroke = 2) + 
+  scale_color_highcontrast(reverse = F) + 
+  ylab("Consumer biomass in Dispersers' Pool") + 
+  xlab("Consumer movement") + 
+  scale_x_discrete(labels = c("Equal" = "Gradient-neutral", 
+                              "Along" = "Along-gradient", 
+                              "Against" = "Against-gradient")) + 
+  theme(legend.position = "none", 
+        text = element_text(size = 14)) 
+```
+
+```{r disp-pool-scatterplot, echo=TRUE, tidy=TRUE, fig.show = 'hide', fig.cap="Complementing the figure above, here we show the change in consumer biomass in the dispersers' pool Q over time, for all three consumer movement scenarios. Regardless of the direction of the fertility gradient---hence, of the way consumers move in the meta-ecosystem---consumer biomass in the dispersers' pool appears negligible throughout the duration of the model simulations. In particular, the larger share of consumer biomass in the dispersers' pool appears to accumulate when consumers move along-gradient, whereas against-gradient movement leads to very little consumer biomass lingering in this pool. Note the different scales of the y-axis across the three panels."}
+dplyr::mutate(Qrespos, Fertility = fct_relevel(Fertility,
+                                         "Equal", 
+                                         "Along", 
+                                         "Against")) %>% 
+  ggplot(., aes(x = TIME, y = Q, group = Fertility)) + 
+  geom_point(aes(col = Fertility, alpha = Q), 
+             shape = 21,show.legend = F, stroke = 2) + 
+  geom_smooth(col = "white", method = "lm") + 
+  scale_color_highcontrast(reverse = F) + 
+  facet_wrap(.~Fertility, scales = "free", 
+             labeller = as_labeller(c("Equal" = "Gradient-neutral\nConsumer movement", 
+                                      "Along" = "Along-gradient\nConsumer movement", 
+                                      "Against" = "Against-gradient\nConsumer movement"))) + 
+  ylab("Consumer biomass in Dispersers' Pool") + 
+  xlab("Time") + 
+  theme(text = element_text(size = 14))
+
+ggsave(last_plot(), filename = "../Results/QBiomass_change.svg", device = "svg", dpi = 300, width = width, height = height)
+```
 
 ## Summary tables---Ecosystem functions
 
@@ -4351,17 +3773,18 @@ distribution of biomass in either local ecosystem, or in the meta-ecosystem as a
 whole, following different types of consumer movement.
 
 We produce four graphs, one each for the following four cases:
-(i) _classic_, bottom-heavy pyramid in the donor ecosystem 1; (ii) _classic_, 
-bottom-heavy pyramid in the recipient ecosystem 2; (iii) _inverted_, top-heavy
-pyramid in the donor ecosystem 1; (iv)  _inverted_, top-heavy pyramid in the 
-recipient ecosystem 2. We separate between bottom- and top-heavy pyramids in 
-either the donor or recipient ecosystems as these local conditions can influence
-the effects of consumer movement on biomass distribution and thus ecosystem 
-functioning. Note that these four biomass-informed categories will return when
-we perform a global sensitivity analyses on our results below 
-([Sensitivity Analyses]).
+(i) _classic_, bottom-heavy pyramid in the donor ecosystem 1 (**Appendix Figure D.3**); 
+(ii) _classic_, bottom-heavy pyramid in the recipient ecosystem 2; 
+(iii) _inverted_, top-heavy pyramid in the donor ecosystem 1 (**Appendix Figure D.5**); 
+(iv)  _inverted_, top-heavy pyramid in the recipient ecosystem 2. We separate 
+between bottom- and top-heavy pyramids in either the donor or recipient 
+ecosystems as these local conditions can influence the effects of consumer 
+movement on biomass distribution and thus ecosystem functioning. Note that these
+four biomass-informed categories will return when we perform a global 
+sensitivity analyses on our results below ([Sensitivity Analyses]).
 
-The code we use here was initially developed by [Dr. A. Z. Andis Arietta](https://www.azandisresearch.com).
+The code we use here was initially developed by 
+[Dr. A. Z. Andis Arietta](https://www.azandisresearch.com).
 
 ::::: {.panelset}
 
@@ -4461,7 +3884,7 @@ ecoCR %>%
     legend.position = "top"
   )
 
-ggsave(filename = "../Results/Bpyram_CRbelow1_eco1.pdf", dpi = 300, device = "pdf")
+# ggsave(filename = "../Results/Bpyram_CRbelow1_eco1.pdf", dpi = 300, device = "pdf")
 ```
 
 :::
@@ -4562,7 +3985,7 @@ ecoCR %>%
     legend.position = "top"
   )
 
-ggsave(filename = "../Results/Bpyram_CRbelow1_eco2.pdf", dpi = 300, device = "pdf")
+# ggsave(filename = "../Results/Bpyram_CRbelow1_eco2.pdf", dpi = 300, device = "pdf")
 ```
 
 :::
@@ -4663,7 +4086,7 @@ ecoCR %>%
     legend.position = "top"
   )
 
-ggsave(filename = "../Results/Bpyram_CRabove1_eco1.pdf", dpi = 300, device = "pdf")
+# ggsave(filename = "../Results/Bpyram_CRabove1_eco1.pdf", dpi = 300, device = "pdf")
 ```
 
 :::
@@ -4764,7 +4187,7 @@ ecoCR %>%
     legend.position = "top"
   )
 
-ggsave(filename = "../Results/Bpyram_CRabove1_eco2.pdf", dpi = 300, device = "pdf")
+# ggsave(filename = "../Results/Bpyram_CRabove1_eco2.pdf", dpi = 300, device = "pdf")
 ```
 
 :::
@@ -5461,16 +4884,17 @@ useful in identifying the more important parameters in determining the stock
 value of each trophic compartment in the model for each combination of movement
 scenario and biomass distribution conditions. 
 
-Figure \@ref(fig:gsa-results-whole-system) presents the results from the GSA run
-on the whole system, which do not differ from those of two GSA runs on the two 
-local ecosystems (see above; [Whole System]). Figures 
-\@ref(fig:gsa-results-CR-below-1-eco-1) to \@ref(fig:gsa-results-CR-above-1-eco-2) 
-below present the results from the local-ecosystem GSAs, for transparancy and
-completeness.
+The code chunk below produces **Appendix Figure D.7**, showing the results 
+of the GSA run on the whole system and which do not differ from those of two GSA
+runs on the two local ecosystems (see above; [Whole System]). As with other 
+figures shown in the paper, we only show the code here and not the figure 
+itself. Figures \@ref(fig:gsa-results-CR-below-1-eco-1) to 
+\@ref(fig:gsa-results-CR-above-1-eco-2) below present the results from the 
+local-ecosystem GSAs, for transparancy and completeness.
 
 ### Whole system
 
-```{r gsa-results-whole-system, echo=TRUE, tidy=TRUE, layout = "l-page", fig.height=10, fig.width=12, fig.cap="At the whole system level, considering together all cases of biomass distribution in the two ecosystems, the global sensitivity analysis again shows evidence for the direct and indirect effects of functional response-related parameters across all movement scenarios and in both ecosystems. In particular, when consumers move against-gradient (bottom row), notice the importance of parameters e2 and d2 to shape not only the dynamics of trophic compartment in the recipient ecosystem 2 but also those of the primary producers in ecosystem 1. Note that this figure is equivalent to Figure A.7 in the Appendices to the main text, but with x-axes tailored to each panel's range of relative importance values."}
+```{r gsa-results-whole-system, echo=TRUE, tidy=TRUE, layout = "l-page", fig.show='hide', fig.height=10, fig.width=12, fig.cap="At the whole system level, considering together all cases of biomass distribution in the two ecosystems, the global sensitivity analysis again shows evidence for the direct and indirect effects of functional response-related parameters across all movement scenarios and in both ecosystems. In particular, when consumers move against-gradient (bottom row), notice the importance of parameters e2 and d2 to shape not only the dynamics of trophic compartment in the recipient ecosystem 2 but also those of the primary producers in ecosystem 1. Note that this figure is equivalent to Figure A.7 in the Appendices to the main text, but with x-axes tailored to each panel's range of relative importance values."}
 # plotting pipe
 # first, rename the variable to use as x-axis, then filter by C:R > 1 in the 
 # recipient ecosystem 2, then create a new variable to store information about 
@@ -5512,7 +4936,7 @@ GSAwhole <- sensiRes %>%
 GSAwhole + scale_y_discrete("Parameter", labels = c("l", "g", "m", "c", expression(I[2]), expression(u[2]), expression(a[2]), expression(h[2]), expression(d[2]), expression(e[2]), expression(I[2]), expression(u[1]), expression(a[1]), expression(h[1]), expression(d[1]), expression(e[1])))
 
 # save statement
-ggsave("../Results/SA_RelImpI_WS.pdf", device = "pdf", dpi = 300, width = 12, height = 10)
+# ggsave("../Results/SA_RelImpI_WS.pdf", device = "svg", dpi = 300, width = 14, height = 10)
 ```
 
 
@@ -5565,7 +4989,7 @@ sensiResE1 %>%
   
 
 # save statement
-ggsave("../Results/SA_RelImpI_Eco1CRbelow1.pdf", device = "pdf", dpi = 300, width = 12, height = 10)
+# ggsave("../Results/SA_RelImpI_Eco1CRbelow1.pdf", device = "pdf", dpi = 300, width = 12, height = 10)
 ```
 
 :::
@@ -5616,7 +5040,7 @@ sensiResE2 %>%
   scale_y_discrete("Parameter", labels = c("l", "g", "m", "c", expression(I[2]), expression(u[2]), expression(a[2]), expression(h[2]), expression(d[2]), expression(e[2]), expression(I[2]), expression(u[1]), expression(a[1]), expression(h[1]), expression(d[1]), expression(e[1])))
 
 # save statement
-ggsave("../Results/SA_RelImpI_Eco2CRbelow1.pdf", device = "pdf", dpi = 300, width = 12, height = 10)
+# ggsave("../Results/SA_RelImpI_Eco2CRbelow1.pdf", device = "pdf", dpi = 300, width = 12, height = 10)
 ```
 
 :::
@@ -5667,7 +5091,7 @@ sensiResE1 %>%
   scale_y_discrete("Parameter", labels = c("l", "g", "m", "c", expression(I[2]), expression(u[2]), expression(a[2]), expression(h[2]), expression(d[2]), expression(e[2]), expression(I[2]), expression(u[1]), expression(a[1]), expression(h[1]), expression(d[1]), expression(e[1])))
 
 # save statement
-ggsave("../Results/SA_RelImpI_Eco1CRabove1.pdf", device = "pdf", dpi = 300, width = 12, height = 10)
+# ggsave("../Results/SA_RelImpI_Eco1CRabove1.pdf", device = "pdf", dpi = 300, width = 12, height = 10)
 ```
 
 :::
@@ -5718,7 +5142,7 @@ sensiResE2 %>%
   scale_y_discrete("Parameter", labels = c("l", "g", "m", "c", expression(I[2]), expression(u[2]), expression(a[2]), expression(h[2]), expression(d[2]), expression(e[2]), expression(I[2]), expression(u[1]), expression(a[1]), expression(h[1]), expression(d[1]), expression(e[1])))
 
 # save statement
-ggsave("../Results/SA_RelImpI_Eco2CRabove1.pdf", device = "pdf", dpi = 300, width = 12, height = 10)
+# ggsave("../Results/SA_RelImpI_Eco2CRabove1.pdf", device = "pdf", dpi = 300, width = 12, height = 10)
 ```
 
 :::
