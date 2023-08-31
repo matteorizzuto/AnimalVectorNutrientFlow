@@ -4,9 +4,7 @@ This repository contains the code to replicate the numerical analyses of the mod
 
 This repository contains three folders, *Code*, *Data*, and *Results*. The *Code* folder contains the following items:
 
-  * ModelDevelopment.nb, the Wolfram Mathematica notebook we used to find the equilibria of the model and calculate mathematical expresions for ecosystem functions of interest, which are used in the SupportingCode.Rmd R notebook in this folder (also available as .txt)
-
-  * StabilityAnalyses.nb, the Wolfram Mathematica notebook detailing how we evaluated the model’s Jacobian matrix and then use its expressions in R to assess stability of the parameter sets used in our numerical analyses of the model (also available as .txt)
+  * ModelAnalysis.nb, the Wolfram Mathematica notebook we used to find the equilibria of the model, evaluate the Jacobian matrix to be used in teh local stability analysis, and calculate mathematical expresions for ecosystem functions of interest, which are used in the SupportingCode.Rmd R notebook in this folder (also available as .pdf and .txt)
 
   * SupportingCode.Rmd, the R markdown notebook containing the code to replicate the numerical analyses of the model and produce the figures in the manuscript and appendices. It uses relative paths to load data and save results in deticated folders. A compiled, easier to read version of this file is provided as "SupportingCode.html" in this same folder.
 
@@ -24,4 +22,4 @@ Information on the versions of R and of the packages used is provided in the htm
 
 To reproduce our model analyses, please run all code chunks or knit the SupportingCode.Rmd file. Please note that any change to the structure of the folder needs to be reflected in an update to the relative paths used in this notebook. A simple search for “../“ should be sufficient to find all instances in which relative paths are used, to update them as needed.
 
-The code presented in ModelDevelopment.nb and StabilityAnalyses.nb can be used in Wolfram Mathematica to find the model’s equilibria and evaluated the Jacobian of the single equilibrium that has biological meaning, respectively. Alternative .txt versions of these notebooks can be perused, if Wolfram Mathematica is not available.
+The code presented in ModelAnalysis.nb can be used in Wolfram Mathematica to find the model’s equilibria and evaluated the Jacobian of the single equilibrium that has biological meaning, respectively. Alternative .pdf and .txt versions of this notebook can be perused, if Wolfram Mathematica is not available.
