@@ -206,6 +206,10 @@ library(svglite)
 
 # set the theme for all ggplot2 objects
 theme_set(theme_classic())
+
+# set width and height for 16:9 graphs
+width <- 10
+height <- (9/16)*width
 ```
 
 In the interest of reproducibility, we use package `renv` to keep track of this 
@@ -872,6 +876,72 @@ FluxPRED %>%
   theme(legend.position = "none", axis.title.x = element_blank())
 ```
 
+#### Effects of consumer movement and recycling on Nutrient stocks and Primary Productivity
+
+Here, we use partial derivatives of the nutrient stocks and primary productivity
+with respect to the consumers' death rates in either local ecosystem 
+($\frac{\partial N_i}{\partial d_i}$, $\frac{\partial PP_i}{\partial d_i}$; where $i \in [1, 2]$) and the consumers' movement rate from the donor ecosystem 1 to the 
+dispersers' pool ($\frac{\partial N_i}{\partial g}$, $\frac{\partial PP_i}{\partial g}$). 
+
+This analysis allows us to not only explore the influence of individual parameters 
+related to the consumers on the local nutrient 
+accumulation and primary productivity, but also to assess the relative magnitude 
+of these parameters' effects.
+
+This next code chunk first calculated the value of the partial derivatives listed
+above, and then produces `ggplot2` violin graphs to use further down for creating
+**Figure D.17** in **Appendix D**.
+
+```{r partial-derivs-equal-I, echo=TRUE, tidy=TRUE}
+PRED <- PRED %>% mutate(.,
+                dN1_g = (a1*e1*(h1*l-I1*u1))/(a1*e1*l+(d1-d1*e1+g)*u1)^2,
+                dN2_g = -((a2*e1*m*(a1*e1*l-d1*(-1+e1)*u1)*(h1*l-I1*u1))/((c+m)*((a1*e1*l+(d1-d1*e1+g)*u1)^2)*(a2*e2*l-d2*(-1+e2)*u2))),
+                dN1_d1 = -((a1*(-1+e1)*e1*(h1*l-I1*u1))/((a1*e1*l+(d1-d1*e1+g)*u1)^2)),
+                dN2_d1 = (a2*(-1+e1)*e1*g*m*u1*(-h1*l+I1*u1))/((c+ m)*((a1*e1*l+(d1-d1*e1+g)*u1)^2)*(a2*e2*l-d2*(-1+e2)*u2)),
+                dN1_d2 = 0,
+                dN2_d2 = (a2*(-1+e2)*(-e2*h2*l*(c+m)*(a1*e1*l+(d1-d1*e1+g)*u1)+(a1*e1*e2*I2*l*(c+m)+e2*(d1+g)*I2*(c+m)*u1-e1*(d1*e2*I2*(c+m)*u1+g*m*(h1*l-I1*u1)))*u2))/((c+m)*(a1*e1*l+(d1-d1*e1+g)*u1)*((a2*e2*l-d2*(-1+e2)*u2)^2)),
+                dN1_I1 = (a1*e1)/(a1*e1*l+(d1-d1*e1+g)*u1),
+                dN2_I1 = (a2*e1*g*m*u1)/((c+m)*(a1*e1*l+(d1-d1*e1+g)*u1)*(a2*e2*l-d2*(-1+e2)*u2)),
+                dN1_I2 = 0,
+                dN2_I2 = (a2*e2)/(a2*e2*l-d2*(-1+e2)*u2),
+                dPP1_g = (u1*(a1*e1*(-d1*(-2+e1)*h1+2*g*h1+a1*e1*I1)*l+(((d1-d1*e1+g)^2)*h1-a1*d1*(e1^2)*I1)*u1))/(a1*e1*((a1*e1*l+(d1-d1*e1+g)*u1)^2)),
+                dPP1_d1 = (u1*(a1*e1*(-2*d1*(-1+e1)*h1-(-2+e1)*g*h1+a1*e1*I1)*l+(((d1-d1*e1+g)^2)*h1+a1*(e1^2)*g*I1)*u1))/(a1*e1*((a1*e1*l+(d1-d1*e1+g)*u1)^2)),
+                dPP1_d2 = 0,
+                dPP2_g = -((e1*m*(a1*e1*l-d1*(-1+e1)*u1)*(h1*l-I1*u1)*u2*((d2^2)*((-1+e2)^2)*((d1-d1*e1+g)^2)*h2*((c+m)^2)*(u1^2)*u2*(h2*l-I2*u2)+(a2^2)*l*(e2*(d1*(-1+e1)-g)*h2*l*(c+m)*u1*(d1*e1*e2*I2*(c+m)*u1-e2*(d1+g)*I2*(c+m)*u1+2*e1*g*m*(h1*l-I1*u1))-((e2*(d1+g)*I2*(c+m)*u1-e1*(d1*e2*I2*(c+m)*u1+g*m*(h1*l-I1*u1)))^2)*u2)+(a1^2)*(e1^2)*(l^2)*((c+m)^2)*(h2*l-I2*u2)*((a2^2)*(e2^2)*I2*l+(d2^2)*((-1+e2)^2)*h2*u2-a2*d2*e2*((-2+e2)*h2*l+e2*I2*u2))+2*a1*e1*l*(c+m)*(h2*l-I2*u2)*((a2^2)*e2*l*(e2*(d1+g)*I2*(c+m)*u1-e1*(d1*e2*I2*(c+m)*u1+g*m*(h1*l-I1*u1)))-(d2^2)*((-1+e2)^2)*(d1*(-1+e1)-g)*h2*(c+m)*u1*u2+a2*d2*e2*((-2+e2)*(d1*(-1+e1)-g)*h2*l*(c+m)*u1+(d1*e1*e2*I2*(c+m)*u1-e2*(d1+g)*I2*(c+m)*u1+e1*g*m*(h1*l-I1*u1))*u2))+a2*d2*((-c^2)*e2*((d1-d1*e1+g)^2)*(u1^2)*(h2*l-I2*u2)*((-2+e2)*h2*l+e2*I2*u2)-2*c*e2*(d1*(-1+e1)-g)*m*u1*(h2*l-I2*u2)*((-2+e2)*(d1*(-1+e1)-g)*h2*l*u1+(e1*g*h1*l-(e1*g*I1+e2*(d1-d1*e1+g)*I2)*u1)*u2)+(m^2)*(-((-2+e2)*e2*((d1-d1*e1+g)^2)*(h2^2)*(l^2)*(u1^2))-2*e2*(d1*(-1+e1)-g)*h2*l*u1*(e1*g*h1*l-(e1*g*I1+(d1-d1*e1+g)*I2)*u1)*u2+((-e1*g*h1*l+e1*g*I1*u1+e2*(d1-d1*e1+g)*I2*u1)^2)*(u2^2)))))/(a2*(c+m)*((a1*e1*l+(d1-d1*e1+g)*u1)^2)*(a2*e2*l-d2*(-1+e2)*u2)*((e2*h2*l*(c+m)*(a1*e1*l+(d1-d1*e1+g)*u1)-(a1*e1*e2*I2*l*(c+m)+e2*(d1+g)*I2*(c+m)*u1-e1*(d1*e2*I2*(c+m)*u1+g*m*(h1*l-I1*u1)))*u2)^2))),
+                dPP2_d1 = ((-1+e1)*e1*g*m*u1*(h1*l-I1*u1)*u2*((-d2^2)*((-1+e2)^2)*((d1-d1*e1+g)^2)*h2*((c+m)^2)*(u1^2)*u2*(h2*l-I2*u2)+(a1^2)*(e1^2)*(l^2)*((c+m)^2)*(h2*l-I2*u2)*(a2*e2*(d2*(-2+e2)*h2-a2*e2*I2)*l+d2*(-d2*((-1+e2)^2)*h2+a2*(e2^2)*I2)*u2)+(a2^2)*l*(-e2*(d1*(-1+e1)-g)*h2*l*(c+m)*u1*(d1*e1*e2*I2*(c+m)*u1-e2*(d1+g)*I2*(c+m)*u1+2*e1*g*m*(h1*l-I1*u1))+((e2*(d1+g)*I2*(c+m)*u1-e1*(d1*e2*I2*(c+m)*u1+g*m*(h1*l-I1*u1)))^2)*u2)-2*a1*e1*l*(c+m)*(h2*l-I2*u2)*((a2^2)*e2*l*(e2*(d1+g)*I2*(c+m)*u1-e1*(d1*e2*I2*(c+m)*u1+g*m*(h1*l-I1*u1)))-(d2^2)*((-1+e2)^2)*(d1*(-1+e1)-g)*h2*(c+m)*u1*u2+a2*d2*e2*((-2+e2)*(d1*(-1+e1)-g)*h2*l*(c+m)*u1+(d1*e1*e2*I2*(c+m)*u1-e2*(d1+g)*I2*(c+m)*u1+e1*g*m*(h1*l-I1*u1))*u2))+a2*d2*((c^2)*e2*((d1-d1*e1+g)^2)*(u1^2)*(h2*l-I2*u2)*((-2+e2)*h2*l+e2*I2*u2)+2*c*e2*(d1*(-1+e1)-g)*m*u1*(h2*l-I2*u2)*((-2+e2)*(d1*(-1+e1)-g)*h2*l*u1+(e1*g*h1*l-(e1*g*I1+e2*(d1-d1*e1+g)*I2)*u1)*u2)+(m^2)*((-2+e2)*e2*((d1-d1*e1+g)^2)*(h2^2)*(l^2)*(u1^2)+2*e2*(d1*(-1+e1)-g)*h2*l*u1*(e1*g*h1*l-(e1*g*I1+(d1-d1*e1+g)*I2)*u1)*u2-((-e1*g*h1*l+e1*g*I1*u1+e2*(d1-d1*e1+g)*I2*u1)^2)*(u2^2)))))/(a2*(c+m)*((a1*e1*l+(d1-d1*e1+g)*u1)^2)*(a2*e2*l-d2*(-1+e2)*u2)*((e2*h2*l*(c+m)*(a1*e1*l+(d1-d1*e1+g)*u1)-(a1*e1*e2*I2*l*(c+m)+e2*(d1+g)*I2*(c+m)*u1-e1*(d1*e2*I2*(c+m)*u1+g*m*(h1*l-I1*u1)))*u2)^2)),
+                dPP2_d2 = -((u2*((-a1^2)*(e1^2)*(l^2)*((c+m)^2)*(a2*e2*(-2*d2*(-1+e2)*h2+a2*e2*I2)*l+(d2^2)*((-1+e2)^2)*h2*u2)*(h2*l-I2*u2)+2*a2*d2*(-1+e2)*e2*(d1*(-1+e1)-g)*h2*l*(c+m)*u1*((d1*(-1+e1)-g)*h2*l*(c+m)*u1+((d1+g)*I2*(c+m)*u1-e1*(d1*I2*(c+m)*u1+g*m*(h1*l-I1*u1)))*u2)-(d2^2)*((-1+e2)^2)*(d1*(-1+e1)-g)*h2*(c+m)*u1*u2*((d1*(-1+e1)-g)*h2*l*(c+m)*u1+((d1+g)*I2*(c+m)*u1-e1*(d1*I2*(c+m)*u1+g*m*(h1*l-I1*u1)))*u2)+(a2^2)*l*((-c^2)*(e2^2)*((d1-d1*e1+g)^2)*I2*(u1^2)*(h2*l-I2*u2)-c*e2*(d1*(-1+e1)-g)*m*u1*(h2*l*(-e1*(-2+e2)*g*h1*l+e1*(-2+e2)*g*I1*u1-2*e2*(d1-d1*e1+g)*I2*u1)+2*I2*(-e1*g*h1*l+e1*g*I1*u1+e2*(d1-d1*e1+g)*I2*u1)*u2)+(m^2)*(-e2*(d1*(-1+e1)-g)*h2*l*u1*(-e1*(-2+e2)*g*h1*l-e2*(d1+g)*I2*u1+e1*((-2+e2)*g*I1+d1*e2*I2)*u1)+((-e1*g*h1*l+e1*g*I1*u1+e2*(d1-d1*e1+g)*I2*u1)^2)*u2))+a1*e1*l*(c+m)*(2*a2*d2*(-1+e2)*e2*h2*l*(-2*(d1*(-1+e1)-g)*h2*l*(c+m)*u1+(2*d1*e1*I2*(c+m)*u1-2*(d1+g)*I2*(c+m)*u1+e1*g*m*(h1*l-I1*u1))*u2)+(d2^2)*((-1+e2)^2)*h2*u2*(2*(d1*(-1+e1)-g)*h2*l*(c+m)*u1+(2*(d1+g)*I2*(c+m)*u1-e1*(2*d1*I2*(c+m)*u1+g*m*(h1*l-I1*u1)))*u2)+(a2^2)*e2*l*(e1*h2*l*(2*d1*e2*I2*(c+m)*u1-(-2+e2)*g*m*(h1*l-I1*u1))-2*e1*I2*(d1*e2*I2*(c+m)*u1+g*m*(h1*l-I1*u1))*u2+2*e2*(d1+g)*I2*(c+m)*u1*(-h2*l+I2*u2)))))/(a2*(c+m)*(a1*e1*l+(d1-d1*e1+g)*u1)*((a2*e2*l-d2*(-1+e2)*u2)^2)*(e2*h2*l*(c+m)*(a1*e1*l+(d1-d1*e1+g)*u1)-(a1*e1*e2*I2*l*(c+m)+e2*(d1+g)*I2*(c+m)*u1-e1*(d1*e2*I2*(c+m)*u1+g*m*(h1*l-I1*u1)))*u2))))
+
+dN_PRED <- PRED %>% dplyr::select(., dN1_g, dN1_d1, dN1_d2, dN2_g, dN2_d1, dN2_d2) %>%
+  pivot_longer(., everything(), names_to = "PartD", values_to = "Value") %>% 
+  separate(., PartD, into = c("StateV", "Var"), sep = "_") %>%
+  mutate(., StateV = as.factor(StateV)) %>%
+  dplyr::filter(., between(Value,
+                           quantile(Value, 0.05, na.rm = T),
+                           quantile(Value, 0.95, na.rm = T)),
+                           .preserve = TRUE) %>%
+  ggplot(., aes(x = Var, y = Value)) +
+  geom_violin(aes(col = Var, fill = Var), show.legend = F, alpha = 0.1, draw_quantiles = c(0.25, 0.5, 0.75)) +
+  facet_wrap(.~StateV, scales = "free") +
+  ylab("Change in Nutrient stocks") +
+  xlab(" ") +
+  ggtitle(expression(paste("Gradient-neutral consumer movement (", I[1], "=", I[2], ")")))
+
+dPP_PRED <- PRED %>% dplyr::select(., dPP1_g, dPP1_d1, dPP1_d2, dPP2_g, dPP2_d1, dPP2_d2) %>%
+  pivot_longer(., everything(), names_to = "PartD", values_to = "Value") %>% 
+  separate(., PartD, into = c("StateV", "Var"), sep = "_") %>%
+  mutate(., StateV = as.factor(StateV)) %>%
+  dplyr::filter(., between(Value,
+                           quantile(Value, 0.05, na.rm = T),
+                           quantile(Value, 0.95, na.rm = T)),
+                           .preserve = TRUE) %>%
+  ggplot(., aes(x = Var, y = Value)) +
+  geom_violin(aes(col = Var, fill = Var), show.legend = F, alpha = 0.1, draw_quantiles = c(0.25, 0.5, 0.75)) +
+  facet_wrap(.~StateV, scales = "free") +
+  ylab("Change in Primary Productivity") +
+  xlab(" ") +
+  ggtitle(expression(paste("Gradient-neutral consumer movement (", I[1], "=", I[2], ")")))
+```
+
 ## Experimental scenarios: along- and against-gradient consumer movement
 
 Here, we investigate the influence of consumers moving from ecosystem 1 to 
@@ -1254,6 +1324,62 @@ I2nf
 #ggsave(I2all, filename = "../Results/LowI2BmNf.pdf", device = "pdf", dpi = 300, width = 8, height = 6)
 ```
 
+#### Effects of consumer movement and recycling on Nutrient stocks and Primary Productivity
+
+As for the gradient-neutral consumer movement scenario, here we use partial
+derivatives to explore the influence of consumer-related parameters on local 
+ecosystem nutrient accumulation and primary productivity.
+
+```{r partial-derivs-I2small, echo=TRUE, tidy=TRUE}
+PREDI2 <- PREDI2 %>% mutate(.,
+                dN1_g = (a1*e1*(h1*l-I1*u1))/(a1*e1*l+(d1-d1*e1+g)*u1)^2,
+                dN2_g = -((a2*e1*m*(a1*e1*l-d1*(-1+e1)*u1)*(h1*l-I1*u1))/((c+m)*((a1*e1*l+(d1-d1*e1+g)*u1)^2)*(a2*e2*l-d2*(-1+e2)*u2))),
+                dN1_d1 = -((a1*(-1+e1)*e1*(h1*l-I1*u1))/((a1*e1*l+(d1-d1*e1+g)*u1)^2)),
+                dN2_d1 = (a2*(-1+e1)*e1*g*m*u1*(-h1*l+I1*u1))/((c+ m)*((a1*e1*l+(d1-d1*e1+g)*u1)^2)*(a2*e2*l-d2*(-1+e2)*u2)),
+                dN1_d2 = 0,
+                dN2_d2 = (a2*(-1+e2)*(-e2*h2*l*(c+m)*(a1*e1*l+(d1-d1*e1+g)*u1)+(a1*e1*e2*I2*l*(c+m)+e2*(d1+g)*I2*(c+m)*u1-e1*(d1*e2*I2*(c+m)*u1+g*m*(h1*l-I1*u1)))*u2))/((c+m)*(a1*e1*l+(d1-d1*e1+g)*u1)*((a2*e2*l-d2*(-1+e2)*u2)^2)),
+                dN1_I1 = (a1*e1)/(a1*e1*l+(d1-d1*e1+g)*u1),
+                dN2_I1 = (a2*e1*g*m*u1)/((c+m)*(a1*e1*l+(d1-d1*e1+g)*u1)*(a2*e2*l-d2*(-1+e2)*u2)),
+                dN1_I2 = 0,
+                dN2_I2 = (a2*e2)/(a2*e2*l-d2*(-1+e2)*u2),
+                dPP1_g = (u1*(a1*e1*(-d1*(-2+e1)*h1+2*g*h1+a1*e1*I1)*l+(((d1-d1*e1+g)^2)*h1-a1*d1*(e1^2)*I1)*u1))/(a1*e1*((a1*e1*l+(d1-d1*e1+g)*u1)^2)),
+                dPP1_d1 = (u1*(a1*e1*(-2*d1*(-1+e1)*h1-(-2+e1)*g*h1+a1*e1*I1)*l+(((d1-d1*e1+g)^2)*h1+a1*(e1^2)*g*I1)*u1))/(a1*e1*((a1*e1*l+(d1-d1*e1+g)*u1)^2)),
+                dPP1_d2 = 0,
+                dPP2_g = -((e1*m*(a1*e1*l-d1*(-1+e1)*u1)*(h1*l-I1*u1)*u2*((d2^2)*((-1+e2)^2)*((d1-d1*e1+g)^2)*h2*((c+m)^2)*(u1^2)*u2*(h2*l-I2*u2)+(a2^2)*l*(e2*(d1*(-1+e1)-g)*h2*l*(c+m)*u1*(d1*e1*e2*I2*(c+m)*u1-e2*(d1+g)*I2*(c+m)*u1+2*e1*g*m*(h1*l-I1*u1))-((e2*(d1+g)*I2*(c+m)*u1-e1*(d1*e2*I2*(c+m)*u1+g*m*(h1*l-I1*u1)))^2)*u2)+(a1^2)*(e1^2)*(l^2)*((c+m)^2)*(h2*l-I2*u2)*((a2^2)*(e2^2)*I2*l+(d2^2)*((-1+e2)^2)*h2*u2-a2*d2*e2*((-2+e2)*h2*l+e2*I2*u2))+2*a1*e1*l*(c+m)*(h2*l-I2*u2)*((a2^2)*e2*l*(e2*(d1+g)*I2*(c+m)*u1-e1*(d1*e2*I2*(c+m)*u1+g*m*(h1*l-I1*u1)))-(d2^2)*((-1+e2)^2)*(d1*(-1+e1)-g)*h2*(c+m)*u1*u2+a2*d2*e2*((-2+e2)*(d1*(-1+e1)-g)*h2*l*(c+m)*u1+(d1*e1*e2*I2*(c+m)*u1-e2*(d1+g)*I2*(c+m)*u1+e1*g*m*(h1*l-I1*u1))*u2))+a2*d2*((-c^2)*e2*((d1-d1*e1+g)^2)*(u1^2)*(h2*l-I2*u2)*((-2+e2)*h2*l+e2*I2*u2)-2*c*e2*(d1*(-1+e1)-g)*m*u1*(h2*l-I2*u2)*((-2+e2)*(d1*(-1+e1)-g)*h2*l*u1+(e1*g*h1*l-(e1*g*I1+e2*(d1-d1*e1+g)*I2)*u1)*u2)+(m^2)*(-((-2+e2)*e2*((d1-d1*e1+g)^2)*(h2^2)*(l^2)*(u1^2))-2*e2*(d1*(-1+e1)-g)*h2*l*u1*(e1*g*h1*l-(e1*g*I1+(d1-d1*e1+g)*I2)*u1)*u2+((-e1*g*h1*l+e1*g*I1*u1+e2*(d1-d1*e1+g)*I2*u1)^2)*(u2^2)))))/(a2*(c+m)*((a1*e1*l+(d1-d1*e1+g)*u1)^2)*(a2*e2*l-d2*(-1+e2)*u2)*((e2*h2*l*(c+m)*(a1*e1*l+(d1-d1*e1+g)*u1)-(a1*e1*e2*I2*l*(c+m)+e2*(d1+g)*I2*(c+m)*u1-e1*(d1*e2*I2*(c+m)*u1+g*m*(h1*l-I1*u1)))*u2)^2))),
+                dPP2_d1 = ((-1+e1)*e1*g*m*u1*(h1*l-I1*u1)*u2*((-d2^2)*((-1+e2)^2)*((d1-d1*e1+g)^2)*h2*((c+m)^2)*(u1^2)*u2*(h2*l-I2*u2)+(a1^2)*(e1^2)*(l^2)*((c+m)^2)*(h2*l-I2*u2)*(a2*e2*(d2*(-2+e2)*h2-a2*e2*I2)*l+d2*(-d2*((-1+e2)^2)*h2+a2*(e2^2)*I2)*u2)+(a2^2)*l*(-e2*(d1*(-1+e1)-g)*h2*l*(c+m)*u1*(d1*e1*e2*I2*(c+m)*u1-e2*(d1+g)*I2*(c+m)*u1+2*e1*g*m*(h1*l-I1*u1))+((e2*(d1+g)*I2*(c+m)*u1-e1*(d1*e2*I2*(c+m)*u1+g*m*(h1*l-I1*u1)))^2)*u2)-2*a1*e1*l*(c+m)*(h2*l-I2*u2)*((a2^2)*e2*l*(e2*(d1+g)*I2*(c+m)*u1-e1*(d1*e2*I2*(c+m)*u1+g*m*(h1*l-I1*u1)))-(d2^2)*((-1+e2)^2)*(d1*(-1+e1)-g)*h2*(c+m)*u1*u2+a2*d2*e2*((-2+e2)*(d1*(-1+e1)-g)*h2*l*(c+m)*u1+(d1*e1*e2*I2*(c+m)*u1-e2*(d1+g)*I2*(c+m)*u1+e1*g*m*(h1*l-I1*u1))*u2))+a2*d2*((c^2)*e2*((d1-d1*e1+g)^2)*(u1^2)*(h2*l-I2*u2)*((-2+e2)*h2*l+e2*I2*u2)+2*c*e2*(d1*(-1+e1)-g)*m*u1*(h2*l-I2*u2)*((-2+e2)*(d1*(-1+e1)-g)*h2*l*u1+(e1*g*h1*l-(e1*g*I1+e2*(d1-d1*e1+g)*I2)*u1)*u2)+(m^2)*((-2+e2)*e2*((d1-d1*e1+g)^2)*(h2^2)*(l^2)*(u1^2)+2*e2*(d1*(-1+e1)-g)*h2*l*u1*(e1*g*h1*l-(e1*g*I1+(d1-d1*e1+g)*I2)*u1)*u2-((-e1*g*h1*l+e1*g*I1*u1+e2*(d1-d1*e1+g)*I2*u1)^2)*(u2^2)))))/(a2*(c+m)*((a1*e1*l+(d1-d1*e1+g)*u1)^2)*(a2*e2*l-d2*(-1+e2)*u2)*((e2*h2*l*(c+m)*(a1*e1*l+(d1-d1*e1+g)*u1)-(a1*e1*e2*I2*l*(c+m)+e2*(d1+g)*I2*(c+m)*u1-e1*(d1*e2*I2*(c+m)*u1+g*m*(h1*l-I1*u1)))*u2)^2)),
+                dPP2_d2 = -((u2*((-a1^2)*(e1^2)*(l^2)*((c+m)^2)*(a2*e2*(-2*d2*(-1+e2)*h2+a2*e2*I2)*l+(d2^2)*((-1+e2)^2)*h2*u2)*(h2*l-I2*u2)+2*a2*d2*(-1+e2)*e2*(d1*(-1+e1)-g)*h2*l*(c+m)*u1*((d1*(-1+e1)-g)*h2*l*(c+m)*u1+((d1+g)*I2*(c+m)*u1-e1*(d1*I2*(c+m)*u1+g*m*(h1*l-I1*u1)))*u2)-(d2^2)*((-1+e2)^2)*(d1*(-1+e1)-g)*h2*(c+m)*u1*u2*((d1*(-1+e1)-g)*h2*l*(c+m)*u1+((d1+g)*I2*(c+m)*u1-e1*(d1*I2*(c+m)*u1+g*m*(h1*l-I1*u1)))*u2)+(a2^2)*l*((-c^2)*(e2^2)*((d1-d1*e1+g)^2)*I2*(u1^2)*(h2*l-I2*u2)-c*e2*(d1*(-1+e1)-g)*m*u1*(h2*l*(-e1*(-2+e2)*g*h1*l+e1*(-2+e2)*g*I1*u1-2*e2*(d1-d1*e1+g)*I2*u1)+2*I2*(-e1*g*h1*l+e1*g*I1*u1+e2*(d1-d1*e1+g)*I2*u1)*u2)+(m^2)*(-e2*(d1*(-1+e1)-g)*h2*l*u1*(-e1*(-2+e2)*g*h1*l-e2*(d1+g)*I2*u1+e1*((-2+e2)*g*I1+d1*e2*I2)*u1)+((-e1*g*h1*l+e1*g*I1*u1+e2*(d1-d1*e1+g)*I2*u1)^2)*u2))+a1*e1*l*(c+m)*(2*a2*d2*(-1+e2)*e2*h2*l*(-2*(d1*(-1+e1)-g)*h2*l*(c+m)*u1+(2*d1*e1*I2*(c+m)*u1-2*(d1+g)*I2*(c+m)*u1+e1*g*m*(h1*l-I1*u1))*u2)+(d2^2)*((-1+e2)^2)*h2*u2*(2*(d1*(-1+e1)-g)*h2*l*(c+m)*u1+(2*(d1+g)*I2*(c+m)*u1-e1*(2*d1*I2*(c+m)*u1+g*m*(h1*l-I1*u1)))*u2)+(a2^2)*e2*l*(e1*h2*l*(2*d1*e2*I2*(c+m)*u1-(-2+e2)*g*m*(h1*l-I1*u1))-2*e1*I2*(d1*e2*I2*(c+m)*u1+g*m*(h1*l-I1*u1))*u2+2*e2*(d1+g)*I2*(c+m)*u1*(-h2*l+I2*u2)))))/(a2*(c+m)*(a1*e1*l+(d1-d1*e1+g)*u1)*((a2*e2*l-d2*(-1+e2)*u2)^2)*(e2*h2*l*(c+m)*(a1*e1*l+(d1-d1*e1+g)*u1)-(a1*e1*e2*I2*l*(c+m)+e2*(d1+g)*I2*(c+m)*u1-e1*(d1*e2*I2*(c+m)*u1+g*m*(h1*l-I1*u1)))*u2))))
+
+dN_PREDI2 <- PREDI2 %>% dplyr::select(., dN1_g, dN1_d1, dN1_d2, dN2_g, dN2_d1, dN2_d2) %>%
+  pivot_longer(., everything(), names_to = "PartD", values_to = "Value") %>% 
+  separate(., PartD, into = c("StateV", "Var"), sep = "_") %>%
+  mutate(., StateV = as.factor(StateV)) %>%
+  dplyr::filter(., between(Value,
+                           quantile(Value, 0.05, na.rm = T),
+                           quantile(Value, 0.95, na.rm = T)),
+                           .preserve = TRUE) %>%
+  ggplot(., aes(x = Var, y = Value)) +
+  geom_violin(aes(col = Var, fill = Var), show.legend = F, alpha = 0.1, draw_quantiles = c(0.25, 0.5, 0.75)) +
+  facet_wrap(.~StateV, scales = "free") +
+  ylab("Change in Nutrient stocks") +
+  xlab(" ") +
+  ggtitle(expression(paste("Along-gradient consumer movement (", I[1], ">>",I[2], ")")))
+
+dPP_PREDI2 <- PREDI2 %>% dplyr::select(., dPP1_g, dPP1_d1, dPP1_d2, dPP2_g, dPP2_d1, dPP2_d2) %>%
+  pivot_longer(., everything(), names_to = "PartD", values_to = "Value") %>% 
+  separate(., PartD, into = c("StateV", "Var"), sep = "_") %>%
+  mutate(., StateV = as.factor(StateV)) %>%
+  dplyr::filter(., between(Value,
+                           quantile(Value, 0.05, na.rm = T),
+                           quantile(Value, 0.95, na.rm = T)),
+                           .preserve = TRUE) %>%
+  ggplot(., aes(x = Var, y = Value)) +
+  geom_violin(aes(col = Var, fill = Var), show.legend = F, alpha = 0.1, draw_quantiles = c(0.25, 0.5, 0.75)) +
+  facet_wrap(.~StateV, scales = "free") +
+  ylab("Change in Primary Productivity") +
+  xlab(" ") +
+  ggtitle(expression(paste("Along-gradient consumer movement (", I[1], ">>",I[2], ")")))
+```
+
 ### Against-gradient consumer movement
 
 The code chunk below analyses the experimental scenario of higher environmental 
@@ -1562,6 +1688,475 @@ I1nf
 # I1all <- I1bm + I1nf + plot_annotation(tag_levels = "a", tag_prefix = "(", tag_suffix = ")") + plot_layout(ncol = 1, nrow = 2)
 
 #ggsave(I1all, filename = "../Results/LowI1BmNf.pdf", device = "pdf", dpi = 300, width = 8, height = 6)
+```
+
+#### Effects of consumer movement and recycling on Nutrient stocks and Primary Productivity
+
+Finally, for this against-gradient consumer movement scenario as well, we explore
+the influence of consumer-related parameters on nutrient accumulation and primary 
+productivity using partial derivatives.
+
+```{r partial-derivs-I1small, echo=TRUE, tidy=TRUE}
+PREDI1 <- PREDI1 %>% mutate(.,
+                dN1_g = (a1*e1*(h1*l-I1*u1))/(a1*e1*l+(d1-d1*e1+g)*u1)^2,
+                dN2_g = -((a2*e1*m*(a1*e1*l-d1*(-1+e1)*u1)*(h1*l-I1*u1))/((c+m)*((a1*e1*l+(d1-d1*e1+g)*u1)^2)*(a2*e2*l-d2*(-1+e2)*u2))),
+                dN1_d1 = -((a1*(-1+e1)*e1*(h1*l-I1*u1))/((a1*e1*l+(d1-d1*e1+g)*u1)^2)),
+                dN2_d1 = (a2*(-1+e1)*e1*g*m*u1*(-h1*l+I1*u1))/((c+ m)*((a1*e1*l+(d1-d1*e1+g)*u1)^2)*(a2*e2*l-d2*(-1+e2)*u2)),
+                dN1_d2 = 0,
+                dN2_d2 = (a2*(-1+e2)*(-e2*h2*l*(c+m)*(a1*e1*l+(d1-d1*e1+g)*u1)+(a1*e1*e2*I2*l*(c+m)+e2*(d1+g)*I2*(c+m)*u1-e1*(d1*e2*I2*(c+m)*u1+g*m*(h1*l-I1*u1)))*u2))/((c+m)*(a1*e1*l+(d1-d1*e1+g)*u1)*((a2*e2*l-d2*(-1+e2)*u2)^2)),
+                dN1_I1 = (a1*e1)/(a1*e1*l+(d1-d1*e1+g)*u1),
+                dN2_I1 = (a2*e1*g*m*u1)/((c+m)*(a1*e1*l+(d1-d1*e1+g)*u1)*(a2*e2*l-d2*(-1+e2)*u2)),
+                dN1_I2 = 0,
+                dN2_I2 = (a2*e2)/(a2*e2*l-d2*(-1+e2)*u2),
+                dPP1_g = (u1*(a1*e1*(-d1*(-2+e1)*h1+2*g*h1+a1*e1*I1)*l+(((d1-d1*e1+g)^2)*h1-a1*d1*(e1^2)*I1)*u1))/(a1*e1*((a1*e1*l+(d1-d1*e1+g)*u1)^2)),
+                dPP1_d1 = (u1*(a1*e1*(-2*d1*(-1+e1)*h1-(-2+e1)*g*h1+a1*e1*I1)*l+(((d1-d1*e1+g)^2)*h1+a1*(e1^2)*g*I1)*u1))/(a1*e1*((a1*e1*l+(d1-d1*e1+g)*u1)^2)),
+                dPP1_d2 = 0,
+                dPP2_g = -((e1*m*(a1*e1*l-d1*(-1+e1)*u1)*(h1*l-I1*u1)*u2*((d2^2)*((-1+e2)^2)*((d1-d1*e1+g)^2)*h2*((c+m)^2)*(u1^2)*u2*(h2*l-I2*u2)+(a2^2)*l*(e2*(d1*(-1+e1)-g)*h2*l*(c+m)*u1*(d1*e1*e2*I2*(c+m)*u1-e2*(d1+g)*I2*(c+m)*u1+2*e1*g*m*(h1*l-I1*u1))-((e2*(d1+g)*I2*(c+m)*u1-e1*(d1*e2*I2*(c+m)*u1+g*m*(h1*l-I1*u1)))^2)*u2)+(a1^2)*(e1^2)*(l^2)*((c+m)^2)*(h2*l-I2*u2)*((a2^2)*(e2^2)*I2*l+(d2^2)*((-1+e2)^2)*h2*u2-a2*d2*e2*((-2+e2)*h2*l+e2*I2*u2))+2*a1*e1*l*(c+m)*(h2*l-I2*u2)*((a2^2)*e2*l*(e2*(d1+g)*I2*(c+m)*u1-e1*(d1*e2*I2*(c+m)*u1+g*m*(h1*l-I1*u1)))-(d2^2)*((-1+e2)^2)*(d1*(-1+e1)-g)*h2*(c+m)*u1*u2+a2*d2*e2*((-2+e2)*(d1*(-1+e1)-g)*h2*l*(c+m)*u1+(d1*e1*e2*I2*(c+m)*u1-e2*(d1+g)*I2*(c+m)*u1+e1*g*m*(h1*l-I1*u1))*u2))+a2*d2*((-c^2)*e2*((d1-d1*e1+g)^2)*(u1^2)*(h2*l-I2*u2)*((-2+e2)*h2*l+e2*I2*u2)-2*c*e2*(d1*(-1+e1)-g)*m*u1*(h2*l-I2*u2)*((-2+e2)*(d1*(-1+e1)-g)*h2*l*u1+(e1*g*h1*l-(e1*g*I1+e2*(d1-d1*e1+g)*I2)*u1)*u2)+(m^2)*(-((-2+e2)*e2*((d1-d1*e1+g)^2)*(h2^2)*(l^2)*(u1^2))-2*e2*(d1*(-1+e1)-g)*h2*l*u1*(e1*g*h1*l-(e1*g*I1+(d1-d1*e1+g)*I2)*u1)*u2+((-e1*g*h1*l+e1*g*I1*u1+e2*(d1-d1*e1+g)*I2*u1)^2)*(u2^2)))))/(a2*(c+m)*((a1*e1*l+(d1-d1*e1+g)*u1)^2)*(a2*e2*l-d2*(-1+e2)*u2)*((e2*h2*l*(c+m)*(a1*e1*l+(d1-d1*e1+g)*u1)-(a1*e1*e2*I2*l*(c+m)+e2*(d1+g)*I2*(c+m)*u1-e1*(d1*e2*I2*(c+m)*u1+g*m*(h1*l-I1*u1)))*u2)^2))),
+                dPP2_d1 = ((-1+e1)*e1*g*m*u1*(h1*l-I1*u1)*u2*((-d2^2)*((-1+e2)^2)*((d1-d1*e1+g)^2)*h2*((c+m)^2)*(u1^2)*u2*(h2*l-I2*u2)+(a1^2)*(e1^2)*(l^2)*((c+m)^2)*(h2*l-I2*u2)*(a2*e2*(d2*(-2+e2)*h2-a2*e2*I2)*l+d2*(-d2*((-1+e2)^2)*h2+a2*(e2^2)*I2)*u2)+(a2^2)*l*(-e2*(d1*(-1+e1)-g)*h2*l*(c+m)*u1*(d1*e1*e2*I2*(c+m)*u1-e2*(d1+g)*I2*(c+m)*u1+2*e1*g*m*(h1*l-I1*u1))+((e2*(d1+g)*I2*(c+m)*u1-e1*(d1*e2*I2*(c+m)*u1+g*m*(h1*l-I1*u1)))^2)*u2)-2*a1*e1*l*(c+m)*(h2*l-I2*u2)*((a2^2)*e2*l*(e2*(d1+g)*I2*(c+m)*u1-e1*(d1*e2*I2*(c+m)*u1+g*m*(h1*l-I1*u1)))-(d2^2)*((-1+e2)^2)*(d1*(-1+e1)-g)*h2*(c+m)*u1*u2+a2*d2*e2*((-2+e2)*(d1*(-1+e1)-g)*h2*l*(c+m)*u1+(d1*e1*e2*I2*(c+m)*u1-e2*(d1+g)*I2*(c+m)*u1+e1*g*m*(h1*l-I1*u1))*u2))+a2*d2*((c^2)*e2*((d1-d1*e1+g)^2)*(u1^2)*(h2*l-I2*u2)*((-2+e2)*h2*l+e2*I2*u2)+2*c*e2*(d1*(-1+e1)-g)*m*u1*(h2*l-I2*u2)*((-2+e2)*(d1*(-1+e1)-g)*h2*l*u1+(e1*g*h1*l-(e1*g*I1+e2*(d1-d1*e1+g)*I2)*u1)*u2)+(m^2)*((-2+e2)*e2*((d1-d1*e1+g)^2)*(h2^2)*(l^2)*(u1^2)+2*e2*(d1*(-1+e1)-g)*h2*l*u1*(e1*g*h1*l-(e1*g*I1+(d1-d1*e1+g)*I2)*u1)*u2-((-e1*g*h1*l+e1*g*I1*u1+e2*(d1-d1*e1+g)*I2*u1)^2)*(u2^2)))))/(a2*(c+m)*((a1*e1*l+(d1-d1*e1+g)*u1)^2)*(a2*e2*l-d2*(-1+e2)*u2)*((e2*h2*l*(c+m)*(a1*e1*l+(d1-d1*e1+g)*u1)-(a1*e1*e2*I2*l*(c+m)+e2*(d1+g)*I2*(c+m)*u1-e1*(d1*e2*I2*(c+m)*u1+g*m*(h1*l-I1*u1)))*u2)^2)),
+                dPP2_d2 = -((u2*((-a1^2)*(e1^2)*(l^2)*((c+m)^2)*(a2*e2*(-2*d2*(-1+e2)*h2+a2*e2*I2)*l+(d2^2)*((-1+e2)^2)*h2*u2)*(h2*l-I2*u2)+2*a2*d2*(-1+e2)*e2*(d1*(-1+e1)-g)*h2*l*(c+m)*u1*((d1*(-1+e1)-g)*h2*l*(c+m)*u1+((d1+g)*I2*(c+m)*u1-e1*(d1*I2*(c+m)*u1+g*m*(h1*l-I1*u1)))*u2)-(d2^2)*((-1+e2)^2)*(d1*(-1+e1)-g)*h2*(c+m)*u1*u2*((d1*(-1+e1)-g)*h2*l*(c+m)*u1+((d1+g)*I2*(c+m)*u1-e1*(d1*I2*(c+m)*u1+g*m*(h1*l-I1*u1)))*u2)+(a2^2)*l*((-c^2)*(e2^2)*((d1-d1*e1+g)^2)*I2*(u1^2)*(h2*l-I2*u2)-c*e2*(d1*(-1+e1)-g)*m*u1*(h2*l*(-e1*(-2+e2)*g*h1*l+e1*(-2+e2)*g*I1*u1-2*e2*(d1-d1*e1+g)*I2*u1)+2*I2*(-e1*g*h1*l+e1*g*I1*u1+e2*(d1-d1*e1+g)*I2*u1)*u2)+(m^2)*(-e2*(d1*(-1+e1)-g)*h2*l*u1*(-e1*(-2+e2)*g*h1*l-e2*(d1+g)*I2*u1+e1*((-2+e2)*g*I1+d1*e2*I2)*u1)+((-e1*g*h1*l+e1*g*I1*u1+e2*(d1-d1*e1+g)*I2*u1)^2)*u2))+a1*e1*l*(c+m)*(2*a2*d2*(-1+e2)*e2*h2*l*(-2*(d1*(-1+e1)-g)*h2*l*(c+m)*u1+(2*d1*e1*I2*(c+m)*u1-2*(d1+g)*I2*(c+m)*u1+e1*g*m*(h1*l-I1*u1))*u2)+(d2^2)*((-1+e2)^2)*h2*u2*(2*(d1*(-1+e1)-g)*h2*l*(c+m)*u1+(2*(d1+g)*I2*(c+m)*u1-e1*(2*d1*I2*(c+m)*u1+g*m*(h1*l-I1*u1)))*u2)+(a2^2)*e2*l*(e1*h2*l*(2*d1*e2*I2*(c+m)*u1-(-2+e2)*g*m*(h1*l-I1*u1))-2*e1*I2*(d1*e2*I2*(c+m)*u1+g*m*(h1*l-I1*u1))*u2+2*e2*(d1+g)*I2*(c+m)*u1*(-h2*l+I2*u2)))))/(a2*(c+m)*(a1*e1*l+(d1-d1*e1+g)*u1)*((a2*e2*l-d2*(-1+e2)*u2)^2)*(e2*h2*l*(c+m)*(a1*e1*l+(d1-d1*e1+g)*u1)-(a1*e1*e2*I2*l*(c+m)+e2*(d1+g)*I2*(c+m)*u1-e1*(d1*e2*I2*(c+m)*u1+g*m*(h1*l-I1*u1)))*u2))))
+
+dN_PREDI1 <- PREDI1 %>% dplyr::select(., dN1_g, dN1_d1, dN1_d2, dN2_g, dN2_d1, dN2_d2) %>%
+  pivot_longer(., everything(), names_to = "PartD", values_to = "Value") %>% 
+  separate(., PartD, into = c("StateV", "Var"), sep = "_") %>%
+  mutate(., StateV = as.factor(StateV)) %>%
+  dplyr::filter(., between(Value,
+                           quantile(Value, 0.05, na.rm = T),
+                           quantile(Value, 0.95, na.rm = T)),
+                           .preserve = TRUE) %>%
+  ggplot(., aes(x = Var, y = Value)) +
+  geom_violin(aes(col = Var, fill = Var), show.legend = F, alpha = 0.1, draw_quantiles = c(0.25, 0.5, 0.75)) +
+  facet_wrap(.~StateV, scales = "free") +
+  ylab("Change in Nutrient stocks") +
+  xlab(" ") +
+  ggtitle(expression(paste("Against-gradient consumer movement (", I[1], "<<",I[2], ")")))
+
+dPP_PREDI1 <- PREDI1 %>% dplyr::select(., dPP1_g, dPP1_d1, dPP1_d2, dPP2_g, dPP2_d1, dPP2_d2) %>%
+  pivot_longer(., everything(), names_to = "PartD", values_to = "Value") %>% 
+  separate(., PartD, into = c("StateV", "Var"), sep = "_") %>%
+  mutate(., StateV = as.factor(StateV)) %>%
+  dplyr::filter(., between(Value,
+                           quantile(Value, 0.05, na.rm = T),
+                           quantile(Value, 0.95, na.rm = T)),
+                           .preserve = TRUE) %>%
+  ggplot(., aes(x = Var, y = Value)) +
+  geom_violin(aes(col = Var, fill = Var), show.legend = F, alpha = 0.1, draw_quantiles = c(0.25, 0.5, 0.75)) +
+  facet_wrap(.~StateV, scales = "free") +
+  ylab("Change in Primary Productivity") +
+  xlab(" ") +
+  ggtitle(expression(paste("Against-gradient consumer movement (", I[1], "<<",I[2], ")")))
+```
+
+### Effects of nutrient inputs on Nutrient stocks and Primary Productivity
+
+Here, we explore whether varying the value of the local inorganic nutrient inputs
+into either the donor ecosystem 1 or the recipient ecosystem 2 influences the
+nutrient stock accumulation and primary productivity or either local ecosystem.
+
+As we did with the consumer-related parameters, we use partial derivatives to
+explore these relationships (i.e., $\frac{\partial N_i}{\partial I_i}$, 
+$\frac{\partial PP_i}{\partial I_i}$; where $i \in [1, 2]$). In keeping with
+earlier analyses (see [Control scenario: gradient-neutral consumer movement], 
+[Along-gradient consumer movement], and [Against-gradient consumer movement] ), 
+we vary the values of _I~1~_ and _I~2~_ over the [2, 18] range.
+
+As this analysis is new, vis-à-vis the varying levels of local inorganic inputs,
+the following code chunk not only runs the model with varying values of _I~1~_ and 
+_I~2~_, but also performs stability analyses on the parameter sets involved 
+before calculating the value of the partial derivative listed above. It also 
+produces violin plots capturing the results of these analyses. 
+
+The violin plot for the change in $\frac{\partial PP_i}{\partial I_i}$ appears 
+in **Appendix D** as **Figure D.18** and, for this reason, we do not show it here.
+
+```{r partial-derivs-Irange, echo=TRUE, tidy=TRUE, fig.height=6, fig.width=8}
+# to produce random values for C:N ratio of plants and animals we use lhs again
+# but after creating the lhs, we will transform its margins to constrain
+# the distribution of values within the C:N ranges reported in the literature
+
+# code taken from https://cran.r-project.org/web/packages/lhs/vignettes/lhs_basics.html
+
+# allocate empty dataframe
+iDATA <- NULL
+
+# create the lhs, only 2 bins because we only have 2 C:N parameters in the model
+for (i in seq(1, 100, 1)) {
+  # create the LHS containing random values for 2 C:N parameters
+  iLHSa <- randomLHS(100, 2)
+  # not, create a matrix w/ same dimensions that will contain the rescaled values
+  iLHSb <- matrix(nrow = nrow(iLHSa), ncol = ncol(iLHSa))
+  # rescale values for plants C:N, range 5-150
+  iLHSb[, 1] <- qunif(iLHSa[, 1], min = 2, max = 18)
+  # rescale values for animals C:N, range 3-10
+  iLHSb[, 2] <- qunif(iLHSa[, 2], min = 2, max = 18)
+  # rbind the matrix into a dataframe w/ 3 columns
+  iDATA <- rbind(iDATA, data.frame(i = i, 
+                                   I1 = iLHSb[,1], 
+                                   I2 = iLHSb[,2]))
+  # print i to keep track of progress
+  # print(i)
+}
+
+PREDIrange <- NULL
+
+PREDIrange <-rbind(PREDIrange, data.frame(TIME=seq(0,100,1), I1 = seq(0,100,1), I2 = seq(0,100,1), 
+                              l = seq(0,100,1), u1 = seq(0,100,1), u2 = seq(0,100,1), 
+                              a1 = seq(0,100,1), a2 = seq(0,100,1), h1 = seq(0,100,1), 
+                              h2 = seq(0,100,1), d1 = seq(0,100,1), d2 = seq(0,100,1), 
+                              g = seq(0,100,1), m = seq(0,100,1), c = seq(0,100,1), 
+                              e1 = seq(0,100,1), e2 = seq(0,100,1), N1 = seq(0,100,1), 
+                              P1 = seq(0,100,1), C1 = seq(0,100,1), N2 = seq(0,100,1), 
+                              P2 = seq(0,100,1), C2 = seq(0,100,1), Q = seq(0,100,1), 
+                              FLUX_P1 = seq(0,100,1), FLUX_C1 = seq(0,100,1), 
+                              FLUX_P2 = seq(0,100,1), FLUX_C2 = seq(0,100,1), 
+                              FLUX_Eco_1 = seq(0,100,1), FLUX_Eco_2 = seq(0,100,1), 
+                              FLUX_Q = seq(0,100,1), PROD_P1 = seq(0,100,1), 
+                              PROD_C1 = seq(0,100,1), PROD_P2 = seq(0,100,1), 
+                              PROD_C2 = seq(0,100,1)))
+
+# Here we set values for parameters that we will not vary during the simulations
+# Patch leaching rate/soil loss rate
+l = 0.1
+
+# We want to start simulations at 0
+i1 = 0
+
+for (i in seq(0,9999,1)){
+	# go to the next row
+	i1 = i1 + 1
+
+# Let's sample the parameter values from DATA. We will sample these i times as 
+# defined by the for loop above
+  # Nutrients input rate in each patch
+  I1 = iDATA[i1, 1]
+  I2 = iDATA[i1, 2]
+  # producers uptake rates
+  u1 = DATA1[i1,2] # in ecosystem 1
+  u2 = DATA1[i1,3] # in ecosystem 2
+  # consumers attack rates
+  a1 = DATA1[i1,4] # in ecosystem 1
+  a2 = DATA1[i1,5] # in ecosystem 2
+  # death rates (= recycling rate)
+  h1 = DATA1[i1,6] # death (=recycling) rate for producers in ecosystems 1
+  h2 = DATA1[i1,7] # death (=recycling) rate for producers in ecosystems 2
+  d1 = DATA1[i1,8] # death (=recycling) rate for consumers in ecosystem 1
+  d2 = DATA1[i1,9] # death (=recycling) rate for consumers in ecosystem 2
+  c = DATA1[i1,10] # death rate in the disperser's pool Q
+  # movement rate to the Dispersers' pool Q
+  g = DATA1[i1,11]
+  # movement rate from the Dispersers' pool Q
+  m = DATA1[i1,12]
+  # assimilation efficiency of consumers 
+  e1 = DATA2[i1,2] # in ecosystem 1
+  e2 = DATA2[i1,3] # in ecosystem 2
+  
+  PREDIrange[i1,] <- c(i1, I1, I2, l, u1, u2, a1, a2, h1, h2, d1, d2, g, m, c, e1, e2,
+                 # Nutrient stock in ecosystem 1
+                 ((d1 - d1*e1 + g)*h1 + a1*e1*I1)/(a1*e1*l + (d1 - d1*e1 + g)*u1),
+                 # Primary Producers biomass in ecosystem 1
+                 (d1 + g)/(a1*e1),
+                 # Consumers biomass in ecosystem 1
+                 (e1*(-h1*l + I1*u1))/(a1*e1*l + (d1 - d1*e1 + g)*u1),
+                 # Nutrient stock in ecosystem 2
+                 (-a1*e1*(d2*(-1 + e2)*h2 - a2*e2*I2)*l*(c + m) + d2*(-1 + e2)*(d1*(-1 + e1) - g)*h2*(c + m)*u1 + a2*(e2*(d1 + g)*I2*(c + m)*u1 - e1*(d1*e2*I2*(c + m)*u1 + g*m*(h1*l - I1*u1))))/((c + m)*(a1*e1*l + (d1 - d1*e1 + g)*u1)*(a2*e2*l - d2*(-1 + e2)*u2)),
+                 # Primary Producers biomass in ecosystem 2
+                 (l*(-d2*(d1*(-1 + e1) - g)*h2*(c + m)*u1 + a2*e1*g*m*(-h1*l + I1*u1)) + d2*(d1*e1*I2*(c + m)*u1 - (d1 + g)*I2*(c + m)*u1 + e1*g*m*(h1*l - I1*u1))*u2 + a1*d2*e1*l*(c + m)*(h2*l - I2*u2))/(a2*e2*h2*l*(c + m)*(a1*e1*l + (d1 - d1*e1 + g)*u1) - a2*(a1*e1*e2*I2*l*(c + m) + e2*(d1 + g)*I2*(c + m)*u1 - e1*(d1*e2*I2*(c + m)*u1 + g*m*(h1*l - I1*u1)))*u2),
+                 # Consumer biomass in ecosystem 2
+                 (((e1*g*m*(-h1*l + I1*u1)*u2)/((c + m)*(a1*e1*l + (d1 - d1*e1 + g)*u1))) + e2*(-h2*l + I2*u2))/(a2*e2*l - d2*(-1 + e2)*u2),
+                 # Consumer biomass in the Dispersers' Pool (Q)
+                 (e1*g*(-h1*l + I1*u1))/((c + m)*(a1*e1*l + (d1 - d1*e1 + g)*u1)),
+                 # Nutrient Flux for Primary Producers in Ecosystem 1
+                 ((d1 + g)*h1)/(a1*e1),
+                 # Nutrient Flux for Consumers in Ecosystem 1
+                 (d1*e1*(-h1*l + I1*u1))/(a1*e1*l + (d1 - d1*e1 + g)*u1),
+                 # Nutrient Flux for Primary Producers in Ecosystem 2
+                 (h2*(l*(-d2*(d1*(-1 + e1) - g)*h2*(c + m)*u1 + a2*e1*g*m*(-h1*l + I1*u1)) + d2*(d1*e1*I2*(c + m)*u1 - (d1 + g)*I2*(c + m)*u1 + e1*g*m*(h1*l - I1*u1))*u2 + a1*d2*e1*l*(c + m)*(h2*l - I2*u2)))/(a2*e2*h2*l*(c + m)*(a1*e1*l + (d1 - d1*e1 + g)*u1) - a2*(a1*e1*e2*I2*l*(c + m) + e2*(d1 + g)*I2*(c + m)*u1 - e1*(d1*e2*I2*(c + m)*u1 + g*m*(h1*l - I1*u1)))*u2),
+                 # Nutrient Flux for Consumers in Ecosystem 2
+                 (d2*((e1*g*m*(-h1*l + I1*u1)*u2)/((c + m)*(a1*e1*l + (d1 - d1*e1 + g)*u1)) + e2*(-h2*l + I2*u2)))/(a2*e2*l - d2*(-1 + e2)*u2),
+                 # Nutrient Flux for Ecosystem 1
+                 ((d1 + g)*h1)/(a1*e1) + (d1*e1*(-h1*l + I1*u1))/(a1*e1*l + (d1 - d1*e1 + g)*u1),
+                 # Nutrient Flux for Ecosystem 2
+                 (h2*(l*(-d2*(d1*(-1 + e1) - g)*h2*(c + m)*u1 + a2*e1*g*m*(-h1*l + I1*u1)) + d2*(d1*e1*I2*(c + m)*u1 - (d1 + g)*I2*(c + m)*u1 + e1*g*m*(h1*l - I1*u1))*u2 + a1*d2*e1*l*(c + m)*(h2*l - I2*u2)))/(a2*e2*h2*l*(c + m)*(a1*e1*l + (d1 - d1*e1 + g)*u1) - a2*(a1*e1*e2*I2*l*(c + m) + e2*(d1 + g)*I2*(c + m)*u1 - e1*(d1*e2*I2*(c + m)*u1 + g*m*(h1*l - I1*u1)))*u2) + (d2*((e1*g*m*(-h1*l + I1*u1)*u2)/((c + m)*(a1*e1*l + (d1 - d1*e1 + g)*u1)) + e2*(-h2*l + I2*u2)))/(a2*e2*l - d2*(-1 + e2)*u2),
+                 # Nutrient Flux in the Dispersers' Pool (Q)
+                 (c*e1*g*(-h1*l + I1*u1))/((c + m)*(a1*e1*l + (d1 - d1*e1 + g)*u1)),
+                 # Primary Productivity in Ecosystem 1
+                 ((d1 + g)*((d1 - d1*e1 + g)*h1 + a1*e1*I1)*u1)/(a1*e1*(a1*e1*l + (d1 - d1*e1 + g)*u1)),
+                 # Consumer (=Secondary) Productivity in Ecosystem 1
+                 (e1*(d1 + g)*(-h1*l + I1*u1))/(a1*e1*l + (d1 - d1*e1 + g)*u1),
+                 # Primary Productivity in Ecosystem 2
+                 ((-a1*e1*(d2*(-1 + e2)*h2 - a2*e2*I2)*l*(c + m) + d2*(-1 + e2)*(d1*(-1 + e1) - g)*h2*(c + m)*u1 + a2*(e2*(d1 + g)*I2*(c + m)*u1 - e1*(d1*e2*I2*(c + m)*u1 + g*m*(h1*l - I1*u1))))*u2*(l*(-d2*(d1*(-1 + e1) - g)*h2*(c + m)*u1 + a2*e1*g*m*(-h1*l + I1*u1)) + d2*(d1*e1*I2*(c + m)*u1 - (d1 + g)*I2*(c + m)*u1 + e1*g*m*(h1*l - I1*u1))*u2 + a1*d2*e1*l*(c + m)*(h2*l - I2*u2)))/((c + m)*(a1*e1*l + (d1 - d1*e1 + g)*u1)*(a2*e2*l - d2*(-1 + e2)*u2)*(a2*e2*h2*l*(c + m)*(a1*e1*l + (d1 - d1*e1 + g)*u1) - a2*(a1*e1*e2*I2*l*(c + m) + e2*(d1 + g)*I2*(c + m)*u1 - e1*(d1*e2*I2*(c + m)*u1 + g*m*(h1*l - I1*u1)))*u2)),
+                 # Consumer (=Secondary) Productivity in Ecosystem 2
+                 (e2*l*(-a1*d2*e1*h2*l*(c + m) + d2*(d1*(-1 + e1) - g)*h2*(c + m)*u1 + a2*e1*g*m*(h1*l - I1*u1)) + d2*e2*(a1*e1*I2*l*(c + m) + (d1 + g)*I2*(c + m)*u1 - e1*(d1*I2*(c + m)*u1 + g*m*(h1*l - I1*u1)))*u2)/((c + m)*(a1*e1*l + (d1 - d1*e1 + g)*u1)*(a2*e2*l - d2*(-1 + e2)*u2))
+                 )
+}
+
+# calculate meta-ecosystem biomass stocks for each trophic compartment,
+# a.k.a., meta-ecosystem biomass
+PREDIrange$Ntot <- PREDIrange$N1+PREDIrange$N2
+PREDIrange$Ptot <- PREDIrange$P1+PREDIrange$P2
+PREDIrange$Ctot <- PREDIrange$C1+PREDIrange$C2
+
+# now calculate recycling flux for the local ecosystem manually to double check 
+# the formulae used above are correct 
+PREDIrange$FLUX_Eco1_check <- PREDIrange$FLUX_P1 + PREDIrange$FLUX_C1
+PREDIrange$FLUX_Eco2_check <- PREDIrange$FLUX_P2 + PREDIrange$FLUX_C2
+
+# and the meta-ecosystem recycling flux
+PREDIrange$FLUX_Ptot <- PREDIrange$FLUX_P1 + PREDIrange$FLUX_P2
+PREDIrange$FLUX_Ctot <- PREDIrange$FLUX_C1 + PREDIrange$FLUX_C2
+PREDIrange$MetaEcoFlux <- PREDIrange$FLUX_Eco_1 + PREDIrange$FLUX_Eco_2 - PREDIrange$FLUX_Q
+
+# finally, calculate the production for each compartment at meta-ecosystem level
+PREDIrange <- dplyr::mutate(PREDIrange, PROD_Ptot = PROD_P1 + PROD_P2, .after = "PROD_C2")
+PREDIrange <- dplyr::mutate(PREDIrange, PROD_Ctot = PROD_C1 + PROD_C2, .after = "PROD_Ptot")
+
+# Equilibrium stocks less than or equal to 0 make no biological sense, so we 
+# will flag them in the PRED dataset.
+PREDIrange <- PREDIrange %>% dplyr::mutate(., biosense = ifelse(N1 > 0 & 
+                                                    P1 > 0 & 
+                                                    C1 > 0 & 
+                                                    N2 > 0 & 
+                                                    P2 > 0 & 
+                                                    C2 > 0 & 
+                                                    Q > 0, 
+                                                    "yes", 
+                                                    "no"), 
+                               .after = MetaEcoFlux) %>% 
+  dplyr::mutate_at(vars(biosense), factor)
+
+# create an empty dataframe
+MathStabIrange <- NULL
+
+for (i in 1:nrow(PREDIrange)) {
+  
+  # fetch parameter values from the equilibrium simulations df
+  I1 = PREDIrange$I1[i]
+  I2 = PREDIrange$I2[i]
+  l = PREDIrange$l[i]
+  u1 = PREDIrange$u1[i]
+  u2 = PREDIrange$u2[i]
+  a1 = PREDIrange$a1[i]
+  a2 = PREDIrange$a2[i]
+  h1 = PREDIrange$h1[i]
+  h2 = PREDIrange$h2[i]
+  d1 = PREDIrange$d1[i]
+  d2 = PREDIrange$d2[i]
+  g = PREDIrange$g[i]
+  m = PREDIrange$m[i]
+  c = PREDIrange$c[i]
+  e1 = PREDIrange$e1[i]
+  e2 = PREDIrange$e2[i]
+  
+  # Put in the solutions to the equilibrium values here:
+  dQ = PREDIrange$Q[i]
+  dN1 = PREDIrange$N1[i]
+  dP1 = PREDIrange$P1[i]
+  dC1 = PREDIrange$C1[i]
+  dN2 = PREDIrange$N2[i]
+  dP2 = PREDIrange$P2[i]
+  dC2 = PREDIrange$C2[i]
+  
+  # create the Jacobian from Mathematica
+  # NOTE: in transposing from Mathematica, the Jacobian is here assembled by row
+  Jacob <- rbind(c(-c-m, 0, 0, g, 0, 0, 0),
+                 c(0, -l-dP1*u1, h1-dN1*u1, d1, 0, 0, 0), 
+                 c(0, dP1*u1, -a1*dC1-h1+dN1*u1, -a1*dP1, 0, 0, 0), 
+                 c(0, 0, a1*dC1*e1, -d1-g+a1*e1*dP1, 0, 0, 0), 
+                 c(0, 0, 0, 0, -l-dP2*u2, h2-dN2*u2, d2), 
+                 c(0, 0, 0, 0, dP2*u2, -a2*dC2-h2+dN2*u2, -a2*dP2), 
+                 c(m, 0, 0, 0, 0, a2*dC2*e2, -d2+a2*e2*dP2))
+  
+  # Check to see if the real part of the leading eigenvalue is less than 0 or not - if it is than the system is stable.
+  if (max(Re(base::eigen(Jacob)$values)) < 0 ){ 
+    stable <- "stable"
+  } else {
+    stable <- "unstable"
+  }
+  
+  MathStabIrange <- rbind(MathStabIrange, data.frame(TIME=i, I1, I2, l, u1, u2, a1, a2, h1,
+                                         h2, d1, d2, g, m, c, e1, e2, dQ, dN1, 
+                                         dP1, dC1, dN2, dP2, dC2,
+                                         EiV1 = Re(eigen(Jacob)$values[1]),
+                                         EiV2 = Re(eigen(Jacob)$values[2]),
+                                         EiV3 = Re(eigen(Jacob)$values[3]),
+                                         EiV4 = Re(eigen(Jacob)$values[4]),
+                                         EiV5 = Re(eigen(Jacob)$values[5]),
+                                         EiV6 = Re(eigen(Jacob)$values[6]), 
+                                         EiV7 = Re(eigen(Jacob)$values[7]), 
+                                         maxEv = max(Re(base::eigen(Jacob)$values)),
+                                         stable = stable,
+                                         biosense = PREDIrange$biosense[i]))
+}
+
+MathStabIrange$stable <- as.factor(MathStabIrange$stable)
+
+# separate unstable equilibria to work with later
+MathStabIrangeUS <- subset(MathStabIrange, MathStabIrange$stable == "unstable")
+
+biononsense <- subset(PREDIrange, PREDIrange$biosense == "no")
+
+identical(as.numeric(MathStabIrangeUS[ , "TIME"]), biononsense[ , "TIME"])
+
+PREDIrange <- left_join(PREDIrange, select(MathStabIrange, !c(I1:maxEv)), by = c("TIME", "biosense"))
+
+PREDIrangepos <- filter(PREDIrange, PREDIrange$biosense == "yes" & PREDIrange$stable == "stable")
+
+# sample PREDpos to only use 1000 random simulation results
+PREDIrange_sample1000 <- PREDIrangepos[sample(nrow(PREDIrangepos), size = 1000), ]
+
+PREDIrange_1k <- droplevels(PREDIrange_sample1000)
+
+PREDIrange <- PREDIrange %>% mutate(.,
+                dN1_g = (a1*e1*(h1*l-I1*u1))/(a1*e1*l+(d1-d1*e1+g)*u1)^2,
+                dN2_g = -((a2*e1*m*(a1*e1*l-d1*(-1+e1)*u1)*(h1*l-I1*u1))/((c+m)*((a1*e1*l+(d1-d1*e1+g)*u1)^2)*(a2*e2*l-d2*(-1+e2)*u2))),
+                dN1_d1 = -((a1*(-1+e1)*e1*(h1*l-I1*u1))/((a1*e1*l+(d1-d1*e1+g)*u1)^2)),
+                dN2_d1 = (a2*(-1+e1)*e1*g*m*u1*(-h1*l+I1*u1))/((c+ m)*((a1*e1*l+(d1-d1*e1+g)*u1)^2)*(a2*e2*l-d2*(-1+e2)*u2)),
+                dN1_d2 = 0,
+                dN2_d2 = (a2*(-1+e2)*(-e2*h2*l*(c+m)*(a1*e1*l+(d1-d1*e1+g)*u1)+(a1*e1*e2*I2*l*(c+m)+e2*(d1+g)*I2*(c+m)*u1-e1*(d1*e2*I2*(c+m)*u1+g*m*(h1*l-I1*u1)))*u2))/((c+m)*(a1*e1*l+(d1-d1*e1+g)*u1)*((a2*e2*l-d2*(-1+e2)*u2)^2)),
+                dN1_I1 = (a1*e1)/(a1*e1*l+(d1-d1*e1+g)*u1),
+                dN2_I1 = (a2*e1*g*m*u1)/((c+m)*(a1*e1*l+(d1-d1*e1+g)*u1)*(a2*e2*l-d2*(-1+e2)*u2)),
+                dN1_I2 = 0,
+                dN2_I2 = (a2*e2)/(a2*e2*l-d2*(-1+e2)*u2),
+                dPP1_g = (u1*(a1*e1*(-d1*(-2+e1)*h1+2*g*h1+a1*e1*I1)*l+(((d1-d1*e1+g)^2)*h1-a1*d1*(e1^2)*I1)*u1))/(a1*e1*((a1*e1*l+(d1-d1*e1+g)*u1)^2)),
+                dPP1_d1 = (u1*(a1*e1*(-2*d1*(-1+e1)*h1-(-2+e1)*g*h1+a1*e1*I1)*l+(((d1-d1*e1+g)^2)*h1+a1*(e1^2)*g*I1)*u1))/(a1*e1*((a1*e1*l+(d1-d1*e1+g)*u1)^2)),
+                dPP1_d2 = 0,
+                dPP2_g = -((e1*m*(a1*e1*l-d1*(-1+e1)*u1)*(h1*l-I1*u1)*u2*((d2^2)*((-1+e2)^2)*((d1-d1*e1+g)^2)*h2*((c+m)^2)*(u1^2)*u2*(h2*l-I2*u2)+(a2^2)*l*(e2*(d1*(-1+e1)-g)*h2*l*(c+m)*u1*(d1*e1*e2*I2*(c+m)*u1-e2*(d1+g)*I2*(c+m)*u1+2*e1*g*m*(h1*l-I1*u1))-((e2*(d1+g)*I2*(c+m)*u1-e1*(d1*e2*I2*(c+m)*u1+g*m*(h1*l-I1*u1)))^2)*u2)+(a1^2)*(e1^2)*(l^2)*((c+m)^2)*(h2*l-I2*u2)*((a2^2)*(e2^2)*I2*l+(d2^2)*((-1+e2)^2)*h2*u2-a2*d2*e2*((-2+e2)*h2*l+e2*I2*u2))+2*a1*e1*l*(c+m)*(h2*l-I2*u2)*((a2^2)*e2*l*(e2*(d1+g)*I2*(c+m)*u1-e1*(d1*e2*I2*(c+m)*u1+g*m*(h1*l-I1*u1)))-(d2^2)*((-1+e2)^2)*(d1*(-1+e1)-g)*h2*(c+m)*u1*u2+a2*d2*e2*((-2+e2)*(d1*(-1+e1)-g)*h2*l*(c+m)*u1+(d1*e1*e2*I2*(c+m)*u1-e2*(d1+g)*I2*(c+m)*u1+e1*g*m*(h1*l-I1*u1))*u2))+a2*d2*((-c^2)*e2*((d1-d1*e1+g)^2)*(u1^2)*(h2*l-I2*u2)*((-2+e2)*h2*l+e2*I2*u2)-2*c*e2*(d1*(-1+e1)-g)*m*u1*(h2*l-I2*u2)*((-2+e2)*(d1*(-1+e1)-g)*h2*l*u1+(e1*g*h1*l-(e1*g*I1+e2*(d1-d1*e1+g)*I2)*u1)*u2)+(m^2)*(-((-2+e2)*e2*((d1-d1*e1+g)^2)*(h2^2)*(l^2)*(u1^2))-2*e2*(d1*(-1+e1)-g)*h2*l*u1*(e1*g*h1*l-(e1*g*I1+(d1-d1*e1+g)*I2)*u1)*u2+((-e1*g*h1*l+e1*g*I1*u1+e2*(d1-d1*e1+g)*I2*u1)^2)*(u2^2)))))/(a2*(c+m)*((a1*e1*l+(d1-d1*e1+g)*u1)^2)*(a2*e2*l-d2*(-1+e2)*u2)*((e2*h2*l*(c+m)*(a1*e1*l+(d1-d1*e1+g)*u1)-(a1*e1*e2*I2*l*(c+m)+e2*(d1+g)*I2*(c+m)*u1-e1*(d1*e2*I2*(c+m)*u1+g*m*(h1*l-I1*u1)))*u2)^2))),
+                dPP2_d1 = ((-1+e1)*e1*g*m*u1*(h1*l-I1*u1)*u2*((-d2^2)*((-1+e2)^2)*((d1-d1*e1+g)^2)*h2*((c+m)^2)*(u1^2)*u2*(h2*l-I2*u2)+(a1^2)*(e1^2)*(l^2)*((c+m)^2)*(h2*l-I2*u2)*(a2*e2*(d2*(-2+e2)*h2-a2*e2*I2)*l+d2*(-d2*((-1+e2)^2)*h2+a2*(e2^2)*I2)*u2)+(a2^2)*l*(-e2*(d1*(-1+e1)-g)*h2*l*(c+m)*u1*(d1*e1*e2*I2*(c+m)*u1-e2*(d1+g)*I2*(c+m)*u1+2*e1*g*m*(h1*l-I1*u1))+((e2*(d1+g)*I2*(c+m)*u1-e1*(d1*e2*I2*(c+m)*u1+g*m*(h1*l-I1*u1)))^2)*u2)-2*a1*e1*l*(c+m)*(h2*l-I2*u2)*((a2^2)*e2*l*(e2*(d1+g)*I2*(c+m)*u1-e1*(d1*e2*I2*(c+m)*u1+g*m*(h1*l-I1*u1)))-(d2^2)*((-1+e2)^2)*(d1*(-1+e1)-g)*h2*(c+m)*u1*u2+a2*d2*e2*((-2+e2)*(d1*(-1+e1)-g)*h2*l*(c+m)*u1+(d1*e1*e2*I2*(c+m)*u1-e2*(d1+g)*I2*(c+m)*u1+e1*g*m*(h1*l-I1*u1))*u2))+a2*d2*((c^2)*e2*((d1-d1*e1+g)^2)*(u1^2)*(h2*l-I2*u2)*((-2+e2)*h2*l+e2*I2*u2)+2*c*e2*(d1*(-1+e1)-g)*m*u1*(h2*l-I2*u2)*((-2+e2)*(d1*(-1+e1)-g)*h2*l*u1+(e1*g*h1*l-(e1*g*I1+e2*(d1-d1*e1+g)*I2)*u1)*u2)+(m^2)*((-2+e2)*e2*((d1-d1*e1+g)^2)*(h2^2)*(l^2)*(u1^2)+2*e2*(d1*(-1+e1)-g)*h2*l*u1*(e1*g*h1*l-(e1*g*I1+(d1-d1*e1+g)*I2)*u1)*u2-((-e1*g*h1*l+e1*g*I1*u1+e2*(d1-d1*e1+g)*I2*u1)^2)*(u2^2)))))/(a2*(c+m)*((a1*e1*l+(d1-d1*e1+g)*u1)^2)*(a2*e2*l-d2*(-1+e2)*u2)*((e2*h2*l*(c+m)*(a1*e1*l+(d1-d1*e1+g)*u1)-(a1*e1*e2*I2*l*(c+m)+e2*(d1+g)*I2*(c+m)*u1-e1*(d1*e2*I2*(c+m)*u1+g*m*(h1*l-I1*u1)))*u2)^2)),
+                dPP2_d2 = -((u2*((-a1^2)*(e1^2)*(l^2)*((c+m)^2)*(a2*e2*(-2*d2*(-1+e2)*h2+a2*e2*I2)*l+(d2^2)*((-1+e2)^2)*h2*u2)*(h2*l-I2*u2)+2*a2*d2*(-1+e2)*e2*(d1*(-1+e1)-g)*h2*l*(c+m)*u1*((d1*(-1+e1)-g)*h2*l*(c+m)*u1+((d1+g)*I2*(c+m)*u1-e1*(d1*I2*(c+m)*u1+g*m*(h1*l-I1*u1)))*u2)-(d2^2)*((-1+e2)^2)*(d1*(-1+e1)-g)*h2*(c+m)*u1*u2*((d1*(-1+e1)-g)*h2*l*(c+m)*u1+((d1+g)*I2*(c+m)*u1-e1*(d1*I2*(c+m)*u1+g*m*(h1*l-I1*u1)))*u2)+(a2^2)*l*((-c^2)*(e2^2)*((d1-d1*e1+g)^2)*I2*(u1^2)*(h2*l-I2*u2)-c*e2*(d1*(-1+e1)-g)*m*u1*(h2*l*(-e1*(-2+e2)*g*h1*l+e1*(-2+e2)*g*I1*u1-2*e2*(d1-d1*e1+g)*I2*u1)+2*I2*(-e1*g*h1*l+e1*g*I1*u1+e2*(d1-d1*e1+g)*I2*u1)*u2)+(m^2)*(-e2*(d1*(-1+e1)-g)*h2*l*u1*(-e1*(-2+e2)*g*h1*l-e2*(d1+g)*I2*u1+e1*((-2+e2)*g*I1+d1*e2*I2)*u1)+((-e1*g*h1*l+e1*g*I1*u1+e2*(d1-d1*e1+g)*I2*u1)^2)*u2))+a1*e1*l*(c+m)*(2*a2*d2*(-1+e2)*e2*h2*l*(-2*(d1*(-1+e1)-g)*h2*l*(c+m)*u1+(2*d1*e1*I2*(c+m)*u1-2*(d1+g)*I2*(c+m)*u1+e1*g*m*(h1*l-I1*u1))*u2)+(d2^2)*((-1+e2)^2)*h2*u2*(2*(d1*(-1+e1)-g)*h2*l*(c+m)*u1+(2*(d1+g)*I2*(c+m)*u1-e1*(2*d1*I2*(c+m)*u1+g*m*(h1*l-I1*u1)))*u2)+(a2^2)*e2*l*(e1*h2*l*(2*d1*e2*I2*(c+m)*u1-(-2+e2)*g*m*(h1*l-I1*u1))-2*e1*I2*(d1*e2*I2*(c+m)*u1+g*m*(h1*l-I1*u1))*u2+2*e2*(d1+g)*I2*(c+m)*u1*(-h2*l+I2*u2)))))/(a2*(c+m)*(a1*e1*l+(d1-d1*e1+g)*u1)*((a2*e2*l-d2*(-1+e2)*u2)^2)*(e2*h2*l*(c+m)*(a1*e1*l+(d1-d1*e1+g)*u1)-(a1*e1*e2*I2*l*(c+m)+e2*(d1+g)*I2*(c+m)*u1-e1*(d1*e2*I2*(c+m)*u1+g*m*(h1*l-I1*u1)))*u2))),
+                dPP1_I1 = ((d1+g)*u1)/(a1*e1*l+(d1-d1*e1+g)*u1),
+                dPP1_I2 = 0,
+                dPP2_I1 = (e1*g*m*u1*u2*(-((a2*e1*g*h1*l*m+a1*e1*(d2*(-1+e2)*h2-a2*e2*I2)*l*(c+m)-d2*(-1+e2)*(d1*(-1+e1)-g)*h2*(c+m)*u1-a2*(c*e2*(d1-d1*e1+g)*I2+e1*g*I1*m+e2*(d1-d1*e1+g)*I2*m)*u1)*(a2*l-d2*u2)*(e2*h2*l*(c+m)*(a1*e1*l+(d1-d1*e1+g)*u1)-(a1*e1*e2*I2*l*(c+m)+e2*(d1+g)*I2*(c+m)*u1-e1*(d1*e2*I2*(c+m)*u1+g*m*(h1*l-I1*u1)))*u2))+(a2*e1*g*h1*l*m+a1*e1*(d2*(-1+e2)*h2-a2*e2*I2)*l*(c+m)-d2*(-1+e2)*(d1*(-1+e1)-g)*h2*(c+m)*u1-a2*(c*e2*(d1-d1*e1+g)*I2+e1*g*I1*m+e2*(d1-d1*e1+g)*I2*m)*u1)*u2*(d2*(d1*(-1+e1)-g)*h2*l*(c+m)*u1+a2*e1*g*l*m*(h1*l-I1*u1)+d2*(d1+g)*I2*(c+m)*u1*u2-d2*e1*(d1*I2*(c+m)*u1+g*m*(h1*l-I1*u1))*u2-a1*d2*e1*l*(c+m)*(h2*l-I2*u2))-a2*(e2*h2*l*(c+m)*(a1*e1*l+(d1-d1*e1+g)*u1)-(a1*e1*e2*I2*l*(c+m)+e2*(d1+g)*I2*(c+m)*u1-e1*(d1*e2*I2*(c+m)*u1+g*m*(h1*l-I1*u1)))*u2)*(d2*(d1*(-1+e1)-g)*h2*l*(c+m)*u1+a2*e1*g*l*m*(h1*l-I1*u1)+d2*(d1+g)*I2*(c+m)*u1*u2-d2*e1*(d1*I2*(c+m)*u1+g*m*(h1*l-I1*u1))*u2-a1*d2*e1*l*(c+m)*(h2*l-I2*u2))))/(a2*(c+m)*(a1*e1*l+(d1-d1*e1+g)*u1)*(a2*e2*l-d2*(-1+e2)*u2)*((e2*h2*l*(c+m)*(a1*e1*l+(d1-d1*e1+g)*u1)-(a1*e1*e2*I2*l*(c+m)+e2*(d1+g)*I2*(c+m)*u1-e1*(d1*e2*I2*(c+m)*u1+g*m*(h1*l-I1*u1)))*u2)^2)),
+                dPP2_I2 = (u2*((a2^2)*e1*(e2^2)*(d1*(-1+e1)-g)*g*h2*(l^2)*m*(c+m)*u1*(h1*l-I1*u1)-(d2^2)*e1*((-1+e2)^2)*(d1*(-1+e1)-g)*g*h2*m*(c+m)*u1*(-h1*l+I1*u1)*(u2^2)+(a1^2)*a2*d2*(e1^2)*(e2^2)*(l^2)*((c+m)^2)*((h2*l-I2*u2)^2)+a2*d2*((e2^2)*((d1-d1*e1+g)^2)*(h2^2)*(l^2)*((c+m)^2)*(u1^2)-2*(e2^2)*(d1*(-1+e1)-g)*h2*l*(c+m)*u1*(d1*e1*I2*(c+m)*u1-(d1+g)*I2*(c+m)*u1+e1*g*m*(h1*l-I1*u1))*u2+((e2*(d1+g)*I2*(c+m)*u1-e1*(d1*e2*I2*(c+m)*u1+g*m*(h1*l-I1*u1)))^2)*(u2^2))-a1*e1*l*(c+m)*(a2*(e2^2)*h2*(l^2)*(2*d2*(d1*(-1+e1)-g)*h2*(c+m)*u1+a2*e1*g*m*(h1*l-I1*u1))+2*a2*d2*(e2^2)*h2*l*(2*(d1+g)*I2*(c+m)*u1-e1*(2*d1*I2*(c+m)*u1+g*m*(h1*l-I1*u1)))*u2+d2*(d2*e1*((-1+e2)^2)*g*h2*m*(h1*l-I1*u1)+2*a2*e2*I2*(d1*e1*e2*I2*(c+m)*u1-e2*(d1+g)*I2*(c+m)*u1+e1*g*m*(h1*l-I1*u1)))*(u2^2))))/(a2*(a2*e2*l-d2*(-1+e2)*u2)*((e2*h2*l*(c+m)*(a1*e1*l+(d1-d1*e1+g)*u1)-(a1*e1*e2*I2*l*(c+m)+e2*(d1+g)*I2*(c+m)*u1-e1*(d1*e2*I2*(c+m)*u1+g*m*(h1*l-I1*u1)))*u2)^2)))
+
+PREDIrange %>% dplyr::select(., dN1_I1, dN1_I2, dN2_I1, dN2_I2) %>%
+  pivot_longer(., everything(), names_to = "PartD", values_to = "Value") %>% 
+  separate(., PartD, into = c("StateV", "Var"), sep = "_") %>%
+  mutate(., StateV = as.factor(StateV)) %>%
+  dplyr::filter(., between(Value,
+                           quantile(Value, 0.05, na.rm = T),
+                           quantile(Value, 0.95, na.rm = T)),
+                           .preserve = TRUE) %>%
+  ggplot(., aes(x = Var, y = Value)) +
+  geom_violin(aes(col = Var, fill = Var), show.legend = F, alpha = 0.1, draw_quantiles = c(0.25, 0.5, 0.75)) +
+  # coord_cartesian(ylim = c(-12,10)) +
+  facet_wrap(.~StateV, scales = "free") +
+  ylab("Change in Nutrient stocks") +
+  xlab(" ") +
+  ggtitle(expression(paste("Consumer movement in a varying environment (", I[1], ", ", I[2], " sampled over the [2,18] range.)")))
+
+# ggsave(filename = "../Results/Nstock_Irange.svg", device = "svg", dpi = 300, width = width, height = height)
+
+dPP_Irange <- PREDIrange %>% dplyr::select(., dPP1_I1, dPP1_I2, dPP2_I1, dPP2_I2) %>%
+  pivot_longer(., everything(), names_to = "PartD", values_to = "Value") %>% 
+  separate(., PartD, into = c("StateV", "Var"), sep = "_") %>%
+  mutate(., StateV = as.factor(StateV)) %>%
+  dplyr::filter(., between(Value,
+                           quantile(Value, 0.05, na.rm = T),
+                           quantile(Value, 0.95, na.rm = T)),
+                           .preserve = TRUE) %>%
+  ggplot(., aes(x = Var, y = Value)) +
+  geom_violin(aes(col = Var, fill = Var), show.legend = F, alpha = 0.1, draw_quantiles = c(0.25, 0.5, 0.75)) +
+  # coord_cartesian(ylim = c(-12,10)) +
+  facet_wrap(.~StateV, scales = "free") +
+  ylab("Change in Primary Productivity stocks") +
+  xlab(" ") +
+  ggtitle(expression(paste("Consumer movement in a varying environment (", I[1], ", ", I[2], " sampled over the [2,18] range.)")))
+
+# ggsave(dPP_Irange, filename = "../Results/PP_Irange.svg", device = "svg", dpi = 300, width = width, height = height)
+```
+
+The following code-chunk combines the individual plots for the effects of 
+consumer-related parameters on nutrient stocks accumulation and primary 
+productivity in local ecosystems produced in earlier sections ([Control scenario: gradient-neutral consumer movement], [Along-gradient consumer movement], and
+[Against-gradient consumer movement]) into multi-panel visual objects. The figure 
+combining the results for $\frac{\partial PP_i}{\partial d_i}$ and 
+$\frac{\partial PP_i}{\partial g}$ appears in **Appendix D** as **Figures D.17**
+and as such we do not show it here.
+
+```{r partial-derivs-consumer-combi, echo=TRUE,tidy=TRUE, fig.height=8, fig.width=6}
+dN_PRED + dN_PREDI2 + dN_PREDI1 + plot_layout(ncol = 1, nrow = 3) + plot_annotation(tag_levels = "a", tag_prefix = "(", tag_suffix = ")")
+
+# ggsave(filename = "../Results/NutriensPD.svg", device = "svg", dpi = 300, width = height, height = width)
+
+dPP_SUM <- dPP_PRED + dPP_PREDI2 + dPP_PREDI1 + plot_layout(ncol = 1, nrow = 3) + plot_annotation(tag_levels = "a", tag_prefix = "(", tag_suffix = ")")
+
+# ggsave(dPP_SUM, filename = "../Results/PP_PD.svg", device = "svg", dpi = 300, width = height, height = width)
+```
+
+### Summary of consumer and environemntal parameters effect on local nutrient stocks and primary productivity
+
+Here, we produce tables to summarize the effects of consumer-related and 
+environmental on local nutrient stocks and primary productivity. Both tables can
+be found in folder `../Results/` as `.rtf` files.
+
+```{r partial-derivs-summary-tab, echo=TRUE,tidy=TRUE}
+ConsParamsSUM <- bind_rows(PRED, PREDI2, PREDI1, .id = "Scenario") %>%
+  select(., Scenario, stable, dN1_g:dN2_d2, dPP1_g:dPP2_d2) %>%
+  pivot_longer(., dN1_g:dPP2_d2, names_to = "PartialD", values_to = "Value") %>%
+  separate(., PartialD, into = c("PartialD", "Param"), sep = "_") %>%
+  mutate(., Scenario = as_factor(Scenario),
+         Scenario = fct_recode(.f = Scenario, "Gradient-neutral consumer movement (I~1~ = I~2~)" = "1", "Along-gradient consumer movement (I~1~ >> I~2~)" = "2", "Against-gradient consumer movement (I~1~ << I~2~)" = "3"),
+         PartialD = as_factor(PartialD),
+         PartialD = fct_recode(.f = PartialD, "N^*^~1~" = "dN1", "N^*^~2~" = "dN2", "PP^*^~1~" = "dPP1", "PP^*^~2~" = "dPP2"),
+         PartialD = as.character(PartialD)) %>%
+  filter(., stable == "stable") %>%
+  group_by(., Param, Scenario, PartialD) %>%
+  dplyr::filter(., between(Value,
+                           quantile(Value, 0.05, na.rm = T),
+                           quantile(Value, 0.95, na.rm = T)),
+                           .preserve = TRUE) %>%
+  summarise(., min = min(Value), 
+            median = median(Value), 
+            max = max(Value),
+            .groups = "keep") %>% 
+  dplyr::ungroup() %>% 
+  pivot_wider(., names_from = Param, values_from = c(min, median, max)) %>% 
+  gt(., groupname_col = "Scenario", rowname_col = "PartialD", process_md = T) %>% 
+  tab_spanner(label = md("**Consumer movement rate from ecosystem 1 (g)**"), columns = c("min_g", "median_g", "max_g")) %>%
+  tab_spanner(label = md("**Consumer recycling rate in ecosystem 1 (d~1~)**"), columns = c("min_d1", "median_d1", "max_d1")) %>%
+  tab_spanner(label = md("**Consumer recycling rate in ecosystem 2 (d~2~)**"), columns = c("min_d2", "median_d2", "max_d2")) %>%
+  cols_label(PartialD = md("**Compartment**"), "min_g" = md("*Min.*"), "median_g" = md("*Median*"), "max_g" = md("*Max.*"), "min_d1" = md("*Min.*"), "median_d1" = md("*Median*"), "max_d1" = md("*Max.*"), "min_d2" = md("*Min.*"), "median_d2" = md("*Median*"), "max_d2" = md("*Max.*")) %>%
+  fmt_number(., columns = c(3:11), decimals = 2) %>%
+  fmt_markdown(., columns = 2) %>%
+  tab_footnote(
+    footnote = md("N^*^~i~ stands for Nutrient stock in ecosystem _i_ = [1, 2]"),
+    locations = cells_row_groups()) %>%
+  tab_footnote(
+    footnote = md("PP^*^~i~ stands for Primary Productivity in ecosystem _i_ = [1, 2]"),
+    locations = cells_row_groups()) %>%
+  gtsave(., filename = "../Results/ConsParamsSUM.rtf")
+
+PREDIrange %>%
+  select(., stable, dN1_I1:dN2_I2, dPP1_I1:dPP2_I2) %>%
+  pivot_longer(., dN1_I1:dPP2_I2, names_to = "PartialD", values_to = "Value") %>%
+  separate(., PartialD, into = c("PartialD", "Param"), sep = "_") %>%
+  mutate(., PartialD = as_factor(PartialD),
+         PartialD = fct_recode(.f = PartialD, "N^*^~1~" = "dN1", "N^*^~2~" = "dN2", "PP^*^~1~" = "dPP1", "PP^*^~2~" = "dPP2"),
+         PartialD = as.character(PartialD)) %>%
+  filter(., stable == "stable") %>%
+  group_by(., Param,, PartialD) %>%
+  dplyr::filter(., between(Value,
+                           quantile(Value, 0.05, na.rm = T),
+                           quantile(Value, 0.95, na.rm = T)),
+                           .preserve = TRUE) %>%
+  summarise(., min = min(Value), 
+            median = median(Value), 
+            max = max(Value),
+            .groups = "keep") %>% 
+  dplyr::ungroup() %>% 
+  pivot_wider(., names_from = Param, values_from = c(min, median, max)) %>% 
+  gt() %>% 
+  tab_spanner(label = md("**Inorganic inputs into ecosystem 1 (I~1~)**"), columns = c("min_I1", "median_I1", "max_I1")) %>%
+   tab_spanner(label = md("**Inorganic inputs into ecosystem 2 (I~2~)**"), columns = c("min_I2", "median_I2", "max_I2")) %>%
+  cols_label(PartialD = md("**Compartment**"), "min_I1" = md("*Min.*"), "median_I1" = md("*Median*"), "max_I1" = md("*Max.*"), "min_I2" = md("*Min.*"), "median_I2" = md("*Median*"), "max_I2" = md("*Max.*")) %>%
+  fmt_number(., columns = c(2:7), decimals = 2) %>%
+  fmt_markdown(., columns = 1) %>%
+  tab_footnote(
+    footnote = md("N^*^~i~ stands for Nutrient stock in ecosystem _i_ = [1, 2]"),
+    locations = cells_row_groups()) %>%
+  tab_footnote(
+    footnote = md("PP^*^~i~ stands for Primary Productivity in ecosystem _i_ = [1, 2]"),
+    locations = cells_row_groups()) %>%
+  gtsave(., filename = "../Results/InorgInputsSUM.rtf")
 ```
 
 ## Summary of Stability Analyses
