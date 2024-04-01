@@ -1,6 +1,6 @@
 # Animal-Vectored Nutrient Flow in Meta-ecosystems
 
-This repository contains the code to replicate the numerical analyses of the model presented in Rizzuto et al. (2024) _Animal-vectored nutrient flow along different resource gradients influences the nature of local and meta-ecosystem functioning_, Ecological Modelling.
+This repository contains the code to replicate the numerical analyses of the model presented in Rizzuto et al. (2024) _Animal-vectored nutrient flow along different resource gradients influences the nature of local and meta-ecosystem functioning_, Ecological Modelling, doi: , https://doi.org/10.1016/j.ecolmodel.2023.110570.
 
 This repository contains three folders, *Code*, *Data*, and *Results*. The *Code* folder contains the following items:
 
